@@ -8,7 +8,11 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
-require('dotenv').config({ path: './config.env' });
+// Load environment variables based on NODE_ENV
+const envPath = process.env.NODE_ENV === 'production' 
+  ? './config.env.production' 
+  : './config.env';
+require('dotenv').config({ path: envPath });
 
 // Server Configuration
 const PORT = process.env.PORT || 3001;
@@ -237,8 +241,8 @@ if (process.env.NODE_ENV === 'development') {
     res.sendFile(filePath);
   });
   
-  // Serve index.html for root path
-  app.get('/', (req, res) => {
+  // Serve index.html for root path (only in development)
+  app.get('/home', (req, res) => {
     const indexPath = path.join(__dirname, 'index.html');
     console.log('🏠 Serving index.html:', indexPath);
     res.sendFile(indexPath);
@@ -278,6 +282,17 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
+});
+
+// Root health check endpoint for Render
+app.get('/', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Laiq Bags E-commerce API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || 'not set'
+  });
 });
 
 // Health check endpoint
@@ -408,7 +423,7 @@ app.use((error, req, res, next) => {
 
 // Start HTTP server
 const startServer = (port) => {
-  const server = app.listen(port, () => {
+  const server = app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 HTTP Server running on port ${port}`);
     console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 API URL: http://localhost:${port}/api`);
@@ -545,8 +560,10 @@ function connectWithRetry() {
       retryCount = 0;
     });
     
-    // Start servers after successful connection
-    startServers();
+    // Start servers after successful connection (only in development)
+    if (process.env.NODE_ENV !== 'production') {
+      startServers();
+    }
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
@@ -567,4 +584,11 @@ function connectWithRetry() {
 }
 
 // Start the connection process
-connectWithRetry();
+if (process.env.NODE_ENV === 'production') {
+  // In production, start server immediately and connect to MongoDB in background
+  startServers();
+  connectWithRetry();
+} else {
+  // In development, wait for MongoDB connection before starting server
+  connectWithRetry();
+}
