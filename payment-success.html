@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2C2C2C',
+                        'gold': '#D4AF37',
+                        'beige': '#F5F5DC'
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'montserrat': ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-charcoal">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+            <!-- Success Icon -->
+            <div class="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-8">
+                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            
+            <!-- Success Message -->
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h1>
+            <p class="text-lg text-gray-600 mb-8">Your order has been placed successfully and payment has been processed.</p>
+            
+            <!-- Order Details -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Details</h2>
+                <div id="order-details" class="text-left">
+                    <!-- Order details will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="space-x-4">
+                <a href="index.html" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gold hover:bg-charcoal transition-colors">
+                    Continue Shopping
+                </a>
+                <a href="customer-orders.html" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    View Orders
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <h3 class="text-xl font-bold laiq-logo mb-4">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+                    </h3>
+                <p class="text-gray-300">Carry Style with Confidence.</p>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 Laiq Bags. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <!-- <script>
+        // Load order details from localStorage and create order
+        document.addEventListener('DOMContentLoaded', async function() {
+            const pendingOrderData = localStorage.getItem('pendingOrderData');
+            if (pendingOrderData) {
+                const orderData = JSON.parse(pendingOrderData);
+                const orderDetails = document.getElementById('order-details');
+                
+                // Show order details
+                orderDetails.innerHTML = `
+                    <div class="space-y-2">
+                        <div><span class="font-medium">Total Amount:</span> ₹${orderData.totalAmount?.toLocaleString() || 'N/A'}</div>
+                        <div><span class="font-medium">Payment Method:</span> Razorpay</div>
+                        <div><span class="font-medium">Status:</span> <span class="text-green-600 font-semibold">Processing...</span></div>
+                    </div>
+                `;
+                
+                try {
+                    // Create order with payment details
+                    const orderResponse = await api.createCustomerOrder({
+                        ...orderData,
+                        paymentMethod: 'razorpay',
+                        paymentStatus: 'paid',
+                        razorpayOrderId: orderData.razorpayOrderId
+                    });
+                    
+                    if (orderResponse.success) {
+                        // Update status
+                        orderDetails.innerHTML = `
+                            <div class="space-y-2">
+                                <div><span class="font-medium">Order ID:</span> ${orderResponse.order._id}</div>
+                                <div><span class="font-medium">Total Amount:</span> ₹${orderData.totalAmount?.toLocaleString() || 'N/A'}</div>
+                                <div><span class="font-medium">Payment Method:</span> Razorpay</div>
+                                <div><span class="font-medium">Status:</span> <span class="text-green-600 font-semibold">Paid</span></div>
+                            </div>
+                        `;
+                        
+                        // Clear cart
+                        const customerToken = localStorage.getItem('customerToken');
+                        if (customerToken) {
+                            localStorage.removeItem('userCart');
+                        } else {
+                            localStorage.removeItem('guestCart');
+                        }
+                        
+                        // Clear pending order data
+                        localStorage.removeItem('pendingOrderData');
+                        
+                    } else {
+                        throw new Error(orderResponse.message || 'Failed to create order');
+                    }
+                } catch (error) {
+                    console.error('❌ Error creating order:', error);
+                    orderDetails.innerHTML = `
+                        <div class="space-y-2">
+                            <div><span class="font-medium">Error:</span> <span class="text-red-600">${error.message}</span></div>
+                            <div><span class="font-medium">Please contact support.</span></div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Products Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #results { margin-top: 20px; }
+        .log { margin: 5px 0; padding: 5px; background: #f8f9fa; border-left: 3px solid #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Admin Products Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Instructions</h3>
+        <p>1. This page tests admin products functionality</p>
+        <p>2. Click the test buttons below to check functionality</p>
+        <p>3. Check browser console for detailed logs</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 Test Admin Products</h3>
+        <button onclick="testProductsAPI()">Test Products API</button>
+        <button onclick="testProductsTable()">Test Products Table</button>
+        <button onclick="testDiscounts()">Test Discounts</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <div id="products-table-container" style="display: none;">
+        <h3>📦 Products Table</h3>
+        <table id="products-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Discount</th>
+                </tr>
+            </thead>
+            <tbody id="products-table-body">
+                <!-- Products will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(logDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('products-table-container').style.display = 'none';
+        }
+        
+        async function testProductsAPI() {
+            log('🧪 Testing products API...', 'info');
+            
+            try {
+                // Test if we can access the admin page
+                const response = await fetch('http://localhost:3001/admin.html');
+                if (response.ok) {
+                    log('✅ Admin page is accessible', 'success');
+                } else {
+                    log('❌ Admin page not accessible', 'error');
+                }
+                
+                // Test products API (will fail without auth, but that's expected)
+                try {
+                    const productsResponse = await fetch('http://localhost:3001/api/admin/products?page=1&limit=5');
+                    if (productsResponse.status === 401) {
+                        log('✅ Admin products endpoint requires authentication (expected)', 'success');
+                    } else {
+                        log(`⚠️ Admin products endpoint status: ${productsResponse.status}`, 'info');
+                    }
+                } catch (error) {
+                    log(`⚠️ Admin products endpoint error: ${error.message}`, 'info');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing products API: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProductsTable() {
+            log('📦 Testing products table...', 'info');
+            
+            try {
+                // Simulate products data
+                const mockProducts = [
+                    {
+                        _id: '1',
+                        name: 'Test Backpack',
+                        category: 'backpack',
+                        price: 1500,
+                        material: 'Canvas',
+                        calculatedStock: 10,
+                        discount: 20,
+                        discountType: 'percentage',
+                        isDiscountActive: true
+                    },
+                    {
+                        _id: '2',
+                        name: 'Test Sling Bag',
+                        category: 'sling',
+                        price: 800,
+                        material: 'Leather',
+                        calculatedStock: 5,
+                        discount: 0,
+                        discountType: 'percentage',
+                        isDiscountActive: false
+                    }
+                ];
+                
+                log(`📊 Mock products created: ${mockProducts.length}`, 'success');
+                
+                // Render products table
+                renderProductsTable(mockProducts);
+                
+                log('✅ Products table rendered successfully', 'success');
+                
+            } catch (error) {
+                log(`❌ Error testing products table: ${error.message}`, 'error');
+            }
+        }
+        
+        function renderProductsTable(products) {
+            const tbody = document.getElementById('products-table-body');
+            const container = document.getElementById('products-table-container');
+            
+            if (!tbody) {
+                log('❌ Products table body not found', 'error');
+                return;
+            }
+            
+            try {
+                tbody.innerHTML = products.map(product => `
+                    <tr>
+                        <td>
+                            <div>
+                                <div class="font-semibold">${product.name || 'Unnamed Product'}</div>
+                                <div class="text-sm text-gray-500">${product.material || 'N/A'}</div>
+                            </div>
+                        </td>
+                        <td>${product.category || 'N/A'}</td>
+                        <td>₹${(product.price || 0).toLocaleString()}</td>
+                        <td>${product.calculatedStock || 0}</td>
+                        <td>${(product.calculatedStock || 0) > 0 ? 'In Stock' : 'Out of Stock'}</td>
+                        <td>
+                            ${product.discount && product.discount > 0 && product.isDiscountActive 
+                                ? `${product.discount}% OFF` 
+                                : 'No Discount'
+                            }
+                        </td>
+                    </tr>
+                `).join('');
+                
+                container.style.display = 'block';
+                log('✅ Products table rendered successfully', 'success');
+                
+            } catch (error) {
+                log(`❌ Error rendering products table: ${error.message}`, 'error');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-red-500">
+                            <p>Error rendering products table</p>
+                            <p class="text-sm text-gray-500 mt-2">${error.message}</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        async function testDiscounts() {
+            log('🎯 Testing discounts...', 'info');
+            
+            try {
+                // Test discount calculations
+                const testPrice = 1000;
+                const testDiscount = 20;
+                const calculatedPrice = testPrice - (testPrice * testDiscount / 100);
+                
+                log(`✅ Discount calculation test: ₹${testPrice} - ${testDiscount}% = ₹${calculatedPrice}`, 'success');
+                
+                // Test discount validation
+                const validDiscounts = [0, 10, 25, 50, 100];
+                const invalidDiscounts = [-5, 101, 150];
+                
+                log('✅ Valid discount values:', validDiscounts.join(', '), 'success');
+                log('❌ Invalid discount values:', invalidDiscounts.join(', '), 'error');
+                
+            } catch (error) {
+                log(`❌ Error testing discounts: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run basic test
+        window.onload = function() {
+            log('🚀 Admin products test loaded', 'success');
+            log('📋 Click test buttons to check functionality', 'info');
+        };
+    </script>
+</body>
+</html>

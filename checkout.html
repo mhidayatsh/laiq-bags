@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Laiq Bags</title>
+    <!-- Enhanced SEO Meta Tags -->
+    <meta name="application-name" content="Laiq Bags">
+    <meta name="apple-mobile-web-app-title" content="Laiq Bags">
+    <meta name="msapplication-TileColor" content="#d4af37">
+    <meta name="theme-color" content="#d4af37">
+    
+    <!-- Structured Data for Logo -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Laiq Bags",
+      "url": "https://laiqbags.com",
+      "logo": "https://laiqbags.com/assets/laiq-logo.png",
+      "description": "Carry Style with Confidence - Premium bags and accessories",
+      "brand": {
+        "@type": "Brand",
+        "name": "LAIQ"
+      }
+    }
+    </script>
+    <link href="/css/styles.css" rel="stylesheet">
+    <!-- Google Fonts: Poppins & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Orbitron (similar to Lucidity Expand) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2C2C2C',
+                        'gold': '#D4AF37',
+                        'beige': '#F5F5DC'
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'montserrat': ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+      
+      
+    /* SEO-Optimized LAIQ Logo Font - Orbitron */
+    .laiq-logo {
+      font-family: 'Orbitron', 'Montserrat', sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      /* Ensure good contrast for accessibility */
+      color: #36454f;
+    }
+    
+    .laiq-logo-text {
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-family: 'Orbitron', 'Montserrat', sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      /* Fallback for browsers that don't support background-clip */
+      color: #d4af37;
+    }
+    
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+      .laiq-logo-text {
+        -webkit-text-fill-color: #d4af37;
+        background: none;
+        text-shadow: none;
+      }
+    }
+    
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      .laiq-logo-text {
+        transition: none;
+      }
+    }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+            <p id="loading-text" class="text-charcoal/60">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center" aria-label="Laiq Bags - Home">
+                        <h1 class="text-2xl font-bold laiq-logo text-charcoal">
+                            <span class="laiq-logo-text" aria-label="LAIQ">LAIQ</span> 
+                            <span class="text-charcoal" aria-label="Bags">Bags</span>
+                        </h1>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="shop.html" class="text-charcoal hover:text-gold transition-colors">Shop</a>
+                    <a href="about.html" class="text-charcoal hover:text-gold transition-colors">About</a>
+                    <a href="contact.html" class="text-charcoal hover:text-gold transition-colors">Contact</a>
+                    
+                    <!-- Cart Icon -->
+                    <button id="cart-btn" class="relative text-charcoal hover:text-gold transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                    
+                    <!-- Wishlist Icon -->
+                    <button id="wishlist-btn" class="relative text-charcoal hover:text-gold transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        <span id="wishlist-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                    
+                    <!-- Customer Auth Section -->
+                    <div id="customer-auth-section" class="flex items-center space-x-2">
+                        <!-- Login/Register Links (shown when not logged in) -->
+                        <div id="guest-menu" class="flex items-center space-x-2">
+                            <a href="customer-login.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Login</a>
+                            <span class="text-charcoal/40">|</span>
+                            <a href="customer-register.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Register</a>
+                        </div>
+                        <!-- User Menu (shown when logged in) -->
+                        <div id="customer-menu" class="hidden flex items-center space-x-3">
+                            <a href="customer-profile.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">My Profile</a>
+                            <span id="customer-name" class="text-charcoal text-sm font-medium"></span>
+                            <button id="logout-btn" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Logout</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile menu button -->
+                    <div class="md:hidden">
+                        <button id="mobile-menu-btn" class="text-charcoal hover:text-gold transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="shop.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Shop</a>
+                <a href="about.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">About</a>
+                <a href="contact.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Contact</a>
+                <div class="flex items-center space-x-4 px-3 py-2">
+                    <a href="#" id="mobile-wishlist-link" class="text-charcoal hover:text-gold transition-colors relative">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        <span id="wishlist-count-mobile" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                    </a>
+                    <a href="#" id="mobile-cart-link" class="text-charcoal hover:text-gold transition-colors relative">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        <span id="cart-count-mobile" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                    </a>
+                </div>
+                
+                <!-- Mobile Customer Auth Section -->
+                <div id="customer-auth-section-mobile" class="px-3 py-2 border-t border-gray-200">
+                    <!-- Login/Register Links (shown when not logged in) -->
+                    <div id="guest-menu-mobile" class="flex items-center space-x-2">
+                        <a href="customer-login.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Login</a>
+                        <span class="text-charcoal/40">|</span>
+                        <a href="customer-register.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Register</a>
+                    </div>
+                    <!-- User Menu (shown when logged in) -->
+                    <div id="customer-menu-mobile" class="hidden flex items-center space-x-2">
+                        <span id="customer-name-mobile" class="text-charcoal text-sm font-medium"></span>
+                        <a href="customer-profile.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">My Profile</a>
+                        <a href="#" id="mobile-logout-link" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Order Summary -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-2xl font-semibold mb-6">Order Summary</h2>
+                <div id="order-items" class="space-y-4 mb-6">
+                    <!-- Order items will be loaded here -->
+                </div>
+                <div class="border-t pt-4">
+                    <div class="flex justify-between text-lg font-semibold">
+                        <span>Total:</span>
+                        <span id="order-total" class="text-gold">₹0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkout Form -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-2xl font-semibold mb-6">Checkout</h2>
+                
+                <!-- Customer Info -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-4">Customer Information</h3>
+                    <div id="customer-info" class="space-y-3">
+                        <!-- Customer info will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-4">Shipping Address</h3>
+                    
+                    <!-- Saved Addresses Section -->
+                    <div id="saved-addresses-section" class="mb-4">
+                        <h4 class="text-md font-medium mb-3 text-gray-700">Saved Addresses</h4>
+                        <div id="saved-addresses" class="space-y-3">
+                            <!-- Saved addresses will be loaded here -->
+                        </div>
+                        <div id="no-saved-addresses" class="hidden text-center py-4 text-gray-500">
+                            <p>No saved addresses found</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Address Button -->
+                    <div class="mb-4">
+                        <button id="add-new-address-btn" class="text-gold hover:text-charcoal font-medium text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Add New Address
+                        </button>
+                    </div>
+                    
+                    <!-- Address Form -->
+                    <form id="address-form" class="space-y-4" style="display: block;">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Street Address *</label>
+                                <input type="text" name="street" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                                <input type="text" name="city" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                                <input type="text" name="state" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
+                                <input type="text" name="pincode" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                            </div>
+                        </div>
+                        
+                        <!-- Save Address Checkbox -->
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="save-address" name="save-address" class="text-gold focus:ring-gold" checked>
+                            <label for="save-address" class="text-sm text-gray-700">Save this address for future orders</label>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-charcoal">Payment Method</h3>
+                    
+                    <!-- Payment Instructions -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="text-sm font-semibold text-blue-800 mb-2">💡 Payment Options:</h4>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• <strong>Cash on Delivery:</strong> Pay when you receive your order</li>
+                            <li>• <strong>Razorpay:</strong> Cards, UPI, Net Banking, Wallets</li>
+                            <li>• <strong>Secure:</strong> All payments are encrypted and secure</li>
+                        </ul>
+                        <p class="text-xs text-blue-600 mt-2">💡 <strong>Test Mode:</strong> Use test card 4111 1111 1111 1111 for testing</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <!-- Cash on Delivery -->
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="radio" name="payment-method" value="cod" class="text-gold focus:ring-gold" checked>
+                            <span class="text-charcoal">Cash on Delivery</span>
+                        </label>
+                        <!-- Razorpay -->
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="radio" name="payment-method" value="razorpay" class="text-gold focus:ring-gold">
+                            <span class="text-charcoal">Razorpay</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Place Order Button -->
+                <button id="place-order-btn" class="w-full bg-gold text-white py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <h3 class="text-2xl font-bold laiq-logo">
+                            <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+                        </h3>
+                    </div>
+                    <p class="text-gray-300">Carry Style with Confidence.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="shop.html" class="text-gray-300 hover:text-gold transition-colors">Shop</a></li>
+                        <li><a href="about.html" class="text-gray-300 hover:text-gold transition-colors">About</a></li>
+                        <li><a href="contact.html" class="text-gray-300 hover:text-gold transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contact</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="footer-contact-email">mdhidayatulahsheikh786@gmail.com</li>
+                        <li><a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" class="whatsapp-number footer-whatsapp hover:text-gold">+91 99999 99999</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Follow Us</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-gold transition-colors footer-instagram">@laiq_bags_</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 <span class="text-gold laiq-logo">LAIQ</span> <span class="website-name">Bags</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/checkout.js"></script>
+    <script src="js/analytics-tracker.js"></script>
+</body>
+</html> 

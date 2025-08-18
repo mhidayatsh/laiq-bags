@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Cart/Wishlist Test - Laiq Bags</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link href="css/tailwind.css" rel="stylesheet">
+    <style>
+        .test-section { border: 2px solid #e5e7eb; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .test-button { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 6px; margin: 5px; cursor: pointer; }
+        .test-button:hover { background: #2563eb; }
+        .test-button.danger { background: #ef4444; }
+        .test-button.danger:hover { background: #dc2626; }
+        .test-button.success { background: #10b981; }
+        .test-button.success:hover { background: #059669; }
+        .log-area { background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">🧪 Guest Cart/Wishlist Test Page</h1>
+        
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">📊 Current Status</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <h3 class="font-semibold text-blue-800">Cart Count</h3>
+                    <p id="cartCount" class="text-2xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="bg-pink-100 p-4 rounded-lg">
+                    <h3 class="font-semibold text-pink-800">Wishlist Count</h3>
+                    <p id="wishlistCount" class="text-2xl font-bold text-pink-600">0</p>
+                </div>
+            </div>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-gray-800">localStorage Status</h3>
+                <div id="localStorageStatus" class="text-sm text-gray-600">Loading...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🛒 Cart Operations</h2>
+            <button class="test-button" onclick="addTestProductToCart()">Add Test Product to Cart</button>
+            <button class="test-button danger" onclick="clearGuestCart()">Clear Guest Cart</button>
+            <button class="test-button success" onclick="refreshPage()">🔄 Refresh Page</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">❤️ Wishlist Operations</h2>
+            <button class="test-button" onclick="addTestProductToWishlist()">Add Test Product to Wishlist</button>
+            <button class="test-button danger" onclick="clearGuestWishlist()">Clear Guest Wishlist</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🔍 Debug Information</h2>
+            <button class="test-button" onclick="showDebugInfo()">Show Debug Info</button>
+            <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+            <div class="log-area mt-4" id="logArea">
+                <div class="text-green-400">✅ Test page loaded. Ready to test guest cart/wishlist functionality.</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">📋 Test Instructions</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                <li>Click "Add Test Product to Cart" to add a product to guest cart</li>
+                <li>Click "Add Test Product to Wishlist" to add a product to guest wishlist</li>
+                <li>Verify the counts update correctly</li>
+                <li>Click "Refresh Page" to test persistence</li>
+                <li>Check if cart and wishlist data survives the refresh</li>
+                <li>Use "Show Debug Info" to see detailed localStorage data</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Test functions
+        function addTestProductToCart() {
+            const testProduct = {
+                id: 'test-product-' + Date.now(),
+                name: 'Test Product ' + new Date().toLocaleTimeString(),
+                price: Math.floor(Math.random() * 1000) + 100,
+                image: 'https://via.placeholder.com/150x150?text=Test+Product',
+                color: { name: 'Test Color', code: '#ff0000' }
+            };
+            
+            addToCart(testProduct.id, testProduct.name, testProduct.price, testProduct.image, testProduct.color);
+            logMessage(`➕ Added test product to cart: ${testProduct.name}`, 'success');
+            updateStatus();
+        }
+
+        function addTestProductToWishlist() {
+            const testProduct = {
+                id: 'test-wishlist-' + Date.now(),
+                name: 'Test Wishlist Item ' + new Date().toLocaleTimeString(),
+                price: Math.floor(Math.random() * 1000) + 100,
+                image: 'https://via.placeholder.com/150x150?text=Wishlist+Item'
+            };
+            
+            addToWishlist(testProduct.id, testProduct);
+            logMessage(`❤️ Added test product to wishlist: ${testProduct.name}`, 'success');
+            updateStatus();
+        }
+
+        function clearGuestCart() {
+            if (typeof guestCart !== 'undefined') {
+                guestCart.length = 0;
+                localStorage.removeItem('guestCart');
+                updateCartCount();
+                updateStatus();
+                logMessage('🗑️ Cleared guest cart', 'warning');
+            }
+        }
+
+        function clearGuestWishlist() {
+            if (typeof guestWishlist !== 'undefined') {
+                guestWishlist.length = 0;
+                localStorage.removeItem('guestWishlist');
+                updateWishlistCount();
+                updateStatus();
+                logMessage('🗑️ Cleared guest wishlist', 'warning');
+            }
+        }
+
+        function refreshPage() {
+            logMessage('🔄 Refreshing page...', 'info');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        function showDebugInfo() {
+            const cartData = localStorage.getItem('guestCart');
+            const wishlistData = localStorage.getItem('guestWishlist');
+            
+            logMessage('🔍 Debug Information:', 'info');
+            logMessage(`Cart localStorage: ${cartData || 'null'}`, 'info');
+            logMessage(`Wishlist localStorage: ${wishlistData || 'null'}`, 'info');
+            
+            if (typeof guestCart !== 'undefined') {
+                logMessage(`Guest Cart Array: ${JSON.stringify(guestCart, null, 2)}`, 'info');
+            }
+            if (typeof guestWishlist !== 'undefined') {
+                logMessage(`Guest Wishlist Array: ${JSON.stringify(guestWishlist, null, 2)}`, 'info');
+            }
+        }
+
+        function updateStatus() {
+            // Update counts
+            if (typeof updateCartCount === 'function') updateCartCount();
+            if (typeof updateWishlistCount === 'function') updateWishlistCount();
+            
+            // Update localStorage status
+            const cartData = localStorage.getItem('guestCart');
+            const wishlistData = localStorage.getItem('guestWishlist');
+            
+            let cartCount = 0;
+            let wishlistCount = 0;
+            
+            try {
+                if (cartData) cartCount = JSON.parse(cartData).length;
+                if (wishlistData) wishlistCount = JSON.parse(wishlistData).length;
+            } catch (e) {
+                console.error('Error parsing localStorage data:', e);
+            }
+            
+            document.getElementById('localStorageStatus').innerHTML = `
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div>Cart: ${cartCount} items</div>
+                    <div>Wishlist: ${wishlistCount} items</div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    Cart: ${cartData ? '✅' : '❌'} | Wishlist: ${wishlistData ? '✅' : '❌'}
+                </div>
+            `;
+        }
+
+        function logMessage(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = {
+                'success': 'text-green-400',
+                'error': 'text-red-400',
+                'warning': 'text-yellow-400',
+                'info': 'text-blue-400'
+            }[type] || 'text-gray-400';
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = colorClass;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logArea').innerHTML = '<div class="text-green-400">✅ Logs cleared</div>';
+        }
+
+        // Initialize status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                updateStatus();
+                logMessage('✅ Page fully loaded and initialized', 'success');
+            }, 1000);
+        });
+
+        // Update status every 2 seconds
+        setInterval(updateStatus, 2000);
+    </script>
+</body>
+</html>

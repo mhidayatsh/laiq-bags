@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login | Laiq Bags</title>
+    <!-- Tailwind CSS -->
+    <link href="/css/styles.css" rel="stylesheet">
+    <!-- <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script> -->
+    <!-- <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gold: '#d4af37',
+              beige: '#f5f5dc',
+              charcoal: '#1a1a1a',
+            },
+            fontFamily: {
+              poppins: ['Poppins', 'sans-serif'],
+              montserrat: ['Montserrat', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Google Fonts: Poppins & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Orbitron (similar to Lucidity Expand) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Poppins', 'Montserrat', sans-serif; }
+      
+      /* Custom LAIQ Logo Font - Lucidity Expand */
+      .laiq-logo {
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .laiq-logo-text {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 text-charcoal min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full mx-4">
+      <!-- Login Card -->
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-2xl font-bold font-montserrat text-charcoal mb-2">
+            <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span> Admin
+          </h1>
+          <p class="text-gray-600">Sign in to access admin panel</p>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="login-form" class="space-y-6">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              autocomplete="username"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold outline-none transition-colors"
+              placeholder="Enter your email"
+            >
+          </div>
+          
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required 
+              autocomplete="current-password"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold outline-none transition-colors"
+              placeholder="Enter your password"
+            >
+          </div>
+          
+          <button 
+            type="submit" 
+            class="w-full bg-gold text-white py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors"
+          >
+            Sign In
+          </button>
+        </form>
+        
+        <!-- Forgot Password Link -->
+        <div class="text-center mt-4">
+          <button 
+            type="button" 
+            id="forgot-password-btn"
+            class="text-sm text-gray-600 hover:text-gold transition-colors underline"
+          >
+            Forgot Password?
+          </button>
+        </div>
+        
+        <!-- Forgot Password Modal -->
+        <div id="forgot-password-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+          <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+              <h3 class="text-xl font-bold text-charcoal mb-2">Reset Admin Password</h3>
+              <p class="text-gray-600">Enter your admin email to receive a password reset link</p>
+            </div>
+            
+            <form id="forgot-password-form" class="space-y-4">
+              <div>
+                <label for="reset-email" class="block text-sm font-medium text-gray-700 mb-2">Admin Email</label>
+                <input 
+                  type="email" 
+                  id="reset-email" 
+                  name="reset-email" 
+                  required 
+                  autocomplete="username"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold outline-none transition-colors"
+                  placeholder="Enter your email"
+                >
+              </div>
+              
+              <div class="flex space-x-3">
+                <button 
+                  type="button" 
+                  id="cancel-reset"
+                  class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  id="send-reset"
+                  class="flex-1 bg-gold text-white py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors"
+                >
+                  Send Reset Link
+                </button>
+              </div>
+            </form>
+            
+            <div id="reset-message" class="mt-4 hidden"></div>
+          </div>
+        </div>
+        
+        <!-- Back to Website -->
+        <div class="text-center mt-6">
+          <a href="index.html" class="text-sm text-gray-600 hover:text-gold transition-colors">
+            ← Back to Website
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script>
+      // Check if already logged in as admin (robust)
+      (async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            try {
+              const user = JSON.parse(userStr);
+              if (user && user.role === 'admin') {
+                window.location.href = 'admin.html';
+                return;
+              }
+            } catch (_) {}
+          }
+          if (token) {
+            // Try to decode JWT and verify admin role
+            try {
+              const payloadPart = token.split('.')[1];
+              const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+              const payload = JSON.parse(atob(base64));
+              if (payload && payload.role === 'admin') {
+                const minimalUser = { _id: payload.id || payload._id || '', name: payload.name || 'Admin', email: payload.email || '', role: 'admin' };
+                localStorage.setItem('user', JSON.stringify(minimalUser));
+                window.location.href = 'admin.html';
+                return;
+              }
+            } catch (_) {}
+            // Fallback: fetch profile
+            try {
+              const me = await api.getProfile();
+              if (me && me.success && me.user && me.user.role === 'admin') {
+                localStorage.setItem('user', JSON.stringify(me.user));
+                window.location.href = 'admin.html';
+                return;
+              }
+            } catch (_) {}
+          }
+        } catch (_) {}
+      })();
+      
+      // Check if API is available
+      if (typeof api === 'undefined') {
+        console.error('❌ API object not found. Make sure js/api.js is loaded.');
+        alert('Error: API not loaded. Please refresh the page.');
+      } else {
+        console.log('✅ API object loaded successfully');
+      }
+      
+      // Test login functionality
+      console.log('🧪 Testing login functionality...');
+      console.log('📝 Form element:', document.getElementById('login-form'));
+      console.log('📝 Email input:', document.getElementById('email'));
+      console.log('📝 Password input:', document.getElementById('password'));
+      
+      // Forgot password modal functionality
+      const forgotPasswordBtn = document.getElementById('forgot-password-btn');
+      const forgotPasswordModal = document.getElementById('forgot-password-modal');
+      const cancelResetBtn = document.getElementById('cancel-reset');
+      const forgotPasswordForm = document.getElementById('forgot-password-form');
+      const resetMessage = document.getElementById('reset-message');
+      
+      // Show modal
+      forgotPasswordBtn.addEventListener('click', () => {
+        forgotPasswordModal.classList.remove('hidden');
+        forgotPasswordModal.classList.add('flex');
+      });
+      
+      // Hide modal
+      cancelResetBtn.addEventListener('click', () => {
+        forgotPasswordModal.classList.add('hidden');
+        forgotPasswordModal.classList.remove('flex');
+        resetMessage.classList.add('hidden');
+        forgotPasswordForm.reset();
+      });
+      
+      // Close modal when clicking outside
+      forgotPasswordModal.addEventListener('click', (e) => {
+        if (e.target === forgotPasswordModal) {
+          forgotPasswordModal.classList.add('hidden');
+          forgotPasswordModal.classList.remove('flex');
+          resetMessage.classList.add('hidden');
+          forgotPasswordForm.reset();
+        }
+      });
+      
+      // Handle forgot password form
+      forgotPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('reset-email').value;
+        const sendResetBtn = document.getElementById('send-reset');
+        
+        // Show loading
+        sendResetBtn.disabled = true;
+        sendResetBtn.textContent = 'Sending...';
+        
+        try {
+          const response = await fetch('/api/auth/admin/forgot-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email })
+          });
+          
+          const data = await response.json();
+          
+          resetMessage.classList.remove('hidden');
+          
+          if (response.ok) {
+            resetMessage.className = 'mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded';
+            resetMessage.textContent = data.message || 'Password reset email sent';
+            
+            // Hide form and show success message
+            forgotPasswordForm.style.display = 'none';
+            
+            // Auto close modal after 5 seconds
+            setTimeout(() => {
+              forgotPasswordModal.classList.add('hidden');
+              forgotPasswordModal.classList.remove('flex');
+              resetMessage.classList.add('hidden');
+              forgotPasswordForm.style.display = 'block';
+              forgotPasswordForm.reset();
+            }, 5000);
+            
+          } else {
+            resetMessage.className = 'mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded';
+            resetMessage.textContent = data.message || 'Failed to send reset email';
+          }
+          
+        } catch (error) {
+          console.error('Forgot password error:', error);
+          resetMessage.classList.remove('hidden');
+          resetMessage.className = 'mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded';
+          resetMessage.textContent = 'Network error. Please try again.';
+        } finally {
+          // Reset button
+          sendResetBtn.disabled = false;
+          sendResetBtn.textContent = 'Send Reset Link';
+        }
+      });
+      
+      // Handle login form
+      document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        console.log('🔐 Login form submitted');
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        console.log('📧 Email:', email);
+        console.log('🔑 Password length:', password.length);
+        
+        // Validate inputs
+        if (!email || !password) {
+          showLoginError('Please enter both email and password.');
+          return;
+        }
+        
+        // Clear previous error messages
+        const errorDiv = document.getElementById('login-error');
+        if (errorDiv) {
+          errorDiv.remove();
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing In...';
+        
+        try {
+          console.log('🚀 Calling api.adminLogin...');
+          const response = await api.adminLogin(email, password);
+          console.log('✅ API response:', response);
+          
+          if (response.success) {
+            if (!response.user || response.user.role !== 'admin') {
+              showLoginError('Access denied. Admin login required.');
+              return;
+            }
+            console.log('🎉 Login successful!');
+            // Store token and user data
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            
+            // Show success message
+            showLoginSuccess('Login successful! Redirecting to admin panel...');
+            
+            // Redirect to admin panel after a short delay
+            setTimeout(() => {
+              window.location.href = 'admin.html';
+            }, 1500);
+          } else {
+            console.log('❌ Login failed:', response.message);
+            showLoginError(response.message || 'Login failed. Please check your credentials.');
+          }
+        } catch (error) {
+          console.error('❌ Login error:', error);
+          let errorMessage = 'Login failed. Please try again.';
+          
+          // Check if it's a network error or specific error
+          if (error.message.includes('Email address not found')) {
+            errorMessage = 'Email address not found. Please check your email or contact administrator.';
+          } else if (error.message.includes('Incorrect password')) {
+            errorMessage = 'Incorrect password. Please check your password and try again.';
+          } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Network error. Please check your internet connection and try again.';
+          }
+          
+          showLoginError(errorMessage);
+        } finally {
+          // Reset button state
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      });
+      
+      // Function to show login error
+      function showLoginError(message) {
+        // Remove existing error message
+        const existingError = document.getElementById('login-error');
+        if (existingError) {
+          existingError.remove();
+        }
+        
+        // Create error message element
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'login-error';
+        errorDiv.className = 'mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm';
+        errorDiv.innerHTML = `
+          <div class="flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            ${message}
+          </div>
+        `;
+        
+        // Insert error message after the form
+        const form = document.getElementById('login-form');
+        form.parentNode.insertBefore(errorDiv, form.nextSibling);
+        
+        // Auto remove error after 5 seconds
+        setTimeout(() => {
+          if (errorDiv.parentNode) {
+            errorDiv.remove();
+          }
+        }, 5000);
+      }
+      
+      // Function to show login success
+      function showLoginSuccess(message) {
+        // Remove existing messages
+        const existingError = document.getElementById('login-error');
+        const existingSuccess = document.getElementById('login-success');
+        if (existingError) existingError.remove();
+        if (existingSuccess) existingSuccess.remove();
+        
+        // Create success message element
+        const successDiv = document.createElement('div');
+        successDiv.id = 'login-success';
+        successDiv.className = 'mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
+        successDiv.innerHTML = `
+          <div class="flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            ${message}
+          </div>
+        `;
+        
+        // Insert success message after the form
+        const form = document.getElementById('login-form');
+        form.parentNode.insertBefore(successDiv, form.nextSibling);
+      }
+    </script>
+  </body>
+</html> 

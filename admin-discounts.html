@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discount Management - Laiq Bags Admin</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/api.js"></script>
+    <style>
+        .loading-placeholder {
+            color: #9CA3AF;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        #loadingSpinner {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        #loadingSpinner .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-800">🎯 Discount Management</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="admin.html" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Product Discounts</h2>
+            <p class="text-gray-600">Manage discounts for your products to boost sales</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-tags text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Active Discounts</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="activeDiscounts">
+                            <span class="loading-placeholder">--</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-clock text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Upcoming</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="upcomingDiscounts">
+                            <span class="loading-placeholder">--</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Expired</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="expiredDiscounts">
+                            <span class="loading-placeholder">--</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Avg Discount</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="avgDiscount">
+                            <span class="loading-placeholder">--</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 mb-8">
+            <button onclick="showAddDiscountModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>Add Discount
+            </button>
+            <button onclick="showBulkDiscountModal()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-layer-group mr-2"></i>Bulk Discount
+            </button>
+            <button onclick="loadActiveDiscounts()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <i class="fas fa-eye mr-2"></i>View Active
+            </button>
+            <button onclick="loadAllProducts()" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="fas fa-list mr-2"></i>All Products
+            </button>
+            <button onclick="forceRefresh()" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Products</label>
+                    <input type="text" id="searchInput" placeholder="Search by name..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Categories</option>
+                        <option value="backpack">Backpack</option>
+                        <option value="sling">Sling</option>
+                        <option value="handbag">Handbag</option>
+                        <option value="tote">Tote</option>
+                        <option value="laptop-bag">Laptop Bag</option>
+                        <option value="travel-bag">Travel Bag</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Discount Status</label>
+                    <select id="discountFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">No Discount</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <select id="sortFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="name">Name</option>
+                        <option value="price">Price</option>
+                        <option value="discount">Discount %</option>
+                        <option value="createdAt">Date Added</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Products</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200" style="display: none;">
+                        <!-- Products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="loadingSpinner" class="p-8 text-center" style="display: block;">
+                <div class="flex flex-col items-center justify-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p class="mt-4 text-gray-600 font-medium">Loading discounts...</p>
+                    <p class="mt-2 text-sm text-gray-400">Please wait while we fetch the latest discount data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Discount Modal -->
+    <div id="discountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Add Discount</h3>
+                </div>
+                <form id="discountForm" class="p-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
+                        <select id="productSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Select Product</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
+                        <select id="discountType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount Value</label>
+                        <input type="number" id="discountValue" min="0" step="0.01" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date (Optional)</label>
+                        <input type="datetime-local" id="discountStartDate" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date (Optional)</label>
+                        <input type="datetime-local" id="discountEndDate" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeDiscountModal()" 
+                                class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                            Save Discount
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Discount Modal -->
+    <div id="bulkDiscountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Bulk Discount Update</h3>
+                </div>
+                <form id="bulkDiscountForm" class="p-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Products</label>
+                        <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+                            <div id="bulkProductList" class="space-y-2">
+                                <!-- Products will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
+                        <select id="bulkDiscountType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount Value</label>
+                        <input type="number" id="bulkDiscountValue" min="0" step="0.01" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date (Optional)</label>
+                        <input type="datetime-local" id="bulkDiscountStartDate" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date (Optional)</label>
+                        <input type="datetime-local" id="bulkDiscountEndDate" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeBulkDiscountModal()" 
+                                class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            Apply to Selected
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allProducts = [];
+        let selectedProducts = [];
+
+        // Load products on page load
+        $(document).ready(function() {
+            console.log('🚀 Admin discounts page loaded');
+            
+            // Check authentication first
+            if (!checkAdminAuth()) {
+                console.error('❌ No admin authentication found');
+                showAlert('Please login as admin first', 'error');
+                setTimeout(() => {
+                    window.location.href = '/admin-login.html';
+                }, 2000);
+                return;
+            }
+            
+            // Verify token is valid by trying to load products (which requires admin auth)
+            console.log('🔐 Verifying admin authentication...');
+            // Show loading immediately
+            console.log('🔄 Initializing loading state...');
+            showLoading();
+            updateStats(); // Show loading placeholders in stats
+            
+            // Load products after a short delay to ensure loading is visible
+            setTimeout(function() {
+                console.log('📦 Loading products...');
+                loadAllProducts();
+            }, 100);
+            
+            setupEventListeners();
+        });
+
+        // Check if user is authenticated as admin
+        function checkAdminAuth() {
+            const token = localStorage.getItem('token');
+            const customerToken = localStorage.getItem('customerToken');
+            
+            console.log('🔍 Checking authentication...');
+            console.log('Token exists:', !!token);
+            console.log('Customer token exists:', !!customerToken);
+            
+            if (token) {
+                console.log('✅ Admin token found');
+                return true;
+            }
+            
+            if (customerToken) {
+                try {
+                    const customerUser = JSON.parse(localStorage.getItem('customerUser'));
+                    if (customerUser && customerUser.role === 'admin') {
+                        console.log('✅ Customer user is admin');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error parsing customer user:', error);
+                }
+            }
+            
+            console.log('❌ No valid admin authentication found');
+            return false;
+        }
+
+        function setupEventListeners() {
+            $('#searchInput').on('input', filterProducts);
+            $('#categoryFilter').on('change', filterProducts);
+            $('#discountFilter').on('change', filterProducts);
+            $('#sortFilter').on('change', filterProducts);
+            
+            $('#discountType').on('change', function() {
+                const type = $(this).val();
+                const input = $('#discountValue');
+                if (type === 'percentage') {
+                    input.attr('max', '100');
+                    input.attr('placeholder', 'Enter percentage (0-100)');
+                } else {
+                    input.removeAttr('max');
+                    input.attr('placeholder', 'Enter amount in ₹');
+                }
+            });
+
+            $('#bulkDiscountType').on('change', function() {
+                const type = $(this).val();
+                const input = $('#bulkDiscountValue');
+                if (type === 'percentage') {
+                    input.attr('max', '100');
+                    input.attr('placeholder', 'Enter percentage (0-100)');
+                } else {
+                    input.removeAttr('max');
+                    input.attr('placeholder', 'Enter amount in ₹');
+                }
+            });
+        }
+
+        function showLoading() {
+            console.log('🔄 Showing loading spinner...');
+            $('#loadingSpinner').show();
+            $('#productsTableBody').hide();
+        }
+
+        function hideLoading() {
+            console.log('✅ Hiding loading spinner...');
+            $('#loadingSpinner').hide();
+            $('#productsTableBody').show();
+        }
+
+        function loadAllProducts() {
+            showLoading();
+            // Add cache-busting parameter to ensure fresh data
+            const timestamp = new Date().getTime();
+            
+            // Use the API service instead of direct AJAX calls
+            api.request(`/products?t=${timestamp}`, {
+                method: 'GET'
+            })
+            .then(response => {
+                allProducts = response.products || response;
+                console.log('🔄 Refreshing products data:', allProducts.length, 'products loaded');
+                
+                // Debug: Log first product to see data structure
+                if (allProducts.length > 0) {
+                    console.log('🔍 First product data:', {
+                        name: allProducts[0].name,
+                        price: allProducts[0].price,
+                        discount: allProducts[0].discount,
+                        isDiscountActive: allProducts[0].isDiscountActive,
+                        discountInfo: allProducts[0].discountInfo
+                    });
+                }
+                
+                displayProducts(allProducts);
+                updateStats();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                hideLoading();
+                showAlert('Error loading products. Please try again.', 'error');
+            });
+        }
+
+        function loadActiveDiscounts() {
+            showLoading();
+            api.request('/products/discounts/active', {
+                method: 'GET'
+            })
+            .then(response => {
+                allProducts = response.products || response;
+                displayProducts(allProducts);
+                updateStats();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error loading discounted products:', error);
+                hideLoading();
+                showAlert('Error loading discounted products. Please try again.', 'error');
+            });
+        }
+
+        function displayProducts(products) {
+            const tbody = $('#productsTableBody');
+            tbody.empty();
+
+            if (products.length === 0) {
+                tbody.append(`
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No products found
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+
+            products.forEach(product => {
+                // Check for discount in multiple ways to handle different API response formats
+                const discountInfo = product.discountInfo;
+                const hasDiscount = (discountInfo && discountInfo.status === 'active') || 
+                                   (product.isDiscountActive && product.discount > 0);
+                
+                // Calculate discount display info if not provided by API
+                let displayDiscountInfo = discountInfo;
+                if (!discountInfo && product.isDiscountActive && product.discount > 0) {
+                    const discountPrice = Math.round(product.price - (product.price * product.discount / 100));
+                    displayDiscountInfo = {
+                        type: 'percentage',
+                        value: `${product.discount}%`,
+                        originalPrice: product.price,
+                        discountPrice: discountPrice,
+                        savings: Math.round(product.price * product.discount / 100),
+                        status: 'active'
+                    };
+                }
+                
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <img class="h-10 w-10 rounded-lg object-cover" src="${product.image || product.images?.[0]?.url || 'https://via.placeholder.com/40'}" alt="${product.name}">
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${product.name}</div>
+                                    <div class="text-sm text-gray-500">${product.category}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                ${hasDiscount ? 
+                                    `<span class="line-through text-gray-400">₹${product.price}</span><br>
+                                     <span class="text-green-600 font-semibold">₹${displayDiscountInfo.discountPrice}</span>` : 
+                                    `₹${product.price}`
+                                }
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${hasDiscount ? 
+                                `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    ${displayDiscountInfo.value} OFF
+                                </span>` : 
+                                `<span class="text-gray-400">No discount</span>`
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${getDiscountStatusBadge(displayDiscountInfo)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editDiscount('${product._id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${hasDiscount ? 
+                                `<button onclick="removeDiscount('${product._id}')" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash"></i>
+                                </button>` : ''
+                            }
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        function getDiscountStatusBadge(discountInfo) {
+            if (!discountInfo) {
+                return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">No Discount</span>';
+            }
+
+            switch (discountInfo.status) {
+                case 'active':
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>';
+                case 'upcoming':
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Upcoming</span>';
+                case 'expired':
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Expired</span>';
+                default:
+                    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Inactive</span>';
+            }
+        }
+
+        function filterProducts() {
+            const searchTerm = $('#searchInput').val().toLowerCase();
+            const category = $('#categoryFilter').val();
+            const discountStatus = $('#discountFilter').val();
+            const sortBy = $('#sortFilter').val();
+
+            let filtered = allProducts.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                    (product.shortDescription && product.shortDescription.toLowerCase().includes(searchTerm));
+                const matchesCategory = !category || product.category === category;
+                const matchesDiscount = !discountStatus || 
+                    (discountStatus === 'active' && product.discountInfo?.status === 'active') ||
+                    (discountStatus === 'inactive' && !product.discountInfo) ||
+                    (discountStatus === 'expired' && product.discountInfo?.status === 'expired');
+
+                return matchesSearch && matchesCategory && matchesDiscount;
+            });
+
+            // Sort products
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'price':
+                        return a.price - b.price;
+                    case 'discount':
+                        return (b.discountInfo?.savings || 0) - (a.discountInfo?.savings || 0);
+                    case 'createdAt':
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    default:
+                        return 0;
+                }
+            });
+
+            displayProducts(filtered);
+        }
+
+        function updateStats() {
+            if (!allProducts || allProducts.length === 0) {
+                $('#activeDiscounts').html('<span class="loading-placeholder">--</span>');
+                $('#upcomingDiscounts').html('<span class="loading-placeholder">--</span>');
+                $('#expiredDiscounts').html('<span class="loading-placeholder">--</span>');
+                $('#avgDiscount').html('<span class="loading-placeholder">--</span>');
+                return;
+            }
+
+            const active = allProducts.filter(p => p.discountInfo?.status === 'active').length;
+            const upcoming = allProducts.filter(p => p.discountInfo?.status === 'upcoming').length;
+            const expired = allProducts.filter(p => p.discountInfo?.status === 'expired').length;
+            
+            const activeDiscounts = allProducts.filter(p => p.discountInfo?.status === 'active');
+            const avgDiscount = activeDiscounts.length > 0 ? 
+                Math.round(activeDiscounts.reduce((sum, p) => sum + (p.discount || 0), 0) / activeDiscounts.length) : 0;
+
+            $('#activeDiscounts').text(active);
+            $('#upcomingDiscounts').text(upcoming);
+            $('#expiredDiscounts').text(expired);
+            $('#avgDiscount').text(avgDiscount + '%');
+        }
+
+        function showAddDiscountModal() {
+            $('#modalTitle').text('Add Discount');
+            $('#discountForm')[0].reset();
+            populateProductSelect();
+            $('#discountModal').removeClass('hidden');
+        }
+
+        function editDiscount(productId) {
+            // Check authentication before proceeding
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showAlert('Please login as admin first', 'error');
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            const product = allProducts.find(p => p._id === productId);
+            if (!product) {
+                console.error('Product not found:', productId);
+                return;
+            }
+
+            console.log('Editing discount for product:', product);
+
+            // First populate the product select dropdown
+            populateProductSelect();
+            
+            // Set modal title
+            $('#modalTitle').text('Edit Discount');
+            
+            // Pre-select the product
+            $('#productSelect').val(productId);
+            
+            // Set discount type (check both discountType and discountInfo)
+            const discountType = product.discountType || 
+                               (product.discountInfo && product.discountInfo.type) || 
+                               'percentage';
+            $('#discountType').val(discountType);
+            
+            // Set discount value (check both discount and discountInfo)
+            const discountValue = product.discount || 
+                                (product.discountInfo && product.discountInfo.value) || 
+                                0;
+            $('#discountValue').val(discountValue);
+            
+            // Set start date if available
+            if (product.discountStartDate) {
+                $('#discountStartDate').val(product.discountStartDate.slice(0, 16));
+            } else if (product.discountInfo && product.discountInfo.startDate) {
+                $('#discountStartDate').val(product.discountInfo.startDate.slice(0, 16));
+            } else {
+                $('#discountStartDate').val('');
+            }
+            
+            // Set end date if available
+            if (product.discountEndDate) {
+                $('#discountEndDate').val(product.discountEndDate.slice(0, 16));
+            } else if (product.discountInfo && product.discountInfo.endDate) {
+                $('#discountEndDate').val(product.discountInfo.endDate.slice(0, 16));
+            } else {
+                $('#discountEndDate').val('');
+            }
+
+            // Show the modal
+            $('#discountModal').removeClass('hidden');
+        }
+
+        function closeDiscountModal() {
+            $('#discountModal').addClass('hidden');
+        }
+
+        function showBulkDiscountModal() {
+            populateBulkProductList();
+            $('#bulkDiscountModal').removeClass('hidden');
+        }
+
+        function closeBulkDiscountModal() {
+            $('#bulkDiscountModal').addClass('hidden');
+            selectedProducts = [];
+        }
+
+        function populateProductSelect() {
+            const select = $('#productSelect');
+            select.empty().append('<option value="">Select Product</option>');
+            
+            if (!allProducts || allProducts.length === 0) {
+                console.warn('No products available for dropdown');
+                return;
+            }
+            
+            console.log('Populating product select with', allProducts.length, 'products');
+            
+            allProducts.forEach(product => {
+                const optionText = `${product.name} - ₹${product.price}`;
+                const option = `<option value="${product._id}">${optionText}</option>`;
+                select.append(option);
+            });
+            
+            console.log('Product select populated successfully');
+        }
+
+        function populateBulkProductList() {
+            const container = $('#bulkProductList');
+            container.empty();
+            
+            allProducts.forEach(product => {
+                const checkbox = `
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" value="${product._id}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-gray-900">${product.name} - ₹${product.price}</span>
+                    </label>
+                `;
+                container.append(checkbox);
+            });
+
+            // Handle checkbox changes
+            container.find('input[type="checkbox"]').on('change', function() {
+                const productId = $(this).val();
+                if ($(this).is(':checked')) {
+                    selectedProducts.push(productId);
+                } else {
+                    selectedProducts = selectedProducts.filter(id => id !== productId);
+                }
+            });
+        }
+
+        function removeDiscount(productId) {
+            if (!confirm('Are you sure you want to remove this discount?')) return;
+
+            api.request(`/products/${productId}/discount/remove`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                showAlert('Discount removed successfully', 'success');
+                loadAllProducts();
+            })
+            .catch(error => {
+                console.error('Error removing discount:', error);
+                showAlert('Error removing discount', 'error');
+            });
+        }
+
+        // Form submissions
+        $('#discountForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Check authentication before proceeding
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showAlert('Please login as admin first', 'error');
+                window.location.href = '/admin-login.html';
+                return;
+            }
+            
+            const productId = $('#productSelect').val();
+            const discountType = $('#discountType').val();
+            const discountValue = parseFloat($('#discountValue').val());
+            const startDate = $('#discountStartDate').val();
+            const endDate = $('#discountEndDate').val();
+
+            if (!productId) {
+                showAlert('Please select a product', 'error');
+                return;
+            }
+
+            const data = {
+                discount: discountValue,
+                discountType: discountType,
+                discountStartDate: startDate ? new Date(startDate).toISOString() : null,
+                discountEndDate: endDate ? new Date(endDate).toISOString() : null
+            };
+
+            api.request(`/products/${productId}/discount`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                showAlert('Discount updated successfully', 'success');
+                closeDiscountModal();
+                
+                // Force refresh with a small delay to ensure database is updated
+                setTimeout(() => {
+                    console.log('🔄 Forcing refresh after discount update...');
+                    loadAllProducts();
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error updating discount:', error);
+                showAlert('Error updating discount', 'error');
+            });
+        });
+
+        $('#bulkDiscountForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Check authentication before proceeding
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showAlert('Please login as admin first', 'error');
+                window.location.href = '/admin-login.html';
+                return;
+            }
+            
+            if (selectedProducts.length === 0) {
+                showAlert('Please select at least one product', 'error');
+                return;
+            }
+
+            const discountType = $('#bulkDiscountType').val();
+            const discountValue = parseFloat($('#bulkDiscountValue').val());
+            const startDate = $('#bulkDiscountStartDate').val();
+            const endDate = $('#bulkDiscountEndDate').val();
+
+            const data = {
+                productIds: selectedProducts,
+                discount: discountValue,
+                discountType: discountType,
+                discountStartDate: startDate ? new Date(startDate).toISOString() : null,
+                discountEndDate: endDate ? new Date(endDate).toISOString() : null
+            };
+
+            api.request('/products/discounts/bulk', {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                showAlert(`Discount applied to ${response.modifiedCount} products`, 'success');
+                closeBulkDiscountModal();
+                
+                // Force refresh with a small delay to ensure database is updated
+                setTimeout(() => {
+                    console.log('🔄 Forcing refresh after bulk discount update...');
+                    loadAllProducts();
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error applying bulk discount:', error);
+                showAlert('Error applying bulk discount', 'error');
+            });
+        });
+
+        function forceRefresh() {
+            console.log('🔄 Force refreshing all data...');
+            // Clear any cached data
+            allProducts = [];
+            selectedProducts = [];
+            
+            // Show loading and refresh
+            showLoading();
+            updateStats(); // Reset stats to loading state
+            
+            // Force fresh data load
+            setTimeout(() => {
+                loadAllProducts();
+            }, 100);
+        }
+
+        function showAlert(message, type) {
+            const alertClass = type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+            const alert = $(`
+                <div class="fixed top-4 right-4 z-50 px-4 py-2 rounded-md ${alertClass} shadow-lg">
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

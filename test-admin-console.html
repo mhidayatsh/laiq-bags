@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page Console Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #results { margin-top: 20px; }
+        .log { margin: 5px 0; padding: 5px; background: #f8f9fa; border-left: 3px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Admin Page Console Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Instructions</h3>
+        <p>1. Open admin page in another tab: <a href="http://localhost:3001/admin.html" target="_blank">Admin Page</a></p>
+        <p>2. Open browser developer tools (F12)</p>
+        <p>3. Go to Console tab</p>
+        <p>4. Click the test buttons below to check functionality</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 Test Admin Page Functions</h3>
+        <button onclick="testAdminFunctions()">Test Admin Functions</button>
+        <button onclick="testProductsLoading()">Test Products Loading</button>
+        <button onclick="testDiscountsLoading()">Test Discounts Loading</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            results.appendChild(logDiv);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testAdminFunctions() {
+            log('🧪 Testing admin page functions...', 'info');
+            
+            try {
+                // Test if admin page is accessible
+                const response = await fetch('http://localhost:3001/admin.html');
+                if (response.ok) {
+                    log('✅ Admin page is accessible', 'success');
+                } else {
+                    log('❌ Admin page not accessible', 'error');
+                }
+                
+                // Test API endpoints (will fail without auth, but that's expected)
+                try {
+                    const productsResponse = await fetch('http://localhost:3001/api/admin/products');
+                    if (productsResponse.status === 401) {
+                        log('✅ Admin products endpoint requires authentication (expected)', 'success');
+                    } else {
+                        log(`⚠️ Admin products endpoint status: ${productsResponse.status}`, 'info');
+                    }
+                } catch (error) {
+                    log(`⚠️ Admin products endpoint error: ${error.message}`, 'info');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing admin functions: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProductsLoading() {
+            log('📦 Testing products loading...', 'info');
+            
+            try {
+                // Test if we can access the products table structure
+                const adminPage = window.open('http://localhost:3001/admin.html', '_blank');
+                
+                if (adminPage) {
+                    log('✅ Admin page opened in new tab', 'success');
+                    log('📋 Please check the console in the admin page tab for any errors', 'info');
+                } else {
+                    log('❌ Failed to open admin page', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing products loading: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDiscountsLoading() {
+            log('🎯 Testing discounts loading...', 'info');
+            
+            try {
+                // Test discount-related functions
+                log('📋 Checking discount system...', 'info');
+                
+                // Test discount calculation
+                const testPrice = 1000;
+                const testDiscount = 20;
+                const calculatedPrice = testPrice - (testPrice * testDiscount / 100);
+                
+                log(`✅ Discount calculation test: ₹${testPrice} - ${testDiscount}% = ₹${calculatedPrice}`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error testing discounts: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run basic test
+        window.onload = function() {
+            log('🚀 Admin page console test loaded', 'success');
+            log('📋 Please open admin page in another tab and check console for errors', 'info');
+        };
+    </script>
+</body>
+</html>

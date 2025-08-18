@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile | Laiq Bags</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="/css/styles.css" rel="stylesheet">
+    <!-- <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gold: '#d4af37',
+              beige: '#f5f5dc',
+              charcoal: '#1a1a1a',
+            },
+            fontFamily: {
+              poppins: ['Poppins', 'sans-serif'],
+              montserrat: ['Montserrat', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Google Fonts: Poppins & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Orbitron (similar to Lucidity Expand) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Poppins', 'Montserrat', sans-serif; }
+      
+      /* Custom LAIQ Logo Font - Lucidity Expand */
+      .laiq-logo {
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .laiq-logo-text {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-beige min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          
+          <!-- Logo -->
+          <div class="flex items-center">
+            <a href="index.html" class="flex items-center">
+              <h1 class="text-2xl font-bold laiq-logo text-charcoal">
+                <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+              </h1>
+            </a>
+          </div>
+          
+          <!-- Desktop Navigation -->
+          <div class="hidden md:flex items-center space-x-8">
+            <a href="index.html" class="text-charcoal hover:text-gold transition-colors font-medium">Home</a>
+            <a href="shop.html" class="text-charcoal hover:text-gold transition-colors font-medium">Shop</a>
+            <a href="about.html" class="text-charcoal hover:text-gold transition-colors font-medium">About</a>
+            <a href="contact.html" class="text-charcoal hover:text-gold transition-colors font-medium">Contact</a>
+          </div>
+          
+            <!-- Desktop Icons -->
+            <div class="hidden md:flex items-center space-x-4">
+            <button id="wishlist-btn" class="relative text-charcoal hover:text-gold transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+              </svg>
+              <span id="wishlist-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <button id="cart-btn" class="relative text-charcoal hover:text-gold transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+              </svg>
+              <span id="cart-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <div id="customer-auth-section" class="flex items-center space-x-2">
+              <!-- Login/Register Links (shown when not logged in) -->
+              <div id="guest-menu" class="flex items-center space-x-2">
+                <a href="customer-login.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Login</a>
+                <span class="text-charcoal/40">|</span>
+                <a href="customer-register.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Register</a>
+              </div>
+              <!-- User Menu (shown when logged in) -->
+              <div id="customer-menu" class="hidden flex items-center space-x-3">
+                <a href="customer-profile.html" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">My Profile</a>
+                <span id="customer-name" class="text-charcoal text-sm font-medium"></span>
+                <button id="logout-btn" class="text-charcoal hover:text-gold transition-colors text-sm font-medium">Logout</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <button id="mobile-menu-btn" class="text-charcoal hover:text-gold transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="md:hidden hidden">
+          <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="index.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Home</a>
+            <a href="shop.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Shop</a>
+            <a href="about.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">About</a>
+            <a href="contact.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Contact</a>
+            <div class="flex items-center space-x-4 px-3 py-2">
+              <a href="#" id="mobile-wishlist-link" class="text-charcoal hover:text-gold transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+              </a>
+              <a href="#" id="mobile-cart-link" class="text-charcoal hover:text-gold transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Breadcrumb -->
+      <nav class="mb-8">
+        <ol class="flex items-center space-x-2 text-sm text-charcoal/60">
+          <li><a href="index.html" class="hover:text-gold transition-colors">Home</a></li>
+          <li><span class="text-charcoal/40">/</span></li>
+          <li class="text-charcoal">My Profile</li>
+        </ol>
+      </nav>
+
+      <!-- Profile Header -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-6">
+            <div class="w-20 h-20 bg-gold rounded-full flex items-center justify-center">
+              <span class="text-white text-2xl font-bold" id="profile-initial">U</span>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-charcoal" id="profile-name">User Name</h1>
+              <p class="text-charcoal/60" id="profile-email">user@example.com</p>
+              <p class="text-charcoal/60" id="profile-phone">+91 99999 99999</p>
+            </div>
+          </div>
+          <button onclick="refreshProfileData()" class="bg-gold text-white px-4 py-2 rounded-lg hover:bg-charcoal transition-colors flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Profile Tabs -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <!-- Tab Navigation -->
+        <div class="border-b border-beige">
+          <nav class="flex">
+            <button class="tab-btn active px-6 py-4 text-gold border-b-2 border-gold font-medium" data-tab="profile">
+              Profile
+            </button>
+            <button class="tab-btn px-6 py-4 text-charcoal/60 hover:text-gold transition-colors font-medium" data-tab="orders">
+              Orders
+            </button>
+            <button class="tab-btn px-6 py-4 text-charcoal/60 hover:text-gold transition-colors font-medium" data-tab="wishlist">
+              Wishlist
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-8">
+          <!-- Profile Tab -->
+          <div id="profile-tab" class="tab-content">
+            <h2 class="text-xl font-semibold mb-6">Edit Profile</h2>
+            <form id="profile-form" class="space-y-6">
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label for="edit-name" class="block text-sm font-medium text-charcoal mb-2">Full Name</label>
+                  <input type="text" id="edit-name" name="name" required 
+                         class="w-full px-4 py-3 border border-beige rounded-lg focus:ring-gold focus:border-gold outline-none transition-colors">
+                </div>
+                <div>
+                  <label for="edit-phone" class="block text-sm font-medium text-charcoal mb-2">Phone Number</label>
+                  <input type="tel" id="edit-phone" name="phone" required 
+                         class="w-full px-4 py-3 border border-beige rounded-lg focus:ring-gold focus:border-gold outline-none transition-colors">
+                </div>
+              </div>
+              <div>
+                <label for="edit-address" class="block text-sm font-medium text-charcoal mb-2">Address</label>
+                <textarea id="edit-address" name="address" rows="3"
+                          class="w-full px-4 py-3 border border-beige rounded-lg focus:ring-gold focus:border-gold outline-none transition-colors"></textarea>
+              </div>
+              <div class="flex justify-end">
+                <button type="submit" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                  Update Profile
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Orders Tab -->
+          <div id="orders-tab" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-6">My Orders</h2>
+            <div id="orders-list" class="space-y-4">
+              <!-- Orders will be loaded here -->
+            </div>
+          </div>
+
+          <!-- Wishlist Tab -->
+          <div id="wishlist-tab" class="tab-content hidden">
+            <h2 class="text-xl font-semibold mb-6">My Wishlist</h2>
+            <div id="wishlist-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Wishlist items will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white py-12 mt-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Brand -->
+          <div class="col-span-1 md:col-span-2">
+            
+            <div class="flex items-center mb-4">
+              <h3 class="text-2xl font-bold laiq-logo">
+                <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+              </h3>
+            </div>
+            <p class="text-gray-300 mb-4">Carry Style with Confidence.</p>
+            <div class="flex space-x-4">
+              <a href="https://twitter.com/laiq_bags" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-gold transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                </svg>
+              </a>
+              <a href="https://www.facebook.com/laiqbags" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-gold transition-colors">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001 12.017.001z"/>
+                </svg>
+              </a>
+              <a href="https://www.instagram.com/laiq_bags_?igsh=M25mYmNld3dqM3J1" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-gold transition-colors instagram-handle">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+              <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-gold transition-colors whatsapp-number">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Quick Links -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul class="space-y-2">
+              <li><a href="index.html" class="text-gray-300 hover:text-gold transition-colors">Home</a></li>
+              <li><a href="shop.html" class="text-gray-300 hover:text-gold transition-colors">Shop</a></li>
+              <li><a href="about.html" class="text-gray-300 hover:text-gold transition-colors">About</a></li>
+              <li><a href="contact.html" class="text-gray-300 hover:text-gold transition-colors">Contact</a></li>
+              <li><a href="size-guide.html" class="text-gray-300 hover:text-gold transition-colors">Size Guide</a></li>
+            </ul>
+          </div>
+          
+          <!-- Contact Info -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Contact Info</h4>
+            <div class="space-y-2">
+              <p class="text-gray-300">
+                <span class="text-gold">Email:</span>
+                <a href="mailto:mdhidayatulahsheikh786@gmail.com" class="contact-email footer-contact-email hover:text-gold">mdhidayatulahsheikh786@gmail.com</a>
+              </p>
+              <p class="text-gray-300">
+                <span class="text-gold">Instagram:</span>
+                <a href="https://www.instagram.com/laiq_bags_?igsh=M25mYmNld3dqM3J1" target="_blank" rel="noopener noreferrer" class="instagram-handle footer-instagram hover:text-gold">@laiq_bags_</a>
+              </p>
+              <p class="text-gray-300">
+                <span class="text-gold">WhatsApp:</span>
+                <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" class="whatsapp-number footer-whatsapp hover:text-gold">+91 99999 99999</a>
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+          <p class="text-gray-300">
+            © 2024 <span class="text-gold laiq-logo">Laiq</span> <span class="website-name">Bags</span>. All rights reserved. 
+            <span class="text-gold">Crafted with ❤️ by Laiq</span>
+          </p>
+          <div class="mt-2">
+            <a href="admin-login.html" class="hover:text-gold transition-colors text-sm opacity-75">Admin</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/analytics-tracker.js"></script>
+    <script>
+      // Profile Page Scripts
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('👤 Profile page initialized');
+        
+        // Check if user is logged in (use customer token)
+        const token = localStorage.getItem('customerToken');
+        const customerUser = localStorage.getItem('customerUser');
+        
+        if (!token || !customerUser) {
+          showToast('Please login to view your profile', 'error');
+          setTimeout(() => {
+            window.location.href = 'customer-login.html';
+          }, 2000);
+          return;
+        }
+        
+        // Load user profile
+        loadCustomerData();
+        
+        // Initialize tabs
+        initializeTabs();
+        
+        // Initialize profile form
+        initializeProfileForm();
+        
+        // Start auto-refresh for orders
+        startOrdersAutoRefresh();
+      });
+      
+      // Auto-refresh orders every 30 seconds
+      let ordersRefreshInterval = null;
+      
+      function startOrdersAutoRefresh() {
+        // Clear any existing interval
+        if (ordersRefreshInterval) {
+          clearInterval(ordersRefreshInterval);
+        }
+        
+        // Refresh orders every 30 seconds
+        ordersRefreshInterval = setInterval(async () => {
+          console.log('🔄 Auto-refreshing orders...');
+          await loadOrders();
+        }, 30000); // 30 seconds
+        
+        console.log('🔄 Orders auto-refresh started');
+      }
+      
+      // Stop auto-refresh when page is unloaded
+      window.addEventListener('beforeunload', () => {
+        if (ordersRefreshInterval) {
+          clearInterval(ordersRefreshInterval);
+          console.log('🔄 Orders auto-refresh stopped');
+        }
+      });
+      
+      // Check for order status changes and update localStorage
+      function checkOrderStatusChanges(orders) {
+          try {
+              // Get existing orders from localStorage
+              const existingOrdersData = localStorage.getItem('customerOrders');
+              let existingOrders = [];
+              
+              if (existingOrdersData) {
+                  try {
+                      existingOrders = JSON.parse(existingOrdersData);
+                  } catch (error) {
+                      console.warn('⚠️ Error parsing existing orders, clearing:', error);
+                      localStorage.removeItem('customerOrders');
+                  }
+              }
+              
+              // Create a map of existing orders for quick lookup
+              const existingOrdersMap = new Map();
+              existingOrders.forEach(order => {
+                  existingOrdersMap.set(order._id, order);
+              });
+              
+              // Check for status changes and update
+              let hasChanges = false;
+              const updatedOrders = orders.map(order => {
+                  const existingOrder = existingOrdersMap.get(order._id);
+                  
+                  if (!existingOrder) {
+                      // New order
+                      hasChanges = true;
+                      return {
+                          _id: order._id,
+                          status: order.status,
+                          totalAmount: order.totalAmount,
+                          createdAt: order.createdAt,
+                          updatedAt: order.updatedAt
+                      };
+                  }
+                  
+                  if (existingOrder.status !== order.status) {
+                      // Status changed
+                      hasChanges = true;
+                      return {
+                          ...existingOrder,
+                          status: order.status,
+                          updatedAt: order.updatedAt
+                      };
+                  }
+                  
+                  return existingOrder;
+              });
+              
+              // Only save if there are changes
+              if (hasChanges) {
+                  // Compress data before saving
+                  const compressedOrders = updatedOrders.map(order => ({
+                      id: order._id,
+                      s: order.status,
+                      a: order.totalAmount,
+                      c: order.createdAt,
+                      u: order.updatedAt
+                  }));
+                  
+                  try {
+                      localStorage.setItem('customerOrders', JSON.stringify(compressedOrders));
+                      console.log('✅ Orders status updated in localStorage');
+                  } catch (error) {
+                      if (error.name === 'QuotaExceededError') {
+                          console.warn('⚠️ localStorage quota exceeded, clearing old data');
+                          // Clear old data and try again
+                          localStorage.removeItem('customerOrders');
+                          localStorage.removeItem('userCart');
+                          localStorage.removeItem('userWishlist');
+                          
+                          // Try with minimal data
+                          const minimalOrders = updatedOrders.slice(-5).map(order => ({
+                              id: order._id,
+                              s: order.status
+                          }));
+                          
+                          try {
+                              localStorage.setItem('customerOrders', JSON.stringify(minimalOrders));
+                              console.log('✅ Orders saved with minimal data');
+                          } catch (retryError) {
+                              console.error('❌ Still cannot save orders:', retryError);
+                          }
+                      } else {
+                          console.error('❌ Error saving orders:', error);
+                      }
+                  }
+              }
+          } catch (error) {
+              console.error('❌ Error checking order status changes:', error);
+          }
+      }
+      
+      async function loadCustomerData() {
+        try {
+          console.log('👤 Loading customer data...');
+          
+          // Get customer user data from localStorage
+          const customerUser = localStorage.getItem('customerUser');
+          if (!customerUser) {
+            console.error('❌ No customer user data found');
+            showToast('Please login to view your profile', 'error');
+            setTimeout(() => {
+              window.location.href = 'customer-login.html';
+            }, 2000);
+            return;
+          }
+          
+          // Parse existing user data first
+          let user;
+          try {
+            user = JSON.parse(customerUser);
+            console.log('👤 Using localStorage data:', user);
+          } catch (parseError) {
+            console.error('❌ Error parsing customer user data:', parseError);
+            showToast('Invalid user data, please login again', 'error');
+            setTimeout(() => {
+              window.location.href = 'customer-login.html';
+            }, 2000);
+            return;
+          }
+          
+          // Try to fetch fresh data from server
+          try {
+            const response = await api.getCustomerProfile();
+            if (response.success) {
+              // Use fresh data from server
+              user = response.user;
+              console.log('👤 Fresh customer data from server:', user);
+              
+              // Update localStorage with fresh data
+              localStorage.setItem('customerUser', JSON.stringify(user));
+            }
+          } catch (apiError) {
+            console.warn('⚠️ Failed to fetch fresh data from server, using cached data:', apiError);
+            // Continue with cached data
+          }
+          
+          // Update profile information
+          document.getElementById('profile-name').textContent = user.name || 'N/A';
+          document.getElementById('profile-email').textContent = user.email || 'N/A';
+          document.getElementById('profile-phone').textContent = user.phone || 'N/A';
+          document.getElementById('profile-initial').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+          
+          // Update form fields
+          document.getElementById('edit-name').value = user.name || '';
+          document.getElementById('edit-phone').value = user.phone || '';
+          
+          // Handle address properly
+          let addressText = '';
+          if (user.address) {
+              if (typeof user.address === 'string') {
+                  addressText = user.address;
+              } else if (user.address.street) {
+                  addressText = user.address.street;
+                  if (user.address.city) addressText += `, ${user.address.city}`;
+                  if (user.address.state) addressText += `, ${user.address.state}`;
+                  if (user.address.pincode) addressText += ` - ${user.address.pincode}`;
+              }
+          }
+          document.getElementById('edit-address').value = addressText;
+          
+          // Load orders, wishlist, and cart
+          await loadOrders();
+          await loadWishlist();
+          await loadCart();
+          
+          console.log('✅ Customer data loaded successfully');
+        } catch (error) {
+          console.error('❌ Error loading customer data:', error);
+          showToast('Error loading customer data', 'error');
+        }
+      }
+      
+      function initializeTabs() {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const tabName = btn.dataset.tab;
+            
+            // Update active tab button
+            tabBtns.forEach(b => {
+              b.classList.remove('active', 'text-gold', 'border-gold');
+              b.classList.add('text-charcoal/60');
+            });
+            btn.classList.add('active', 'text-gold', 'border-gold');
+            btn.classList.remove('text-charcoal/60');
+            
+            // Show active tab content
+            tabContents.forEach(content => {
+              content.classList.add('hidden');
+            });
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            
+            // Load tab data
+            if (tabName === 'orders') {
+              loadOrders();
+            } else if (tabName === 'wishlist') {
+              loadWishlist();
+            }
+          });
+        });
+      }
+      
+      function initializeProfileForm() {
+        const form = document.getElementById('profile-form');
+        
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const formData = {
+            name: document.getElementById('edit-name').value.trim(),
+            phone: document.getElementById('edit-phone').value.trim(),
+            address: document.getElementById('edit-address').value.trim()
+          };
+          
+          // Validate form data
+          if (!formData.name) {
+            showToast('Please enter your name', 'error');
+            return;
+          }
+          
+          if (!formData.phone) {
+            showToast('Please enter your phone number', 'error');
+            return;
+          }
+          
+          if (!/^[0-9]{10}$/.test(formData.phone)) {
+            showToast('Please enter a valid 10-digit phone number', 'error');
+            return;
+          }
+          
+          if (!formData.address) {
+            showToast('Please enter your address', 'error');
+            return;
+          }
+          
+          try {
+            console.log('📝 Updating profile...');
+            
+            const response = await api.updateCustomerProfile(formData);
+            
+            if (response.success) {
+              showToast('Profile updated successfully!', 'success');
+              
+              // Update profile header
+              document.getElementById('profile-name').textContent = formData.name;
+              document.getElementById('profile-phone').textContent = formData.phone;
+              document.getElementById('profile-initial').textContent = formData.name.charAt(0).toUpperCase();
+              
+              // Update localStorage with fresh data from server
+              const customerUser = JSON.parse(localStorage.getItem('customerUser'));
+              customerUser.name = formData.name;
+              customerUser.phone = formData.phone;
+              customerUser.address = formData.address;
+              localStorage.setItem('customerUser', JSON.stringify(customerUser));
+              
+              // Reload customer data to ensure everything is updated
+              await loadCustomerData();
+              
+              console.log('✅ Profile updated successfully');
+            } else {
+              throw new Error(response.message || 'Failed to update profile');
+            }
+          } catch (error) {
+            console.error('❌ Error updating profile:', error);
+            showToast('Error updating profile: ' + error.message, 'error');
+          }
+        });
+      }
+      
+      async function loadOrders() {
+        try {
+          console.log('📦 Loading orders...');
+          
+          // Get customer user data from localStorage
+          const customerUser = localStorage.getItem('customerUser');
+          if (!customerUser) {
+            console.error('❌ No customer user data found');
+            return;
+          }
+          
+          const user = JSON.parse(customerUser);
+          console.log('👤 Loading orders for customer:', user._id);
+          
+          const response = await api.getCustomerOrders(1, { timeoutMs: 20000 });
+          
+          if (response.success) {
+            const orders = response.orders;
+            const ordersList = document.getElementById('orders-list');
+            
+            // Check for status changes and show notifications
+            checkOrderStatusChanges(orders);
+            
+            if (orders.length === 0) {
+              ordersList.innerHTML = '<p class="text-charcoal/60 text-center py-8">No orders found</p>';
+              return;
+            }
+            
+            // Calculate total amount
+            const totalAmount = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+            
+            ordersList.innerHTML = `
+              <div class="mb-6 p-4 bg-white rounded-lg border border-beige">
+                <h3 class="text-lg font-semibold text-charcoal mb-2">Order Summary</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span class="text-charcoal/60">Total Orders:</span>
+                    <span class="font-semibold text-charcoal ml-1">${orders.length}</span>
+                  </div>
+                  <div>
+                    <span class="text-charcoal/60">Total Amount:</span>
+                    <span class="font-semibold text-gold ml-1">₹${totalAmount.toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span class="text-charcoal/60">Pending:</span>
+                    <span class="font-semibold text-orange-500 ml-1">${orders.filter(o => o.status === 'pending').length}</span>
+                  </div>
+                  <div>
+                    <span class="text-charcoal/60">Delivered:</span>
+                    <span class="font-semibold text-green-500 ml-1">${orders.filter(o => o.status === 'delivered').length}</span>
+                  </div>
+                </div>
+              </div>
+              ${orders.map(order => `
+                <div class="border border-beige rounded-lg p-4 mb-4 bg-white">
+                  <div class="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 class="font-semibold text-lg">Order #${order._id.slice(-8)}</h3>
+                      <p class="text-sm text-charcoal/60">${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-gold font-bold text-lg">₹${(order.totalAmount || 0).toLocaleString()}</p>
+                      <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}">${order.status.toUpperCase()}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <h4 class="font-medium text-charcoal mb-2">Items (${order.orderItems.length})</h4>
+                    <div class="space-y-2">
+                      ${order.orderItems.map(item => `
+                        <div class="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                          <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded object-cover">
+                          <div class="flex-1">
+                            <p class="font-medium text-sm">${item.name}</p>
+                            <p class="text-xs text-charcoal/60">Qty: ${item.quantity}</p>
+                          </div>
+                          <p class="font-semibold text-sm">₹${(item.price * item.quantity).toLocaleString()}</p>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  
+                  <div class="border-t border-gray-200 pt-3">
+                    <h4 class="font-medium text-charcoal mb-2">Shipping Address</h4>
+                    <p class="text-sm text-charcoal/70">
+                      ${order.shippingInfo ? 
+                        `${order.shippingInfo.street || 'N/A'}<br>
+                        ${order.shippingInfo.city || 'N/A'}, ${order.shippingInfo.state || 'N/A'} - ${order.shippingInfo.pincode || 'N/A'}<br>
+                        ${order.shippingInfo.country || 'India'}` : 
+                        'Address not available'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div class="mt-3 flex justify-between items-center">
+                    <div class="text-sm text-charcoal/60">
+                      Payment: ${order.paymentInfo?.id || 'N/A'}
+                    </div>
+                    <div class="flex gap-2">
+                      <button onclick="viewOrderDetails('${order._id}')" class="bg-gold text-white px-4 py-2 rounded text-sm hover:bg-charcoal transition-colors">
+                        View Details
+                      </button>
+                      <a href="order-management.html?id=${order._id}" class="bg-charcoal text-white px-4 py-2 rounded text-sm hover:bg-gold transition-colors">
+                        Manage Order
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            `;
+            
+            console.log('✅ Orders loaded successfully');
+          }
+        } catch (error) {
+          console.error('❌ Error loading orders:', error);
+          document.getElementById('orders-list').innerHTML = '<p class="text-red-500 text-center py-8">Error loading orders</p>';
+        }
+      }
+      
+      function getStatusColor(status) {
+        switch (status) {
+          case 'pending': return 'bg-orange-100 text-orange-800';
+          case 'processing': return 'bg-blue-100 text-blue-800';
+          case 'shipped': return 'bg-purple-100 text-purple-800';
+          case 'delivered': return 'bg-green-100 text-green-800';
+          case 'cancelled': return 'bg-red-100 text-red-800';
+          default: return 'bg-gray-100 text-gray-800';
+        }
+      }
+      
+      async function viewOrderDetails(orderId) {
+        try {
+          const response = await api.getCustomerOrder(orderId);
+          if (response.success) {
+            const order = response.order;
+            
+            // Create modal for order details
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+              <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-bold text-charcoal">Order Details</h2>
+                  <button onclick="this.closest('.fixed').remove()" class="text-charcoal hover:text-gold">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <div class="space-y-4">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <p class="text-sm text-charcoal/60">Order ID</p>
+                      <p class="font-medium">#${order._id.slice(-8)}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-charcoal/60">Order Date</p>
+                      <p class="font-medium">${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-charcoal/60">Status</p>
+                      <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}">${order.status.toUpperCase()}</span>
+                    </div>
+                    <div>
+                      <p class="text-sm text-charcoal/60">Total Amount</p>
+                      <p class="font-bold text-gold">₹${(order.totalAmount || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 class="font-semibold text-charcoal mb-2">Items</h3>
+                    <div class="space-y-2">
+                      ${order.orderItems.map(item => `
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded">
+                          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded object-cover">
+                          <div class="flex-1">
+                            <p class="font-medium">${item.name}</p>
+                            <p class="text-sm text-charcoal/60">Quantity: ${item.quantity}</p>
+                            ${item.color && item.color.name ? `<p class="text-sm text-charcoal/60">Color: <span class="font-medium">${item.color.name}</span></p>` : ''}
+                            <p class="text-sm text-charcoal/60">Price: ₹${item.price.toLocaleString()}</p>
+                          </div>
+                          <p class="font-semibold">₹${(item.price * item.quantity).toLocaleString()}</p>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 class="font-semibold text-charcoal mb-2">Shipping Address</h3>
+                    <p class="text-charcoal/70">
+                      ${order.shippingInfo ? 
+                        `${order.shippingInfo.street || 'N/A'}<br>
+                        ${order.shippingInfo.city || 'N/A'}, ${order.shippingInfo.state || 'N/A'} - ${order.shippingInfo.pincode || 'N/A'}<br>
+                        ${order.shippingInfo.country || 'India'}` : 
+                        'Address not available'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 class="font-semibold text-charcoal mb-2">Payment Information</h3>
+                    <p class="text-charcoal/70">
+                      Method: ${order.paymentInfo?.id || 'N/A'}<br>
+                      Status: ${order.paymentInfo?.status || 'N/A'}
+                    </p>
+                  </div>
+                  
+                  ${order.status !== 'delivered' && order.status !== 'cancelled' && order.status !== 'refunded' && order.status !== 'shipped' ? `
+                    <div class="border-t border-gray-200 pt-4">
+                      <h3 class="font-semibold text-charcoal mb-3">Order Actions</h3>
+                      <div class="space-y-3">
+                        <textarea id="cancel-reason-${order._id}" placeholder="Reason for cancellation (required)..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold text-sm" rows="3"></textarea>
+                        <button onclick="cancelOrder('${order._id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm">
+                          Cancel Order
+                        </button>
+                      </div>
+                    </div>
+                  ` : ''}
+                  
+                  ${order.status === 'shipped' ? `
+                    <div class="border-t border-gray-200 pt-4">
+                      <h3 class="font-semibold text-blue-800 mb-2">Order Status</h3>
+                      <div class="bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-700">
+                          <strong>Order Status:</strong> Shipped<br>
+                          <strong>Message:</strong> This order has been shipped and cannot be cancelled. Please contact customer support if you need assistance.
+                        </p>
+                        ${order.trackingInfo?.trackingNumber ? `
+                          <div class="mt-2">
+                            <strong>Tracking Number:</strong> ${order.trackingInfo.trackingNumber}<br>
+                            <strong>Courier:</strong> ${order.trackingInfo.courierName || 'N/A'}
+                          </div>
+                        ` : ''}
+                      </div>
+                    </div>
+                  ` : ''}
+                  
+                  ${order.status === 'cancelled' ? `
+                    <div class="border-t border-gray-200 pt-4">
+                      <h3 class="font-semibold text-red-800 mb-2">Cancellation Details</h3>
+                      <div class="bg-red-50 p-3 rounded-lg">
+                        <p class="text-sm text-red-700">
+                          <strong>Cancelled by:</strong> ${order.cancellationDetails?.cancelledBy || 'Customer'}<br>
+                          <strong>Reason:</strong> ${order.cancellationDetails?.cancellationReason || 'Not specified'}<br>
+                          <strong>Refund Status:</strong> ${order.cancellationDetails?.refundStatus || 'Pending'}
+                        </p>
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+            
+            document.body.appendChild(modal);
+          }
+        } catch (error) {
+          console.error('❌ Error loading order details:', error);
+          showToast('Error loading order details', 'error');
+        }
+      }
+      
+      // Loading state management
+      let isLoadingCart = false;
+      let isLoadingWishlist = false;
+      let loadWishlistTimeout = null;
+
+      // Get display price (with discount if applicable)
+      function getDisplayPrice(product) {
+        if (product.discountInfo && product.discountInfo.status === 'active') {
+          return product.discountInfo.discountPrice;
+        }
+        if (product.discount > 0 && product.isDiscountActive) {
+          return Math.round(product.price * (1 - product.discount / 100));
+        }
+        return product.price;
+      }
+
+      // Load cart with proper loading state and fallback
+      async function loadCart() {
+        if (isLoadingCart) return;
+        
+        isLoadingCart = true;
+        console.log('🛒 Loading cart...');
+        
+        try {
+          // Try to load from backend first
+          const response = await api.getCart({ timeoutMs: 6000 });
+          
+          if (response.success && response.cart) {
+            console.log('✅ Cart loaded from backend');
+            // Update cart count in header
+            if (window.updateCartCount) {
+              window.updateCartCount();
+            }
+          } else {
+            console.warn('⚠️ Backend cart load failed, using localStorage');
+            // Fallback to localStorage
+            const userCart = localStorage.getItem('userCart');
+            if (userCart) {
+              const cart = JSON.parse(userCart);
+              console.log('📦 Loaded cart from localStorage:', cart.length, 'items');
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading cart:', error);
+          // Fallback to localStorage
+          try {
+            const userCart = localStorage.getItem('userCart');
+            if (userCart) {
+              const cart = JSON.parse(userCart);
+              console.log('📦 Fallback: Loaded cart from localStorage:', cart.length, 'items');
+            }
+          } catch (localError) {
+            console.error('❌ Error loading cart from localStorage:', localError);
+          }
+        } finally {
+          isLoadingCart = false;
+        }
+      }
+
+      // Debounced wishlist loading to prevent race conditions
+      async function loadWishlist() {
+        // Clear any existing timeout
+        if (loadWishlistTimeout) {
+          clearTimeout(loadWishlistTimeout);
+        }
+        
+        // Set a small delay to prevent rapid successive calls
+        loadWishlistTimeout = setTimeout(async () => {
+          if (isLoadingWishlist) return;
+          
+          isLoadingWishlist = true;
+          const wishlistList = document.getElementById('wishlist-list');
+          wishlistList.innerHTML = '<p class="text-charcoal/60 text-center py-8 col-span-full">Loading wishlist...</p>';
+          
+          try {
+            const response = await api.getCustomerWishlist({ timeoutMs: 20000 });
+            
+            if (response.success) {
+              const wishlist = response.wishlist;
+              const wishlistList = document.getElementById('wishlist-list');
+              
+              console.log('📋 Wishlist response:', response);
+              console.log('📋 Wishlist items:', wishlist);
+              
+              if (wishlist.length === 0) {
+                wishlistList.innerHTML = '<p class="text-charcoal/60 text-center py-8 col-span-full">Your wishlist is empty</p>';
+                return;
+              }
+              
+              wishlistList.innerHTML = wishlist.map(product => {
+                const originalPrice = product.price || 0;
+                const displayPrice = getDisplayPrice(product);
+                const hasDiscount = displayPrice < originalPrice;
+                const discountPercentage = hasDiscount ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
+                
+                return `
+                  <div class="bg-white border border-beige rounded-lg overflow-hidden">
+                    <img src="${product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x200?text=Product'}" 
+                         alt="${product.name}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                      <h3 class="font-semibold mb-2">${product.name}</h3>
+                      <div class="flex items-center gap-2 mb-2">
+                        <p class="text-gold font-bold">₹${displayPrice.toLocaleString()}</p>
+                        ${hasDiscount ? `
+                          <span class="text-sm line-through text-gray-400">₹${originalPrice.toLocaleString()}</span>
+                          <span class="text-xs bg-red-500 text-white px-2 py-1 rounded">${discountPercentage}% OFF</span>
+                        ` : ''}
+                      </div>
+                      <div class="flex gap-2">
+                        <button class="add-to-cart-btn bg-gold text-white px-3 py-1 rounded text-sm hover:bg-charcoal transition-colors" 
+                                data-id="${product._id}" data-name="${product.name}" data-price="${displayPrice}" data-image="${product.images?.[0]?.url || product.image}">
+                          Add to Cart
+                        </button>
+                        <button class="remove-wishlist-btn text-red-500 hover:text-gold text-sm" data-id="${product._id}">
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('');
+              
+              // Add event listeners
+              addWishlistEventListeners();
+              
+              console.log('✅ Wishlist loaded successfully');
+            }
+          } catch (error) {
+            console.error('❌ Error loading wishlist:', error);
+            document.getElementById('wishlist-list').innerHTML = '<p class="text-red-500 text-center py-8 col-span-full">Error loading wishlist</p>';
+          } finally {
+            // Reset loading flag
+            isLoadingWishlist = false;
+          }
+        }, 100); // Small delay to prevent race conditions
+      }
+      
+      function addWishlistEventListeners() {
+        // Add to cart buttons
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const productId = this.dataset.id;
+            const productName = this.dataset.name;
+            const productPrice = parseInt(this.dataset.price);
+            const productImage = this.dataset.image;
+            
+            addToCart(productId, productName, productPrice, productImage);
+            showToast('Added to cart!', 'success');
+          });
+        });
+        
+        // Remove from wishlist buttons
+        document.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const productId = this.dataset.id;
+            
+            try {
+              // Use global remover to update local state, counts, header icon, drawer, and backend
+              removeFromWishlist(productId);
+              showToast('Removed from wishlist', 'success');
+              
+              // Small delay before reloading section to reflect server state too
+              setTimeout(() => {
+                loadWishlist();
+              }, 300);
+            } catch (error) {
+              console.error('Error removing from wishlist:', error);
+              showToast('Error removing from wishlist', 'error');
+            }
+          });
+        });
+      }
+
+      function refreshProfileData() {
+        loadCustomerData();
+        showToast('Profile data refreshed!', 'success');
+      }
+
+      async function cancelOrder(orderId) {
+        const cancelReason = document.getElementById(`cancel-reason-${orderId}`).value.trim();
+        if (!cancelReason) {
+          showToast('Please provide a reason for cancellation.', 'error');
+          return;
+        }
+
+        if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+          return;
+        }
+
+        try {
+          console.log('❌ Cancelling order:', orderId);
+          const response = await api.cancelCustomerOrder(orderId, cancelReason);
+          
+          if (response.success) {
+            showToast('Order cancelled successfully!', 'success');
+            loadOrders(); // Reload orders to show updated status
+            
+            // Close the modal
+            const modal = document.querySelector('.fixed.bg-black.bg-opacity-50');
+            if (modal) {
+              modal.remove();
+            }
+          } else {
+            showToast(response.message || 'Error cancelling order', 'error');
+          }
+        } catch (error) {
+          console.error('❌ Error cancelling order:', error);
+          showToast('Error cancelling order: ' + error.message, 'error');
+        }
+      }
+    </script>
+    
+    <!-- Auth Switcher Script -->
+    <script src="js/auth-switcher.js"></script>
+  </body>
+</html> 

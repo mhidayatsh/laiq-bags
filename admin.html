@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel | Laiq Bags</title>
+    <!-- Tailwind CSS -->
+    <link href="/css/styles.css" rel="stylesheet">
+    <!-- <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script> -->
+    <!-- <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gold: '#d4af37',
+              beige: '#f5f5dc',
+              charcoal: '#1a1a1a',
+            },
+            fontFamily: {
+              poppins: ['Poppins', 'sans-serif'],
+              montserrat: ['Montserrat', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Google Fonts: Poppins & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Orbitron (similar to Lucidity Expand) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      body { font-family: 'Poppins', 'Montserrat', sans-serif; }
+      
+      /* Custom LAIQ Logo Font - Lucidity Expand */
+      .laiq-logo {
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .laiq-logo-text {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 text-charcoal min-h-screen">
+    <!-- Admin Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <div class="flex items-center gap-4">
+            <h1 class="text-xl font-bold font-montserrat text-charcoal">
+              <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span> Admin
+            </h1>
+            <span class="bg-gold text-white text-xs px-2 py-1 rounded-full">Admin</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-sm text-gray-600" id="admin-welcome">Welcome, Admin</span>
+            <button id="login-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors" style="display: none;">
+              Login as Admin
+            </button>
+            <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition-colors">
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex">
+      <!-- Sidebar -->
+      <aside class="w-64 bg-white shadow-sm min-h-screen">
+        <nav class="p-4">
+          <ul class="space-y-2">
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors font-semibold" data-section="dashboard">
+                📊 Dashboard
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="products">
+                📦 Products
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="discounts">
+                🎯 Discounts
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="newsletter">
+                📧 Newsletter
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="messages">
+                💬 Contact Messages
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="orders">
+                🛒 Orders
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="customers">
+                👥 Customers
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="analytics">
+                📈 Analytics
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="profile">
+                👤 My Profile
+              </button>
+            </li>
+            <li>
+              <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gold hover:text-white transition-colors" data-section="settings">
+                ⚙️ Settings
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-8">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold font-montserrat mb-4">Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Total Products</p>
+                    <p class="text-2xl font-bold text-charcoal" id="total-products">0</p>
+                  </div>
+                  <div class="bg-blue-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Total Orders</p>
+                    <p class="text-2xl font-bold text-charcoal" id="total-orders">0</p>
+                  </div>
+                  <div class="bg-green-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Total Revenue</p>
+                    <p class="text-2xl font-bold text-charcoal" id="total-revenue">₹0</p>
+                  </div>
+                  <div class="bg-gold bg-opacity-20 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Total Customers</p>
+                    <p class="text-2xl font-bold text-charcoal" id="total-customers">0</p>
+                  </div>
+                  <div class="bg-purple-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 class="text-lg font-semibold mb-4">Recent Orders</h3>
+              <div id="recent-orders" class="space-y-4">
+                <!-- Recent orders will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="admin-section hidden">
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold font-montserrat">Products Management</h2>
+              <button id="add-product-btn" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                + Add Product
+              </button>
+            </div>
+            
+            <!-- Products Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="products-table-body" class="bg-white divide-y divide-gray-200">
+                    <!-- Products will be loaded here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Discounts Section -->
+        <section id="discounts" class="admin-section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Discount Management</h2>
+                    <div class="space-x-2">
+                        <button onclick="window.open('/admin-discounts.html', '_blank')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Manage Discounts
+                        </button>
+                        <button onclick="refreshDiscounts()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-blue-800">Active Discounts</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="active-discounts-count">0</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-yellow-800">Upcoming</h3>
+                        <p class="text-2xl font-bold text-yellow-600" id="upcoming-discounts-count">0</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-red-800">Expired</h3>
+                        <p class="text-2xl font-bold text-red-600" id="expired-discounts-count">0</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800">Avg Discount</h3>
+                        <p class="text-2xl font-bold text-green-600" id="avg-discount-percent">0%</p>
+                    </div>
+                </div>
+
+                <!-- Discounts Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discounted Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="discounts-table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    <div class="flex items-center justify-center">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                                        Loading discounts...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section id="newsletter" class="admin-section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Newsletter Management</h2>
+                    <button onclick="showSendNewsletterModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                        📧 Send Newsletter
+                    </button>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div id="newsletter-stats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-blue-800">Total Subscribers</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="total-subscribers">0</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800">Active</h3>
+                        <p class="text-2xl font-bold text-green-600" id="active-subscribers">0</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-yellow-800">Recent (7 days)</h3>
+                        <p class="text-2xl font-bold text-yellow-600" id="recent-subscribers">0</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-red-800">Unsubscribed</h3>
+                        <p class="text-2xl font-bold text-red-600" id="unsubscribed-count">0</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                    <div class="flex-1">
+                        <input type="text" id="subscriber-search" placeholder="Search subscribers..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <select id="subscriber-status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="unsubscribed">Unsubscribed</option>
+                        <option value="bounced">Bounced</option>
+                    </select>
+                </div>
+
+                <!-- Subscribers Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribed</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Emails Sent</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscribers-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Subscribers will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-6">
+                    <div class="text-sm text-gray-700">
+                        Showing <span id="subscribers-start">0</span> to <span id="subscribers-end">0</span> of <span id="subscribers-total">0</span> subscribers
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-subscribers-page" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">Previous</button>
+                        <span id="subscribers-page-info" class="px-3 py-1">Page 1</span>
+                        <button id="next-subscribers-page" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">Next</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Messages Section -->
+        <section id="messages" class="admin-section hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Contact Messages</h2>
+                    <div class="space-x-2">
+                        <button onclick="refreshContactMessages()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-blue-800">Total Messages</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="total-messages">0</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-red-800">Unread</h3>
+                        <p class="text-2xl font-bold text-red-600" id="unread-messages">0</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800">Replied</h3>
+                        <p class="text-2xl font-bold text-green-600" id="replied-messages">0</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-yellow-800">Today</h3>
+                        <p class="text-2xl font-bold text-yellow-600" id="today-messages">0</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                    <div class="flex-1">
+                        <input type="text" id="message-search" placeholder="Search messages..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <select id="message-status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="unread">Unread</option>
+                        <option value="read">Read</option>
+                        <option value="replied">Replied</option>
+                    </select>
+                </div>
+
+                <!-- Messages Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messages-table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                    <div class="flex items-center justify-center">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                                        Loading messages...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-6">
+                    <div class="text-sm text-gray-700">
+                        Showing <span id="messages-start">0</span> to <span id="messages-end">0</span> of <span id="messages-total">0</span> messages
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-messages-page" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">Previous</button>
+                        <span id="messages-page-info" class="px-3 py-1">Page 1</span>
+                        <button id="next-messages-page" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">Next</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="orders" class="admin-section hidden">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold font-montserrat mb-6">Orders Management</h2>
+            
+            <!-- Orders Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orders-table" class="bg-white divide-y divide-gray-200">
+                    <!-- Orders will be loaded here -->
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Orders Pagination -->
+              <div id="orders-pagination" class="border-t border-gray-200">
+                <!-- Pagination will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Customers Section -->
+        <section id="customers" class="admin-section hidden">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold font-montserrat mb-6">Customers</h2>
+            
+            <!-- Customers Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Wishlist</th>
+                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cart</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="customers-table-body" class="bg-white divide-y divide-gray-200">
+                    <!-- Customers will be loaded here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="admin-section hidden">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold font-montserrat mb-6">Website Analytics</h2>
+            
+            <!-- Analytics Overview Cards -->
+            <div id="analytics-overview" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Total Visitors</p>
+                    <p class="text-2xl font-bold text-charcoal" id="total-visitors">0</p>
+                  </div>
+                  <div class="bg-blue-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Page Views</p>
+                    <p class="text-2xl font-bold text-charcoal" id="total-pageviews">0</p>
+                  </div>
+                  <div class="bg-green-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Active Users</p>
+                    <p class="text-2xl font-bold text-charcoal" id="active-users">0</p>
+                  </div>
+                  <div class="bg-yellow-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Bounce Rate</p>
+                    <p class="text-2xl font-bold text-charcoal" id="bounce-rate">0%</p>
+                  </div>
+                  <div class="bg-red-100 p-3 rounded-full">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Analytics Controls -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+              <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <label class="text-sm font-medium text-gray-700">Time Period:</label>
+                  <select id="analytics-period" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="1">Last 24 Hours</option>
+                    <option value="7" selected>Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 3 Months</option>
+                  </select>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                  <button id="refresh-analytics" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    🔄 Refresh
+                  </button>
+                  <button id="export-analytics" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                    📊 Export
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Analytics Charts and Data -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <!-- Visitors Chart -->
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">Visitor Trends</h3>
+                <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <p class="text-gray-500">Chart will be implemented here</p>
+                </div>
+              </div>
+              
+              <!-- Top Pages -->
+              <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">Top Pages</h3>
+                <div id="top-pages" class="space-y-3">
+                  <!-- Top pages will be loaded here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Real-time Analytics -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+              <h3 class="text-lg font-semibold mb-4">Real-time Activity</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Active Users</h4>
+                  <p class="text-2xl font-bold text-green-600" id="realtime-active-users">0</p>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Current Sessions</h4>
+                  <p class="text-2xl font-bold text-blue-600" id="realtime-sessions">0</p>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Last Updated</h4>
+                  <p class="text-sm text-gray-600" id="realtime-last-updated">Never</p>
+                </div>
+              </div>
+              
+              <!-- Active Sessions List -->
+              <div class="mt-6">
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Active Sessions</h4>
+                <div id="active-sessions-list" class="space-y-2 max-h-40 overflow-y-auto">
+                  <!-- Active sessions will be loaded here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- User Behavior Analytics -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+              <h3 class="text-lg font-semibold mb-4">User Behavior</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Recent Activity</h4>
+                  <div id="recent-activity" class="space-y-2 max-h-48 overflow-y-auto">
+                    <!-- Recent activity will be loaded here -->
+                  </div>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Conversion Tracking</h4>
+                  <div id="conversion-stats" class="space-y-2">
+                    <!-- Conversion stats will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detailed Analytics Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold">Detailed Analytics</h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitors</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Page Views</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Duration</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bounce Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analytics-table" class="bg-white divide-y divide-gray-200">
+                    <!-- Analytics data will be loaded here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="admin-section hidden">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold font-montserrat mb-6">My Profile</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Profile Card -->
+              <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div class="text-center mb-6">
+                    <div class="w-24 h-24 bg-gold rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <span class="text-2xl font-bold text-white" id="profile-initials">A</span>
+                    </div>
+                    <h3 class="text-xl font-semibold" id="profile-name">Admin</h3>
+                    <p class="text-gray-600" id="profile-email">admin@laiqbags.com</p>
+                    <span class="inline-block bg-gold text-white text-xs px-3 py-1 rounded-full mt-2">Administrator</span>
+                  </div>
+                  
+                  <div class="space-y-3">
+                    <div class="flex items-center text-sm">
+                      <span class="text-gray-500 w-20">Role:</span>
+                      <span class="font-medium">Admin</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                      <span class="text-gray-500 w-20">Status:</span>
+                      <span class="text-green-600 font-medium">Active</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                      <span class="text-gray-500 w-20">Joined:</span>
+                      <span class="font-medium" id="profile-joined">2024</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Profile Form -->
+              <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 class="text-lg font-semibold mb-6">Personal Information</h3>
+                  
+                  <form id="profile-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input type="text" name="name" id="profile-name-input" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input type="email" name="email" id="profile-email-input" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                        <p class="text-xs text-gray-500 mt-1">You can change your email address</p>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" name="phone" id="profile-phone-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                        <input type="date" name="dateOfBirth" id="profile-dob-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                      <textarea name="address" id="profile-address-input" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <input type="text" name="city" id="profile-city-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+                        <input type="text" name="state" id="profile-state-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+                        <input type="text" name="pincode" id="profile-pincode-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                      </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                      <button type="submit" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                        Update Profile
+                      </button>
+                      <button type="button" id="change-password-btn" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                        Change Password
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                
+                <!-- Change Password Section -->
+                <div id="password-section" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6 hidden">
+                  <h3 class="text-lg font-semibold mb-6">Change Password</h3>
+                  
+                  <form id="password-form" class="space-y-4">
+                    <!-- Hidden username field for accessibility -->
+                    <input type="text" name="username" autocomplete="username" style="display: none;" aria-hidden="true">
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                      <input type="password" name="currentPassword" required autocomplete="current-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                      <input type="password" name="newPassword" required autocomplete="new-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                      <input type="password" name="confirmPassword" required autocomplete="new-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                    </div>
+                    
+                    <div class="flex gap-4">
+                      <button type="submit" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                        Change Password
+                      </button>
+                      <button type="button" id="cancel-password-btn" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="admin-section hidden">
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold font-montserrat mb-6">Settings</h2>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 class="text-lg font-semibold mb-4">Website Settings</h3>
+              
+              <form id="settings-form" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Website Name</label>
+                  <input type="text" name="websiteName" id="website-name" value="Laiq Bags" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                  <input type="email" name="contactEmail" id="contact-email" value="mdhidayatulahsheikh786@gmail.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Instagram Handle</label>
+                  <input type="text" name="instagramHandle" id="instagram-handle" value="@laiq_bags_" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
+                  <input type="text" name="whatsappNumber" id="whatsapp-number" value="+91 99999 99999" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                    <input type="text" name="street" value="Admin Street" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                    <input type="text" name="city" value="Mumbai" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+                    <input type="text" name="state" value="Maharashtra" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+                    <input type="text" name="pincode" value="400001" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    <input type="text" name="country" value="India" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                </div>
+                
+                <button type="submit" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                  Save Settings
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold" id="modal-title">Add Product</h3>
+          <button class="close-modal text-2xl hover:text-gold transition-colors">&times;</button>
+        </div>
+        
+        <form id="product-form" class="space-y-6">
+          <!-- Basic Information -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-4">Basic Information</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select name="category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  <option value="">Select Category</option>
+                  <option value="backpack">Backpack</option>
+                  <option value="sling">Sling</option>
+                  <option value="handbag">Handbag</option>
+                  <option value="tote">Tote</option>
+                  <option value="laptop-bag">Laptop Bag</option>
+                  <option value="travel-bag">Travel Bag</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <select name="type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  <option value="">Select Type</option>
+                  <option value="backpack">Backpack</option>
+                  <option value="sling">Sling</option>
+                  <option value="handbag">Handbag</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                <input type="number" name="price" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Material</label>
+                <input type="text" name="material" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                <input type="text" name="size" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea name="description" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold"></textarea>
+            </div>
+          </div>
+
+          <!-- Multiple Images Upload -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-4">Product Images</h4>
+            <div id="image-upload-container">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div class="image-upload-item border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <input type="file" class="image-input hidden" accept="image/*">
+                  <div class="image-preview-container">
+                    <img class="image-preview w-full h-32 object-cover rounded-lg hidden" alt="Preview">
+                    <div class="image-placeholder">
+                      <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      </svg>
+                      <p class="text-sm text-gray-500">Add Image</p>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <label class="flex items-center text-sm">
+                      <input type="radio" name="primaryImage" class="mr-1">
+                      <span>Primary</span>
+                    </label>
+                  </div>
+                  <button type="button" class="remove-image text-red-500 text-sm mt-1 hidden">Remove</button>
+                </div>
+              </div>
+              <button type="button" id="add-image-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">
+                + Add Another Image
+              </button>
+            </div>
+          </div>
+
+          <!-- Color Variants -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-4">Color Variants</h4>
+            <div id="color-variants-container">
+              <div class="color-variant-item border border-gray-300 rounded-lg p-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Color Name</label>
+                    <input type="text" name="colorName[]" placeholder="e.g., Black" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Color Code</label>
+                    <input type="text" name="colorCode[]" placeholder="e.g., #000000" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                    <input type="number" name="colorStock[]" min="0" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  </div>
+                  <div class="flex items-end">
+                    <label class="flex items-center">
+                      <input type="checkbox" name="colorAvailable[]" checked class="mr-2">
+                      <span class="text-sm text-gray-700">Available</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Color Images (optional)</label>
+                  <input type="file" name="colorImages[]" multiple accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                </div>
+              </div>
+            </div>
+            <button type="button" id="add-color-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-600">
+              + Add Another Color
+            </button>
+          </div>
+
+          <!-- Specifications -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-4">Product Specifications</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dimensions (Length × Width × Height)</label>
+                <input type="text" name="dimensions" placeholder="e.g., 35 × 25 × 12 cm" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Weight</label>
+                <input type="text" name="weight" placeholder="e.g., 1.2 kg" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Capacity</label>
+                <input type="text" name="capacity" placeholder="e.g., 25L" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Closure Type</label>
+                <select name="closure" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+                  <option value="">Select Closure</option>
+                  <option value="Zipper">Zipper</option>
+                  <option value="Magnetic">Magnetic</option>
+                  <option value="Drawstring">Drawstring</option>
+                  <option value="Velcro">Velcro</option>
+                  <option value="Snap">Snap</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pockets</label>
+                <input type="text" name="pockets" placeholder="e.g., Multiple compartments" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Care Instructions</label>
+                <input type="text" name="care" placeholder="e.g., Wipe with damp cloth" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold">
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Features (one per line)</label>
+              <textarea name="features" rows="3" placeholder="Laptop compartment&#10;Water bottle holder&#10;Anti-theft design" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold"></textarea>
+            </div>
+            
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label class="flex items-center">
+                <input type="checkbox" name="waterResistant" class="mr-2">
+                <span class="text-sm font-medium text-gray-700">Water Resistant</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" name="laptopCompartment" class="mr-2">
+                <span class="text-sm font-medium text-gray-700">Laptop Compartment</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" name="usbPort" class="mr-2">
+                <span class="text-sm font-medium text-gray-700">USB Port</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Product Flags -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-4">Product Flags</h4>
+            <div class="flex gap-6">
+              <label class="flex items-center">
+                <input type="checkbox" name="featured" class="mr-2">
+                <span class="text-sm font-medium text-gray-700">Featured Product</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" name="bestSeller" class="mr-2">
+                <span class="text-sm font-medium text-gray-700">Best Seller</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" name="newArrival" class="mr-2">
+                <span class="text-sm font-medium text-gray-700">New Arrival</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="flex gap-4">
+            <button type="submit" id="save-product-btn" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+              Save Product
+            </button>
+            <button type="button" class="close-modal bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Customer Profile Modal -->
+    <div id="customer-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Customer Profile</h3>
+            <button onclick="closeModal('customer-profile-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div id="customer-profile-content" class="p-6">
+            <!-- Customer profile content will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div id="edit-customer-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Edit Customer</h3>
+            <button onclick="closeModal('edit-customer-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div id="edit-customer-content" class="p-6">
+            <!-- Edit customer form will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Orders Modal -->
+    <div id="customer-orders-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Customer Orders</h3>
+            <button onclick="closeModal('customer-orders-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div id="customer-orders-content" class="p-6">
+            <!-- Customer orders content will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Wishlist Modal -->
+    <div id="customer-wishlist-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Customer Wishlist</h3>
+            <button onclick="closeModal('customer-wishlist-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div class="modal-content p-6">
+            <!-- Customer wishlist content will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Cart Modal -->
+    <div id="customer-cart-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Customer Cart</h3>
+            <button onclick="closeModal('customer-cart-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div class="modal-content p-6">
+            <!-- Customer cart content will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Newsletter Send Modal -->
+    <div id="newsletter-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b">
+            <h3 class="text-xl font-bold text-gray-800">Send Newsletter</h3>
+            <button onclick="closeNewsletterModal()" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+          
+          <form id="newsletter-form" class="p-6">
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+              <input type="text" id="newsletter-subject" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Content *</label>
+              <textarea id="newsletter-content" rows="8" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+            </div>
+            
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tags (optional)</label>
+              <input type="text" id="newsletter-tags" placeholder="newsletter, promotion, update" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <p class="text-xs text-gray-500 mt-1">Comma-separated tags for categorization</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+              <button type="button" onclick="closeNewsletterModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancel
+              </button>
+              <button type="submit" id="send-newsletter-btn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                Send Newsletter
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Message Modal -->
+    <div id="contact-message-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Contact Message</h3>
+            <button onclick="closeModal('contact-message-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div id="contact-message-content" class="p-6">
+            <!-- Contact message content will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply to Contact Message Modal -->
+    <div id="reply-message-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-charcoal">Reply to Message</h3>
+            <button onclick="closeModal('reply-message-modal')" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+          </div>
+          <div class="p-6">
+            <form id="reply-form">
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">To:</label>
+                <input type="text" id="reply-to" class="w-full px-3 py-2 border border-gray-300 rounded-lg" readonly>
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reply Message *</label>
+                <textarea id="reply-message" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent" placeholder="Type your reply here..." required></textarea>
+              </div>
+              <div class="flex justify-end space-x-3">
+                <button type="submit" class="bg-gold text-white px-6 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                  Send Reply
+                </button>
+                <button type="button" onclick="closeModal('reply-message-modal')" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/analytics-tracker.js"></script>
+    <script src="js/auth-switcher.js"></script>
+  </body>
+</html> 

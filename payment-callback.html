@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Callback - Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2C2C2C',
+                        'gold': '#D4AF37',
+                        'beige': '#F5F5DC'
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'montserrat': ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+            <p id="loading-text" class="text-charcoal/60">Processing payment...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-charcoal">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div id="success-content" class="hidden">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-charcoal mb-4">Payment Successful!</h1>
+                <p class="text-gray-600 mb-6">Your payment has been processed successfully. Your order has been placed.</p>
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-charcoal mb-2">Order Details</h3>
+                        <p class="text-sm text-gray-600">Order ID: <span id="order-id" class="font-medium">-</span></p>
+                        <p class="text-sm text-gray-600">Payment ID: <span id="payment-id" class="font-medium">-</span></p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="customer-profile.html" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                            View Orders
+                        </a>
+                        <a href="shop.html" class="bg-charcoal text-white px-6 py-3 rounded-lg font-semibold hover:bg-gold transition-colors">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="error-content" class="hidden">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-charcoal mb-4">Payment Failed</h1>
+                <p class="text-gray-600 mb-6" id="error-message">There was an issue processing your payment.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="checkout.html" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                        Try Again
+                    </a>
+                    <a href="shop.html" class="bg-charcoal text-white px-6 py-3 rounded-lg font-semibold hover:bg-gold transition-colors">
+                        Back to Shop
+                    </a>
+                </div>
+            </div>
+
+            <div id="processing-content">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+                <h1 class="text-2xl font-bold text-charcoal mb-4">Processing Payment</h1>
+                <p class="text-gray-600">Please wait while we verify your payment...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <h3 class="text-xl font-bold laiq-logo mb-4">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+                    </h3>
+                <p class="text-gray-300">Carry Style with Confidence.</p>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 Laiq Bags. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <!-- <script>
+        // Payment Callback Handler
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 Payment callback page loaded');
+            
+            try {
+                // Get URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const razorpayPaymentId = urlParams.get('razorpay_payment_id');
+                const razorpayOrderId = urlParams.get('razorpay_order_id');
+                const razorpaySignature = urlParams.get('razorpay_signature');
+                const errorCode = urlParams.get('error_code');
+                const errorDescription = urlParams.get('error_description');
+                
+                console.log('📋 Payment parameters:', {
+                    paymentId: razorpayPaymentId,
+                    orderId: razorpayOrderId,
+                    signature: razorpaySignature ? 'Present' : 'Missing',
+                    errorCode: errorCode,
+                    errorDescription: errorDescription
+                });
+                
+                // Check for error parameters first
+                if (errorCode || errorDescription) {
+                    throw new Error(errorDescription || 'Payment failed');
+                }
+                
+                // Check if payment was cancelled
+                if (!razorpayPaymentId && !razorpayOrderId && !razorpaySignature) {
+                    throw new Error('Payment was cancelled or failed');
+                }
+                
+                if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+                    throw new Error('Incomplete payment data received');
+                }
+                
+                // Get pending order data from localStorage
+                const pendingOrderData = localStorage.getItem('pendingOrderData');
+                if (!pendingOrderData) {
+                    throw new Error('No pending order data found. Please try again from checkout page.');
+                }
+                
+                const orderData = JSON.parse(pendingOrderData);
+                console.log('📦 Pending order data:', orderData);
+                
+                // Verify payment signature FIRST - This is crucial for security
+                console.log('🔐 Verifying payment signature...');
+                const verificationResponse = await api.verifyRazorpayPayment({
+                    razorpay_order_id: razorpayOrderId,
+                    razorpay_payment_id: razorpayPaymentId,
+                    razorpay_signature: razorpaySignature
+                });
+                
+                if (!verificationResponse.success) {
+                    throw new Error('Payment verification failed: ' + verificationResponse.message);
+                }
+                
+                console.log('✅ Payment verified successfully - Now creating order...');
+                
+                // ONLY create order after successful payment verification
+                console.log('📦 Creating order with verified payment...');
+                const orderResponse = await api.createCustomerOrder({
+                    ...orderData,
+                    paymentMethod: 'razorpay',
+                    paymentStatus: 'paid',
+                    razorpayOrderId: razorpayOrderId,
+                    razorpayPaymentId: razorpayPaymentId,
+                    razorpaySignature: razorpaySignature
+                });
+                
+                if (!orderResponse.success) {
+                    throw new Error(orderResponse.message || 'Failed to create order');
+                }
+                
+                console.log('✅ Order created successfully:', orderResponse.order._id);
+                
+                // Clear cart and pending order data ONLY after successful order creation
+                const customerToken = localStorage.getItem('customerToken');
+                if (customerToken) {
+                    localStorage.removeItem('userCart');
+                } else {
+                    localStorage.removeItem('guestCart');
+                }
+                localStorage.removeItem('pendingOrderData');
+                
+                // Show success content
+                showSuccess(orderResponse.order._id, razorpayPaymentId);
+                
+            } catch (error) {
+                console.error('❌ Payment callback error:', error);
+                showError(error.message);
+            }
+        });
+        
+        function showSuccess(orderId, paymentId) {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('processing-content').classList.add('hidden');
+            document.getElementById('success-content').classList.remove('hidden');
+            
+            document.getElementById('order-id').textContent = orderId.slice(-8);
+            document.getElementById('payment-id').textContent = paymentId;
+            
+            console.log('✅ Success content shown');
+            
+            // Redirect to order confirmation page after 3 seconds
+            setTimeout(() => {
+                window.location.href = `order-confirmation.html?id=${orderId}`;
+            }, 3000);
+        }
+        
+        function showError(message) {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('processing-content').classList.add('hidden');
+            document.getElementById('error-content').classList.remove('hidden');
+            
+            document.getElementById('error-message').textContent = message;
+            
+            console.log('❌ Error content shown:', message);
+        }
+        
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all duration-300 transform translate-x-full`;
+            
+            switch (type) {
+                case 'success':
+                    toast.classList.add('bg-green-500');
+                    break;
+                case 'error':
+                    toast.classList.add('bg-red-500');
+                    break;
+                case 'warning':
+                    toast.classList.add('bg-yellow-500');
+                    break;
+                default:
+                    toast.classList.add('bg-charcoal');
+            }
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

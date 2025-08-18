@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2C2C2C',
+                        'gold': '#D4AF37',
+                        'beige': '#F5F5DC'
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'montserrat': ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+      
+      /* Custom LAIQ Logo Font - Lucidity Expand */
+      .laiq-logo {
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .laiq-logo-text {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+      }
+        .font-montserrat { font-family: 'Montserrat', 'sans-serif'; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+            <p id="loading-text" class="text-charcoal/60">Loading order details...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-charcoal">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="shop.html" class="text-charcoal hover:text-gold transition-colors">Shop</a>
+                    <a href="about.html" class="text-charcoal hover:text-gold transition-colors">About</a>
+                    <a href="contact.html" class="text-charcoal hover:text-gold transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-sm p-8">
+            <!-- Success Header -->
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-charcoal mb-2">Order Confirmed!</h1>
+                <p class="text-gray-600">Thank you for your purchase. Your order has been successfully placed.</p>
+            </div>
+
+            <!-- Order Details -->
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- Order Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-charcoal mb-4">Order Information</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Order ID:</span>
+                            <span id="order-id" class="font-medium text-charcoal">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Order Date:</span>
+                            <span id="order-date" class="font-medium text-charcoal">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Payment Method:</span>
+                            <span id="payment-method" class="font-medium text-charcoal">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Payment Status:</span>
+                            <span id="payment-status" class="font-medium text-green-600">Paid</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Order Status:</span>
+                            <span id="order-status" class="font-medium text-gold">Processing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-charcoal mb-4">Shipping Information</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="text-gray-600">Address:</span>
+                            <p id="shipping-address" class="font-medium text-charcoal mt-1">-</p>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Total Amount:</span>
+                            <span id="total-amount" class="font-bold text-gold text-lg">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-charcoal mb-4">Order Items</h2>
+                <div id="order-items" class="space-y-4">
+                    <!-- Order items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="customer-profile.html" class="bg-gold text-white px-8 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors text-center">
+                    View All Orders
+                </a>
+                <a href="shop.html" class="bg-charcoal text-white px-8 py-3 rounded-lg font-semibold hover:bg-gold transition-colors text-center">
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">What's Next?</h3>
+                <ul class="text-blue-700 space-y-2">
+                    <li>• You will receive an email confirmation shortly</li>
+                    <li>• We'll notify you when your order ships</li>
+                    <li>• Track your order status in your profile</li>
+                    <li>• Contact us if you have any questions</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center">
+                <h3 class="text-xl font-bold laiq-logo mb-4">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+                    </h3>
+                <p class="text-gray-300">Carry Style with Confidence.</p>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 <span class="text-gold laiq-logo">LAIQ</span> Bags. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script>
+        // Order Confirmation Handler
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 Order confirmation page loaded');
+            
+            try {
+                // Get order ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const orderId = urlParams.get('id');
+                
+                if (!orderId) {
+                    throw new Error('No order ID provided');
+                }
+                
+                console.log('📦 Loading order details for ID:', orderId);
+                
+                // Load order details
+                const orderResponse = await api.getCustomerOrder(orderId);
+                
+                if (!orderResponse.success) {
+                    throw new Error(orderResponse.message || 'Failed to load order details');
+                }
+                
+                const order = orderResponse.order;
+                console.log('✅ Order details loaded:', order);
+                
+                // Populate order information
+                document.getElementById('order-id').textContent = order._id.slice(-8);
+                document.getElementById('order-date').textContent = new Date(order.createdAt).toLocaleDateString('en-IN');
+                document.getElementById('payment-method').textContent = order.paymentMethod === 'razorpay' ? 'Razorpay' : 'Cash on Delivery';
+                document.getElementById('payment-status').textContent = order.paymentInfo?.status === 'paid' ? 'Paid' : 'Pending';
+                
+                // Handle undefined orderStatus
+                const orderStatus = order.status || 'processing';
+                document.getElementById('order-status').textContent = orderStatus.charAt(0).toUpperCase() + orderStatus.slice(1);
+                
+                // Populate shipping address
+                const address = order.shippingInfo;
+                if (address && address.street) {
+                    document.getElementById('shipping-address').textContent = 
+                        `${address.street}, ${address.city}, ${address.state} - ${address.pincode}`;
+                } else {
+                    document.getElementById('shipping-address').textContent = 'Address not available';
+                }
+                
+                // Populate total amount
+                document.getElementById('total-amount').textContent = `₹${(order.totalAmount || 0).toLocaleString()}`;
+                
+                // Populate order items
+                const orderItemsContainer = document.getElementById('order-items');
+                if (order.orderItems && order.orderItems.length > 0) {
+                    orderItemsContainer.innerHTML = order.orderItems.map(item => `
+                        <div class="flex items-center gap-4 border border-gray-200 rounded-lg p-4">
+                            <img src="${item.image || ''}" alt="${item.name || 'Product'}" class="w-16 h-16 rounded-lg object-cover" />
+                            <div class="flex-1">
+                                <div class="font-semibold text-charcoal">${item.name || 'Product Name Not Available'}</div>
+                                <div class="text-sm text-gray-600">
+                                    Quantity: ${item.quantity || 0}
+                                    ${item.color && item.color.name ? `<br>Color: <span class="font-medium">${item.color.name}</span>` : ''}
+                                </div>
+                                <div class="text-gold font-bold">₹${((item.price || 0) * (item.quantity || 0)).toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    orderItemsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No items found in this order.</p>';
+                }
+                
+                // Hide loading overlay
+                document.getElementById('loading-overlay').style.display = 'none';
+                
+                console.log('✅ Order confirmation page populated successfully');
+                
+            } catch (error) {
+                console.error('❌ Error loading order confirmation:', error);
+                showError(error.message);
+            }
+        });
+        
+        function showError(message) {
+            document.getElementById('loading-overlay').style.display = 'none';
+            
+            const mainContent = document.querySelector('main');
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl font-bold text-charcoal mb-4">Error Loading Order</h1>
+                    <p class="text-gray-600 mb-6">${message}</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="customer-profile.html" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                            View Orders
+                        </a>
+                        <a href="shop.html" class="bg-charcoal text-white px-6 py-3 rounded-lg font-semibold hover:bg-gold transition-colors">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all duration-300 transform translate-x-full`;
+            
+            switch (type) {
+                case 'success':
+                    toast.classList.add('bg-green-500');
+                    break;
+                case 'error':
+                    toast.classList.add('bg-red-500');
+                    break;
+                case 'warning':
+                    toast.classList.add('bg-yellow-500');
+                    break;
+                default:
+                    toast.classList.add('bg-charcoal');
+            }
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

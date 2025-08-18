@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'charcoal': '#2C2C2C',
+                        'gold': '#D4AF37',
+                        'beige': '#F5F5DC'
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'montserrat': ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+      
+      /* Custom LAIQ Logo Font - Lucidity Expand */
+      .laiq-logo {
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .laiq-logo-text {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+      }
+        .font-montserrat { font-family: 'Montserrat', 'sans-serif'; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-charcoal">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="shop.html" class="text-charcoal hover:text-gold transition-colors">Shop</a>
+                    <a href="about.html" class="text-charcoal hover:text-gold transition-colors">About</a>
+                    <a href="contact.html" class="text-charcoal hover:text-gold transition-colors">Contact</a>
+                    <a href="customer-profile.html" class="text-charcoal hover:text-gold transition-colors">Profile</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-charcoal mb-2">Order Management</h1>
+                    <p class="text-gray-600">Manage your orders, track shipments, and handle cancellations</p>
+                </div>
+                <button onclick="refreshOrderDetails()" class="bg-gold text-white px-4 py-2 rounded-lg hover:bg-charcoal transition-colors flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Details -->
+        <div id="order-details" class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <!-- Order details will be loaded here -->
+        </div>
+
+        <!-- Order Actions -->
+        <div id="order-actions" class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-semibold text-charcoal mb-4">Order Actions</h2>
+            
+            <!-- Cancel Order -->
+            <div id="cancel-section" class="mb-6">
+                <h3 class="text-lg font-medium text-charcoal mb-3">Cancel Order</h3>
+                <div class="space-y-3">
+                    <textarea id="cancel-reason" placeholder="Reason for cancellation..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold" rows="3"></textarea>
+                    <button id="cancel-order-btn" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                        Cancel Order
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Notes -->
+            <div id="notes-section" class="mb-6">
+                <h3 class="text-lg font-medium text-charcoal mb-3">Add Notes</h3>
+                <div class="space-y-3">
+                    <textarea id="customer-notes" placeholder="Add notes about your order..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold" rows="3"></textarea>
+                    <button id="add-notes-btn" class="bg-gold text-white px-6 py-2 rounded-lg hover:bg-charcoal transition-colors">
+                        Add Notes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order History -->
+        <div id="order-history" class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-charcoal mb-4">Order History</h2>
+            <div id="history-timeline" class="space-y-4">
+                <!-- Order history will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold laiq-logo mb-4">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+                    </h3>
+                    <p class="text-gray-300">Carry Style with Confidence.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="shop.html" class="text-gray-300 hover:text-gold transition-colors">Shop</a></li>
+                        <li><a href="about.html" class="text-gray-300 hover:text-gold transition-colors">About</a></li>
+                        <li><a href="contact.html" class="text-gray-300 hover:text-gold transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contact</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>mdhidayatulahsheikh786@gmail.com</li>
+                        <li>+91 99999 99999</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Follow Us</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-gold transition-colors">@laiq_bags_</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 <span class="text-gold laiq-logo">LAIQ</span> Bags. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/order-management.js"></script>
+</body>
+</html> 

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Loading Test | Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .loading { background-color: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body class="bg-beige min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-charcoal mb-8">Customer Loading Test</h1>
+        
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">Authentication Test</h2>
+            <div id="auth-status" class="test-result info">Checking authentication status...</div>
+            <button onclick="checkAuth()" class="bg-gold text-white px-4 py-2 rounded hover:bg-charcoal">Check Auth</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">Cart Loading Test</h2>
+            <div id="cart-status" class="test-result info">Cart loading status will appear here...</div>
+            <button onclick="testCartLoading()" class="bg-gold text-white px-4 py-2 rounded hover:bg-charcoal">Test Cart Loading</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">Wishlist Loading Test</h2>
+            <div id="wishlist-status" class="test-result info">Wishlist loading status will appear here...</div>
+            <button onclick="testWishlistLoading()" class="bg-gold text-white px-4 py-2 rounded hover:bg-charcoal">Test Wishlist Loading</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">Profile Loading Test</h2>
+            <div id="profile-status" class="test-result info">Profile loading status will appear here...</div>
+            <button onclick="testProfileLoading()" class="bg-gold text-white px-4 py-2 rounded hover:bg-charcoal">Test Profile Loading</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">Error Handling Test</h2>
+            <div id="error-status" class="test-result info">Error handling test results will appear here...</div>
+            <button onclick="testErrorHandling()" class="bg-gold text-white px-4 py-2 rounded hover:bg-charcoal">Test Error Handling</button>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">LocalStorage Fallback Test</h2>
+            <div id="fallback-status" class="test-result info">LocalStorage fallback test results will appear here...</div>
+            <button onclick="testLocalStorageFallback()" class="bg-gold text-white px-4 py-2 rounded hover:bg-charcoal">Test Fallback</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        // Test functions
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `test-result ${type}`;
+        }
+
+        function checkAuth() {
+            updateStatus('auth-status', 'Checking authentication...', 'loading');
+            
+            const token = localStorage.getItem('customerToken');
+            const user = localStorage.getItem('customerUser');
+            
+            if (token && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    updateStatus('auth-status', `✅ Authenticated as: ${userData.name || userData.email}`, 'success');
+                } catch (error) {
+                    updateStatus('auth-status', '❌ Invalid user data in localStorage', 'error');
+                }
+            } else {
+                updateStatus('auth-status', '❌ Not authenticated. Please login first.', 'error');
+            }
+        }
+
+        async function testCartLoading() {
+            updateStatus('cart-status', 'Testing cart loading...', 'loading');
+            
+            try {
+                // Test if cart loading functions exist
+                if (typeof loadCartFromBackend === 'function') {
+                    updateStatus('cart-status', '✅ loadCartFromBackend function exists', 'success');
+                } else {
+                    updateStatus('cart-status', '❌ loadCartFromBackend function not found', 'error');
+                    return;
+                }
+
+                // Test cart loading
+                await loadCartFromBackend();
+                
+                // Check if cart data is available
+                const userCart = localStorage.getItem('userCart');
+                if (userCart) {
+                    const cart = JSON.parse(userCart);
+                    updateStatus('cart-status', `✅ Cart loaded successfully: ${cart.length} items`, 'success');
+                } else {
+                    updateStatus('cart-status', '⚠️ Cart loaded but no localStorage data found', 'warning');
+                }
+            } catch (error) {
+                updateStatus('cart-status', `❌ Cart loading failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWishlistLoading() {
+            updateStatus('wishlist-status', 'Testing wishlist loading...', 'loading');
+            
+            try {
+                // Test if wishlist loading functions exist
+                if (typeof loadWishlistFromBackend === 'function') {
+                    updateStatus('wishlist-status', '✅ loadWishlistFromBackend function exists', 'success');
+                } else {
+                    updateStatus('wishlist-status', '❌ loadWishlistFromBackend function not found', 'error');
+                    return;
+                }
+
+                // Test wishlist loading
+                await loadWishlistFromBackend();
+                
+                // Check if wishlist data is available
+                const userWishlist = localStorage.getItem('userWishlist');
+                if (userWishlist) {
+                    const wishlist = JSON.parse(userWishlist);
+                    updateStatus('wishlist-status', `✅ Wishlist loaded successfully: ${wishlist.length} items`, 'success');
+                } else {
+                    updateStatus('wishlist-status', '⚠️ Wishlist loaded but no localStorage data found', 'warning');
+                }
+            } catch (error) {
+                updateStatus('wishlist-status', `❌ Wishlist loading failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProfileLoading() {
+            updateStatus('profile-status', 'Testing profile loading...', 'loading');
+            
+            try {
+                // Test if API functions exist
+                if (typeof api !== 'undefined' && typeof api.getCustomerProfile === 'function') {
+                    updateStatus('profile-status', '✅ API functions exist', 'success');
+                } else {
+                    updateStatus('profile-status', '❌ API functions not found', 'error');
+                    return;
+                }
+
+                // Test profile loading
+                const response = await api.getCustomerProfile();
+                
+                if (response.success) {
+                    updateStatus('profile-status', `✅ Profile loaded successfully: ${response.user.name}`, 'success');
+                } else {
+                    updateStatus('profile-status', `⚠️ Profile loading returned: ${response.message}`, 'warning');
+                }
+            } catch (error) {
+                updateStatus('profile-status', `❌ Profile loading failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testErrorHandling() {
+            updateStatus('error-status', 'Testing error handling...', 'loading');
+            
+            const tests = [];
+            
+            // Test 1: Check if loading flags exist
+            if (typeof isCartLoading !== 'undefined') {
+                tests.push('✅ isCartLoading flag exists');
+            } else {
+                tests.push('❌ isCartLoading flag missing');
+            }
+            
+            if (typeof isWishlistLoading !== 'undefined') {
+                tests.push('✅ isWishlistLoading flag exists');
+            } else {
+                tests.push('❌ isWishlistLoading flag missing');
+            }
+            
+            // Test 2: Check if error handling functions exist
+            if (typeof loadFromLocalStorage === 'function') {
+                tests.push('✅ loadFromLocalStorage function exists');
+            } else {
+                tests.push('❌ loadFromLocalStorage function missing');
+            }
+            
+            // Test 3: Check if timeout handling exists
+            if (typeof api !== 'undefined' && api.request) {
+                tests.push('✅ API timeout handling exists');
+            } else {
+                tests.push('❌ API timeout handling missing');
+            }
+            
+            updateStatus('error-status', tests.join('<br>'), tests.some(t => t.includes('❌')) ? 'error' : 'success');
+        }
+
+        function testLocalStorageFallback() {
+            updateStatus('fallback-status', 'Testing localStorage fallback...', 'loading');
+            
+            const tests = [];
+            
+            // Test 1: Check if localStorage functions exist
+            if (typeof loadUserCart === 'function') {
+                tests.push('✅ loadUserCart function exists');
+            } else {
+                tests.push('❌ loadUserCart function missing');
+            }
+            
+            if (typeof loadGuestCart === 'function') {
+                tests.push('✅ loadGuestCart function exists');
+            } else {
+                tests.push('❌ loadGuestCart function missing');
+            }
+            
+            // Test 2: Check if localStorage data can be accessed
+            try {
+                const userCart = localStorage.getItem('userCart');
+                const userWishlist = localStorage.getItem('userWishlist');
+                
+                if (userCart) {
+                    const cart = JSON.parse(userCart);
+                    tests.push(`✅ User cart accessible: ${cart.length} items`);
+                } else {
+                    tests.push('⚠️ No user cart data in localStorage');
+                }
+                
+                if (userWishlist) {
+                    const wishlist = JSON.parse(userWishlist);
+                    tests.push(`✅ User wishlist accessible: ${wishlist.length} items`);
+                } else {
+                    tests.push('⚠️ No user wishlist data in localStorage');
+                }
+            } catch (error) {
+                tests.push(`❌ localStorage access failed: ${error.message}`);
+            }
+            
+            // Test 3: Check if fallback mechanisms are in place
+            if (typeof isCustomerLoggedIn === 'function') {
+                tests.push('✅ Authentication check function exists');
+            } else {
+                tests.push('❌ Authentication check function missing');
+            }
+            
+            updateStatus('fallback-status', tests.join('<br>'), tests.some(t => t.includes('❌')) ? 'error' : 'success');
+        }
+
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Customer loading test page initialized');
+            
+            // Run basic tests
+            setTimeout(() => {
+                checkAuth();
+                testErrorHandling();
+                testLocalStorageFallback();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Customer Login Flow Test</h1>
+    
+    <div class="test-section info">
+        <h3>Current Authentication State</h3>
+        <div id="auth-state"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Functions</h3>
+        <button onclick="testTokenCheck()">Test Token Check</button>
+        <button onclick="testCustomerAuth()">Test Customer Auth</button>
+        <button onclick="testAPI()">Test API Service</button>
+        <button onclick="clearTokens()">Clear All Tokens</button>
+        <button onclick="refreshState()">Refresh State</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="test-results"></div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        function refreshState() {
+            const authState = document.getElementById('auth-state');
+            const customerToken = localStorage.getItem('customerToken');
+            const customerUser = localStorage.getItem('customerUser');
+            const adminToken = localStorage.getItem('token');
+            const adminUser = localStorage.getItem('user');
+            
+            authState.innerHTML = `
+                <p><strong>Customer Token:</strong> ${customerToken ? '✅ Present' : '❌ Missing'}</p>
+                <p><strong>Customer User:</strong> ${customerUser ? '✅ Present' : '❌ Missing'}</p>
+                <p><strong>Admin Token:</strong> ${adminToken ? '✅ Present' : '❌ Missing'}</p>
+                <p><strong>Admin User:</strong> ${adminUser ? '✅ Present' : '❌ Missing'}</p>
+                <p><strong>isCustomerLoggedIn():</strong> ${typeof isCustomerLoggedIn === 'function' ? isCustomerLoggedIn() : 'Function not available'}</p>
+                <p><strong>Current Page:</strong> ${window.location.pathname}</p>
+            `;
+        }
+        
+        function testTokenCheck() {
+            const results = document.getElementById('test-results');
+            try {
+                const isLoggedIn = isCustomerLoggedIn();
+                results.innerHTML = `
+                    <div class="success">
+                        <h4>Token Check Test</h4>
+                        <p>isCustomerLoggedIn() returned: ${isLoggedIn}</p>
+                        <p>Customer Token: ${localStorage.getItem('customerToken') ? 'Present' : 'Missing'}</p>
+                        <p>Admin Token: ${localStorage.getItem('token') ? 'Present' : 'Missing'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>Token Check Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testCustomerAuth() {
+            const results = document.getElementById('test-results');
+            try {
+                if (typeof initializeCustomerAuth === 'function') {
+                    results.innerHTML = `
+                        <div class="info">
+                            <h4>Customer Auth Test</h4>
+                            <p>initializeCustomerAuth function is available</p>
+                            <p>Calling function...</p>
+                        </div>
+                    `;
+                    
+                    initializeCustomerAuth().then(() => {
+                        results.innerHTML = `
+                            <div class="success">
+                                <h4>Customer Auth Test</h4>
+                                <p>✅ initializeCustomerAuth completed successfully</p>
+                                <p>Current state: ${isCustomerLoggedIn() ? 'Logged In' : 'Not Logged In'}</p>
+                            </div>
+                        `;
+                    }).catch(error => {
+                        results.innerHTML = `
+                            <div class="error">
+                                <h4>Customer Auth Test Failed</h4>
+                                <p>Error: ${error.message}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>Customer Auth Test Failed</h4>
+                            <p>initializeCustomerAuth function not available</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>Customer Auth Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testAPI() {
+            const results = document.getElementById('test-results');
+            try {
+                if (typeof api !== 'undefined' && api.getCustomerProfile) {
+                    results.innerHTML = `
+                        <div class="info">
+                            <h4>API Test</h4>
+                            <p>API service is available</p>
+                            <p>Testing getCustomerProfile...</p>
+                        </div>
+                    `;
+                    
+                    api.getCustomerProfile().then(response => {
+                        results.innerHTML = `
+                            <div class="success">
+                                <h4>API Test</h4>
+                                <p>✅ getCustomerProfile successful</p>
+                                <pre>${JSON.stringify(response, null, 2)}</pre>
+                            </div>
+                        `;
+                    }).catch(error => {
+                        results.innerHTML = `
+                            <div class="error">
+                                <h4>API Test Failed</h4>
+                                <p>Error: ${error.message}</p>
+                                <p>This might be expected if not logged in</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    results.innerHTML = `
+                        <div class="error">
+                            <h4>API Test Failed</h4>
+                            <p>API service not available</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <div class="error">
+                        <h4>API Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function clearTokens() {
+            localStorage.removeItem('customerToken');
+            localStorage.removeItem('customerUser');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userCart');
+            localStorage.removeItem('userWishlist');
+            localStorage.removeItem('guestCart');
+            localStorage.removeItem('guestWishlist');
+            
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <div class="success">
+                    <h4>Tokens Cleared</h4>
+                    <p>All authentication tokens and user data have been cleared</p>
+                </div>
+            `;
+            
+            refreshState();
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshState();
+        });
+    </script>
+</body>
+</html>
+
+
+
+

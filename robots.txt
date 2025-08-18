@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://laiqbags.com/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin*
+Disallow: /admin-*
+Disallow: /test-*
+
+# Allow important pages
+Allow: /shop.html
+Allow: /product.html
+Allow: /about.html
+Allow: /contact.html

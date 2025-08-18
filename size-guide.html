@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Size Guide | Laiq Bags</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="/css/styles.css" rel="stylesheet">
+    <!-- <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gold: '#d4af37',
+              beige: '#f5f5dc',
+              charcoal: '#1a1a1a',
+            },
+            fontFamily: {
+              poppins: ['Poppins', 'sans-serif'],
+              montserrat: ['Montserrat', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Google Fonts: Poppins & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Orbitron (similar to Lucidity Expand) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Poppins', 'Montserrat', sans-serif; }
+      
+      /* Custom LAIQ Logo Font - Lucidity Expand */
+      .laiq-logo {
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      
+      .laiq-logo-text {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Orbitron', 'Montserrat', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-white text-charcoal min-h-screen flex flex-col">
+    <!-- Navbar Start -->
+    <nav class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-beige shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+          <!-- Logo -->
+          <a href="index.html" class="flex items-center gap-2 font-montserrat font-bold text-2xl tracking-tight text-charcoal">
+            <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+          </a>
+          <!-- Desktop Menu -->
+          <div class="hidden md:flex items-center gap-8">
+            <a href="index.html" class="hover:text-gold transition-colors">Home</a>
+            <a href="shop.html" class="hover:text-gold transition-colors">Shop</a>
+            <a href="about.html" class="hover:text-gold transition-colors">About</a>
+            <a href="contact.html" class="hover:text-gold transition-colors">Contact</a>
+            <!-- Wishlist Icon -->
+            <a href="#" class="relative group" id="wishlist-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+              </svg>
+              <span id="wishlist-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full px-1.5 py-0.5 font-bold shadow transition-all">0</span>
+            </a>
+            <!-- Cart Icon -->
+            <a href="#" class="relative group">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437m0 0A48.108 48.108 0 0116.5 6.75c2.485 0 4.5 2.015 4.5 4.5s-2.015 4.5-4.5 4.5a48.108 48.108 0 01-11.394-1.478m0 0l-.383-1.437A1.125 1.125 0 013.636 12H2.25m1.386 0h15.75" />
+              </svg>
+              <span id="cart-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full px-1.5 py-0.5 font-bold shadow transition-all">0</span>
+            </a>
+          </div>
+          <!-- Hamburger (Mobile) -->
+          <div class="md:hidden flex items-center">
+            <button id="mobile-menu-btn" class="p-2 rounded focus:outline-none focus:ring-2 focus:ring-gold">
+              <svg id="menu-open" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg id="menu-close" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="md:hidden hidden px-4 pb-4 pt-2 bg-white border-b border-beige shadow-sm">
+        <a href="index.html" class="block py-2 hover:text-gold transition-colors">Home</a>
+        <a href="shop.html" class="block py-2 hover:text-gold transition-colors">Shop</a>
+        <a href="about.html" class="block py-2 hover:text-gold transition-colors">About</a>
+        <a href="contact.html" class="block py-2 hover:text-gold transition-colors">Contact</a>
+        <a href="#" class="block py-2 relative group">
+          <span class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 mr-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437m0 0A48.108 48.108 0 0116.5 6.75c2.485 0 4.5 2.015 4.5 4.5s-2.015 4.5-4.5 4.5a48.108 48.108 0 01-11.394-1.478m0 0l-.383-1.437A1.125 1.125 0 013.636 12H2.25m1.386 0h15.75" />
+            </svg>
+            Cart
+            <span id="cart-count-mobile" class="ml-2 bg-gold text-white text-xs rounded-full px-1.5 py-0.5 font-bold shadow">0</span>
+          </span>
+        </a>
+      </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Size Guide Header -->
+    <section class="max-w-4xl mx-auto px-4 py-8">
+      <h1 class="text-3xl md:text-4xl font-bold font-montserrat mb-2">Size Guide</h1>
+      <p class="text-charcoal/70 mb-8">Find the perfect fit for your bag. All measurements are in centimeters.</p>
+      
+      <!-- Size Guide Content -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Backpack Sizes -->
+        <div class="bg-beige rounded-2xl p-6">
+          <h2 class="text-xl font-bold font-montserrat mb-4 text-gold">Backpacks</h2>
+          <div class="space-y-4">
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Small Backpack</h3>
+              <p class="text-sm text-charcoal/70">30 × 20 × 10 cm</p>
+              <p class="text-sm text-charcoal/70">Perfect for daily essentials</p>
+            </div>
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Medium Backpack</h3>
+              <p class="text-sm text-charcoal/70">35 × 25 × 12 cm</p>
+              <p class="text-sm text-charcoal/70">Ideal for work and travel</p>
+            </div>
+            <div>
+              <h3 class="font-semibold">Large Backpack</h3>
+              <p class="text-sm text-charcoal/70">40 × 30 × 15 cm</p>
+              <p class="text-sm text-charcoal/70">Great for weekend trips</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sling Bags -->
+        <div class="bg-beige rounded-2xl p-6">
+          <h2 class="text-xl font-bold font-montserrat mb-4 text-gold">Sling Bags</h2>
+          <div class="space-y-4">
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Mini Sling</h3>
+              <p class="text-sm text-charcoal/70">20 × 15 × 5 cm</p>
+              <p class="text-sm text-charcoal/70">For phone and essentials</p>
+            </div>
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Regular Sling</h3>
+              <p class="text-sm text-charcoal/70">25 × 18 × 8 cm</p>
+              <p class="text-sm text-charcoal/70">Perfect for daily use</p>
+            </div>
+            <div>
+              <h3 class="font-semibold">Large Sling</h3>
+              <p class="text-sm text-charcoal/70">30 × 22 × 10 cm</p>
+              <p class="text-sm text-charcoal/70">For work and travel</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Handbags -->
+        <div class="bg-beige rounded-2xl p-6">
+          <h2 class="text-xl font-bold font-montserrat mb-4 text-gold">Handbags</h2>
+          <div class="space-y-4">
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Mini Handbag</h3>
+              <p class="text-sm text-charcoal/70">18 × 12 × 6 cm</p>
+              <p class="text-sm text-charcoal/70">For evening events</p>
+            </div>
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Medium Handbag</h3>
+              <p class="text-sm text-charcoal/70">25 × 18 × 8 cm</p>
+              <p class="text-sm text-charcoal/70">Perfect for daily use</p>
+            </div>
+            <div>
+              <h3 class="font-semibold">Large Handbag</h3>
+              <p class="text-sm text-charcoal/70">32 × 25 × 12 cm</p>
+              <p class="text-sm text-charcoal/70">For work and shopping</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tote Bags -->
+        <div class="bg-beige rounded-2xl p-6">
+          <h2 class="text-xl font-bold font-montserrat mb-4 text-gold">Tote Bags</h2>
+          <div class="space-y-4">
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Small Tote</h3>
+              <p class="text-sm text-charcoal/70">28 × 20 × 8 cm</p>
+              <p class="text-sm text-charcoal/70">For daily essentials</p>
+            </div>
+            <div class="border-b border-charcoal/20 pb-3">
+              <h3 class="font-semibold">Medium Tote</h3>
+              <p class="text-sm text-charcoal/70">35 × 25 × 10 cm</p>
+              <p class="text-sm text-charcoal/70">Perfect for work</p>
+            </div>
+            <div>
+              <h3 class="font-semibold">Large Tote</h3>
+              <p class="text-sm text-charcoal/70">42 × 30 × 15 cm</p>
+              <p class="text-sm text-charcoal/70">For shopping and travel</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips Section -->
+      <div class="mt-12 bg-white border border-beige rounded-2xl p-6">
+        <h2 class="text-xl font-bold font-montserrat mb-4">Size Tips</h2>
+        <ul class="space-y-2 text-charcoal/80">
+          <li class="flex items-start gap-2">
+            <span class="text-gold font-bold">•</span>
+            <span>Measure your current bag to compare sizes</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-gold font-bold">•</span>
+            <span>Consider what you carry daily when choosing size</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-gold font-bold">•</span>
+            <span>Laptop bags should be 2-3 cm larger than your laptop</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-gold font-bold">•</span>
+            <span>For travel, choose bags with expandable compartments</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Footer Start -->
+    <footer class="bg-white border-t border-beige mt-10">
+      <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- Quick Links -->
+        <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
+          <a href="index.html" class="hover:text-gold transition-colors">Home</a>
+          <a href="shop.html" class="hover:text-gold transition-colors">Shop</a>
+          <a href="about.html" class="hover:text-gold transition-colors">About</a>
+          <a href="contact.html" class="hover:text-gold transition-colors">Contact</a>
+        </div>
+        <!-- Social Icons -->
+        <div class="flex gap-4 items-center">
+          <a href="https://www.instagram.com/laiq_bags_?igsh=M25mYmNld3dqM3J1" target="_blank" rel="noopener" aria-label="Instagram" class="text-charcoal hover:text-gold transition-colors">
+            <svg fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
+              <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zm4.25 3.25a5.25 5.25 0 1 1 0 10.5a5.25 5.25 0 0 1 0-10.5zm0 1.5a3.75 3.75 0 1 0 0 7.5a3.75 3.75 0 0 0 0-7.5zm6 1.25a1 1 0 1 1-2 0a1 1 0 0 1 2 0z"/>
+            </svg>
+          </a>
+          <a href="https://wa.me/919999999999" target="_blank" rel="noopener" aria-label="WhatsApp" class="text-charcoal hover:text-gold transition-colors">
+            <svg fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
+              <path d="M20.52 3.48A12.07 12.07 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.16 1.6 5.98L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12c0-3.21-1.25-6.23-3.48-8.52zM12 22c-1.85 0-3.68-.5-5.26-1.44l-.38-.22l-3.67.96l.98-3.58l-.25-.37A9.94 9.94 0 0 1 2 12c0-5.52 4.48-10 10-10s10 4.48 10 10s-4.48 10-10 10zm5.2-7.8c-.28-.14-1.65-.81-1.9-.9c-.25-.09-.43-.14-.61.14c-.18.28-.7.9-.86 1.08c-.16.18-.32.2-.6.07c-.28-.14-1.18-.44-2.25-1.4c-.83-.74-1.39-1.65-1.55-1.93c-.16-.28-.02-.43.12-.57c.13-.13.28-.34.42-.51c.14-.17.18-.29.28-.48c.09-.18.05-.34-.02-.48c-.07-.14-.61-1.47-.84-2.01c-.22-.53-.45-.46-.61-.47c-.16-.01-.34-.01-.52-.01c-.18 0-.48.07-.73.34c-.25.27-.97.95-.97 2.3c0 1.35.99 2.65 1.13 2.83c.14.18 1.95 2.98 4.74 4.06c.66.28 1.18.45 1.58.58c.66.21 1.26.18 1.73.11c.53-.08 1.65-.67 1.89-1.32c.23-.65.23-1.2.16-1.32c-.07-.12-.25-.18-.53-.32z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="text-center text-sm text-charcoal/60 mt-6">
+        <p>&copy; 2024 <span class="text-gold laiq-logo">LAIQ</span> Bags. All rights reserved.</p>
+        <p>Crafted with <span class="text-gold">❤️</span> by Laiq</p>
+      </div>
+    </footer>
+    <!-- Footer End -->
+    <script src="js/main.js"></script>
+  </body>
+</html> 
