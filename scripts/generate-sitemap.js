@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 // Website base URL
-const BASE_URL = process.env.FRONTEND_URL || 'https://laiqbags.com';
+const BASE_URL = process.env.FRONTEND_URL || 'https://laiq.shop';
 
 // Static pages
 const staticPages = [
