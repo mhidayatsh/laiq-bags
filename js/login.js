@@ -26,8 +26,34 @@ function showLoginError(message) {
   }
 }
 
+// Show/Hide password functionality
+function initializePasswordToggle() {
+  const togglePassword = document.getElementById('toggle-password');
+  const passwordInput = document.getElementById('password');
+  const passwordEye = document.getElementById('password-eye');
+  const passwordEyeSlash = document.getElementById('password-eye-slash');
+  
+  if (togglePassword && passwordInput) {
+    togglePassword.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      if (type === 'text') {
+        passwordEye.classList.add('hidden');
+        passwordEyeSlash.classList.remove('hidden');
+      } else {
+        passwordEye.classList.remove('hidden');
+        passwordEyeSlash.classList.add('hidden');
+      }
+    });
+  }
+}
+
 // Customer Login Handler
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize password toggle functionality
+  initializePasswordToggle();
+  
   const loginForm = document.getElementById('login-form');
   
   if (loginForm) {

@@ -36,8 +36,55 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
+// Show/Hide password functionality
+function initializePasswordToggles() {
+  const togglePassword = document.getElementById('toggle-password');
+  const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
+  const passwordInput = document.getElementById('password');
+  const confirmPasswordInput = document.getElementById('confirm-password');
+  const passwordEye = document.getElementById('password-eye');
+  const passwordEyeSlash = document.getElementById('password-eye-slash');
+  const confirmPasswordEye = document.getElementById('confirm-password-eye');
+  const confirmPasswordEyeSlash = document.getElementById('confirm-password-eye-slash');
+  
+  // Toggle password visibility
+  if (togglePassword && passwordInput) {
+    togglePassword.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      if (type === 'text') {
+        passwordEye.classList.add('hidden');
+        passwordEyeSlash.classList.remove('hidden');
+      } else {
+        passwordEye.classList.remove('hidden');
+        passwordEyeSlash.classList.add('hidden');
+      }
+    });
+  }
+  
+  // Toggle confirm password visibility
+  if (toggleConfirmPassword && confirmPasswordInput) {
+    toggleConfirmPassword.addEventListener('click', function() {
+      const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      confirmPasswordInput.setAttribute('type', type);
+      
+      if (type === 'text') {
+        confirmPasswordEye.classList.add('hidden');
+        confirmPasswordEyeSlash.classList.remove('hidden');
+      } else {
+        confirmPasswordEye.classList.remove('hidden');
+        confirmPasswordEyeSlash.classList.add('hidden');
+      }
+    });
+  }
+}
+
 // Customer Registration Handler
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize password toggle functionality
+  initializePasswordToggles();
+  
   const registerForm = document.getElementById('register-form');
   
   if (registerForm) {
