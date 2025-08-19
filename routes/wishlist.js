@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const { isAuthenticatedUser } = require('../middleware/auth');
 const mongoose = require('mongoose');
+const zlib = require('zlib');
 
 const router = express.Router();
 
@@ -66,25 +67,23 @@ router.get('/', isAuthenticatedUser, async (req, res) => {
         const wishlist = userWithWishlist[0].wishlist;
         
         // Decompress H4sI URLs in wishlist images
+        const decompressIfNeeded = (value) => {
+            try {
+                if (!value || typeof value !== 'string' || !value.startsWith('H4sI')) return value;
+                const buffer = Buffer.from(value, 'base64');
+                const decompressed = zlib.gunzipSync(buffer);
+                return `data:image/jpeg;base64,${decompressed.toString('base64')}`;
+            } catch (_) {
+                return value;
+            }
+        };
+
         const decompressedWishlist = wishlist.map(product => {
             if (product.images && Array.isArray(product.images)) {
-                const decompressedImages = product.images.map(image => {
-                    if (image.url && image.url.startsWith('H4sI')) {
-                        try {
-                            const zlib = require('zlib');
-                            const buffer = Buffer.from(image.url, 'base64');
-                            const decompressed = zlib.gunzipSync(buffer);
-                            return {
-                                ...image,
-                                url: `data:image/jpeg;base64,${decompressed.toString('base64')}`
-                            };
-                        } catch (error) {
-                            console.error('Error decompressing image URL:', error);
-                            return image;
-                        }
-                    }
-                    return image;
-                });
+                const decompressedImages = product.images.map(image => ({
+                    ...image,
+                    url: decompressIfNeeded(image.url)
+                }));
                 return { ...product, images: decompressedImages };
             }
             return product;
