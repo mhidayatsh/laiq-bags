@@ -1007,8 +1007,20 @@ function closeProductModal() {
 }
 
 // Fill product form
-function fillProductForm(productId) {
-    const product = products.find(p => p._id === productId);
+async function fillProductForm(productId) {
+    let product = null;
+    try {
+        // Fetch the full product to ensure all images are available (admin list only returns first image)
+        const response = await api.getProduct(productId + '?_t=' + Date.now());
+        if (response && response.product) {
+            product = response.product;
+        }
+    } catch (e) {
+        console.warn('⚠️ Could not fetch full product by ID, falling back to list data:', e);
+    }
+    if (!product) {
+        product = products.find(p => p._id === productId);
+    }
     if (!product) {
         console.error('❌ Product not found for ID:', productId);
         return;
