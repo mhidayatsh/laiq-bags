@@ -2545,15 +2545,36 @@ function openQuickViewModal(product) {
     
     if (!modal || !content) return
     
+    // Calculate display price with discount
+    const displayPrice = getDisplayPrice(product)
+    const originalPrice = product.price
+    const hasDiscount = product.discountInfo && product.discountInfo.status === 'active' || (product.discount > 0 && product.isDiscountActive)
+    
     content.innerHTML = `
         <div class="grid md:grid-cols-2 gap-6">
-            <img src="${product.images?.[0]?.url || product.image}" alt="${product.name}" class="w-full h-64 object-cover rounded-lg" />
+            <div class="relative">
+                <img src="${product.images?.[0]?.url || product.image}" alt="${product.name}" class="w-full h-64 object-cover rounded-lg" />
+                ${hasDiscount ? `
+                    <div class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold z-10">
+                        <i class="fas fa-fire mr-1"></i>${product.discountInfo?.value || product.discount}% OFF
+                    </div>
+                ` : ''}
+            </div>
             <div>
                 <h4 class="text-lg font-semibold mb-2">${product.name}</h4>
                 <p class="text-charcoal/70 text-sm mb-3">${product.shortDescription || product.description || product.desc || 'No description available'}</p>
-                <div class="text-gold font-bold text-lg mb-4">₹${product.price.toLocaleString()}</div>
+                <div class="mb-4">
+                    ${hasDiscount ? `
+                        <div class="flex flex-col">
+                            <span class="text-gold font-bold text-lg">₹${displayPrice.toLocaleString()}</span>
+                            <span class="text-charcoal/40 text-sm line-through">₹${originalPrice.toLocaleString()}</span>
+                        </div>
+                    ` : `
+                        <div class="text-gold font-bold text-lg">₹${displayPrice.toLocaleString()}</div>
+                    `}
+                </div>
                 <div class="flex gap-2">
-                    <button class="add-to-cart-quick bg-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors" data-id="${product._id || product.id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.images?.[0]?.url || product.image}">
+                    <button class="add-to-cart-quick bg-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors" data-id="${product._id || product.id}" data-name="${product.name}" data-price="${displayPrice}" data-image="${product.images?.[0]?.url || product.image}">
                         Add to Cart
                     </button>
                     <a href="product.html?id=${product._id || product.id}" class="bg-charcoal/10 text-charcoal px-4 py-2 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors">
@@ -2587,9 +2608,9 @@ function openQuickViewModal(product) {
                 }
             }
             
-            // Calculate display price similar to product page logic
-            const price = (product.discountInfo && product.discountInfo.status === 'active') ? product.discountInfo.discountPrice : ((product.discount > 0 && product.isDiscountActive) ? Math.round(product.price * (1 - product.discount / 100)) : product.price)
-            addToCart(btn.dataset.id, btn.dataset.name, parseInt(price), btn.dataset.image, color)
+            // Use the display price that was already calculated and passed to the button
+            const price = parseInt(btn.dataset.price)
+            addToCart(btn.dataset.id, btn.dataset.name, price, btn.dataset.image, color)
             showToast('Added to cart!', 'success')
             closeQuickViewModal()
         })
