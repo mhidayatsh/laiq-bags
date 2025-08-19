@@ -1305,6 +1305,8 @@ async function saveProduct() {
         // Process multiple images
         const images = [];
         const imageInputs = document.querySelectorAll('.image-input');
+        // Determine which radio is selected for primary image
+        const selectedPrimaryRadio = document.querySelector('input[name="primaryImage"]:checked');
         
         console.log('🔍 Found image inputs:', imageInputs.length);
         
@@ -1320,17 +1322,19 @@ async function saveProduct() {
         
         for (let index = 0; index < imageInputs.length; index++) {
             const input = imageInputs[index];
+            const imageItem = input.closest('.image-upload-item');
+            // Skip items explicitly removed by user
+            if (imageItem && imageItem.dataset.removed === 'true') {
+                continue;
+            }
             
             if (input.files && input.files[0]) {
                 // New file uploaded
                 const file = input.files[0];
                 console.log(`📸 Input ${index} has new file:`, file.name, file.size);
                 
-                // Find the radio button for this specific image input
-                const imageItem = input.closest('.image-upload-item');
-                const primaryRadio = imageItem?.querySelector('input[name="primaryImage"]');
-                const isPrimary = primaryRadio?.checked || 
-                                (index === 0 && !document.querySelector('input[name="primaryImage"]:checked'));
+                // Determine primary by checking if this item's radio is the selected one
+                const isPrimary = selectedPrimaryRadio ? (imageItem && imageItem.contains(selectedPrimaryRadio)) : (index === 0);
                 
                 console.log(`📸 Processing new image ${index}: Primary = ${isPrimary}`);
                 
@@ -1373,10 +1377,11 @@ async function saveProduct() {
                 // Existing image (from edit mode)
                 console.log(`📸 Input ${index} has existing image data:`, input.dataset.existingImage ? 'YES' : 'NO');
                 
-                const imageItem = input.closest('.image-upload-item');
-                const primaryRadio = imageItem?.querySelector('input[name="primaryImage"]');
-                const isPrimary = primaryRadio?.checked || 
-                                (index === 0 && !document.querySelector('input[name="primaryImage"]:checked'));
+                // If the item was marked removed or dataset cleared, skip
+                if (imageItem && imageItem.dataset.removed === 'true') {
+                    continue;
+                }
+                const isPrimary = selectedPrimaryRadio ? (imageItem && imageItem.contains(selectedPrimaryRadio)) : (index === 0);
                 const existingImage = JSON.parse(input.dataset.existingImage);
                 
                 console.log(`📸 Processing existing image ${index}: Primary = ${isPrimary}, URL = ${existingImage.url.substring(0, 50)}...`);
@@ -1393,6 +1398,23 @@ async function saveProduct() {
         }
         
         console.log('📸 Final images array:', images);
+
+        // Ensure exactly one primary image is set
+        if (images.length > 0) {
+            let primaryCount = images.filter(img => img.isPrimary).length;
+            if (primaryCount === 0) {
+                images[0].isPrimary = true;
+            } else if (primaryCount > 1) {
+                // Keep the one corresponding to selectedPrimaryRadio if available
+                const chosenIndex = selectedPrimaryRadio 
+                    ? images.findIndex((_, idx) => {
+                        const item = imageInputs[idx]?.closest('.image-upload-item');
+                        return item && item.contains(selectedPrimaryRadio);
+                    })
+                    : 0;
+                images.forEach((img, i) => { img.isPrimary = i === (chosenIndex >= 0 ? chosenIndex : 0); });
+            }
+        }
 
         // Process color variants
         const colorVariants = [];
@@ -3934,13 +3956,15 @@ function initializeImageUploadItem(item) {
         }
     });
     
-    // Handle remove button
+    // Handle remove button (mark as removed so it won't be sent on save)
     removeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         input.value = '';
         preview.classList.add('hidden');
         placeholder.classList.remove('hidden');
         removeBtn.classList.add('hidden');
+        // Mark this image item as removed so saveProduct skips it
+        item.dataset.removed = 'true';
         if (primaryRadio.checked) {
             primaryRadio.checked = false;
         }
