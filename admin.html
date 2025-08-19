@@ -507,8 +507,16 @@
           <div class="mb-8">
             <h2 class="text-2xl font-bold font-montserrat mb-6">Customers</h2>
             
+            <!-- Customers Loader -->
+            <div id="customers-loader" class="hidden">
+              <div class="flex items-center justify-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div>
+                <span class="ml-3 text-lg text-gray-600">Loading customers...</span>
+              </div>
+            </div>
+            
             <!-- Customers Table -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div id="customers-table" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div class="overflow-x-auto">
                 <table class="w-full">
                   <thead class="bg-gray-50">

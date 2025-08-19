@@ -424,6 +424,8 @@ function showSection(sectionName) {
             loadOrders();
             break;
         case 'customers':
+            // Reset loader state and load customers
+            hideCustomersLoader();
             loadCustomers();
             break;
         case 'analytics':
@@ -2004,10 +2006,31 @@ function addOrderStatusListeners() {
     });
 }
 
+// Show customers loader
+function showCustomersLoader() {
+    const loader = document.getElementById('customers-loader');
+    const table = document.getElementById('customers-table');
+    
+    if (loader) loader.classList.remove('hidden');
+    if (table) table.classList.add('hidden');
+}
+
+// Hide customers loader
+function hideCustomersLoader() {
+    const loader = document.getElementById('customers-loader');
+    const table = document.getElementById('customers-table');
+    
+    if (loader) loader.classList.add('hidden');
+    if (table) table.classList.remove('hidden');
+}
+
 // Load customers
 async function loadCustomers() {
     try {
         console.log('👥 Loading customers...');
+        
+        // Show loader
+        showCustomersLoader();
         
         const response = await api.getAdminCustomers();
         customers = response.customers || [];
@@ -2036,6 +2059,9 @@ async function loadCustomers() {
         showToast('Failed to load customers', 'error');
         customers = [];
         renderCustomersTable();
+    } finally {
+        // Hide loader
+        hideCustomersLoader();
     }
 }
 
