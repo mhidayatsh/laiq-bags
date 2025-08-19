@@ -1114,10 +1114,41 @@ function fillProductForm(productId) {
 
 // Fill product images
 function fillProductImages(images) {
+    console.log('📸 Filling product images:', images);
     const imageContainer = document.querySelector('#image-upload-container .grid');
     imageContainer.innerHTML = '';
     
+    if (!images || images.length === 0) {
+        console.log('📸 No images to fill, adding empty image upload item');
+        // Add empty image upload item
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'image-upload-item border-2 border-dashed border-gray-300 rounded-lg p-4 text-center';
+        emptyItem.innerHTML = `
+            <input type="file" class="image-input hidden" accept="image/*">
+            <div class="image-preview-container">
+                <img class="image-preview w-full h-32 object-cover rounded-lg hidden" alt="Preview">
+                <div class="image-placeholder">
+                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <p class="text-sm text-gray-500">Add Image</p>
+                </div>
+            </div>
+            <div class="mt-2">
+                <label class="flex items-center text-sm">
+                    <input type="radio" name="primaryImage" class="mr-1">
+                    <span>Primary</span>
+                </label>
+            </div>
+            <button type="button" class="remove-image text-red-500 text-sm mt-1 hidden">Remove</button>
+        `;
+        imageContainer.appendChild(emptyItem);
+        initializeImageUploadItem(emptyItem);
+        return;
+    }
+    
     images.forEach((image, index) => {
+        console.log(`📸 Creating image item ${index}:`, image);
         const imageItem = document.createElement('div');
         imageItem.className = 'image-upload-item border-2 border-dashed border-gray-300 rounded-lg p-4 text-center';
         imageItem.innerHTML = `
@@ -1143,6 +1174,8 @@ function fillProductImages(images) {
         imageContainer.appendChild(imageItem);
         initializeImageUploadItem(imageItem);
     });
+    
+    console.log(`📸 Created ${images.length} image items`);
 }
 
 // Fill color variants
@@ -1230,9 +1263,13 @@ async function saveProduct() {
             if (input.files && input.files[0]) {
                 // New file uploaded
                 const file = input.files[0];
-                const primaryRadio = document.querySelector(`input[name="primaryImage"][value="${index}"]`);
+                // Find the radio button for this specific image input
+                const imageItem = input.closest('.image-upload-item');
+                const primaryRadio = imageItem?.querySelector('input[name="primaryImage"]');
                 const isPrimary = primaryRadio?.checked || 
                                 (index === 0 && !document.querySelector('input[name="primaryImage"]:checked'));
+                
+                console.log(`📸 Processing new image ${index}: Primary = ${isPrimary}`);
                 
                 // Convert file to base64 data URL instead of blob URL
                 const imageUrl = await convertFileToDataURL(file);
@@ -1244,10 +1281,13 @@ async function saveProduct() {
                 });
             } else if (input.dataset.existingImage) {
                 // Existing image (from edit mode)
-                const primaryRadio = document.querySelector(`input[name="primaryImage"][value="${index}"]`);
+                const imageItem = input.closest('.image-upload-item');
+                const primaryRadio = imageItem?.querySelector('input[name="primaryImage"]');
                 const isPrimary = primaryRadio?.checked || 
                                 (index === 0 && !document.querySelector('input[name="primaryImage"]:checked'));
                 const existingImage = JSON.parse(input.dataset.existingImage);
+                
+                console.log(`📸 Processing existing image ${index}: Primary = ${isPrimary}, URL = ${existingImage.url.substring(0, 50)}...`);
                 
                 images.push({
                     public_id: existingImage.public_id,
@@ -1257,6 +1297,8 @@ async function saveProduct() {
                 });
             }
         }
+        
+        console.log('📸 Final images array:', images);
 
         // Process color variants
         const colorVariants = [];
