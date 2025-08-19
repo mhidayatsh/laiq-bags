@@ -391,40 +391,45 @@ router.put('/update/:productId', isAuthenticatedUser, catchAsyncErrors(async (re
 router.delete('/remove/:productId', isAuthenticatedUser, catchAsyncErrors(async (req, res) => {
     try {
         const { productId } = req.params;
-        const { color } = req.query; // Get color from query parameters
-        
-        console.log('🗑️ Removing item from cart:', { productId, color });
-        
-        let updateQuery = { 
-            user: req.user.id,
-            'items.product': productId 
-        };
-        
-        // If color is specified, also match the color
-        if (color) {
-            updateQuery['items.color.name'] = color;
-        }
-        
-        const updatedCart = await Cart.findOneAndUpdate(
-            updateQuery,
-            { 
-                $pull: { 
-                    items: color ? 
-                        { product: productId, 'color.name': color } : 
-                        { product: productId }
+        const { color } = req.query; // optional color name
+
+        const normalizedColor = typeof color === 'string' ? color.trim() : '';
+        console.log('🗑️ Removing item from cart:', { productId, color: normalizedColor });
+
+        // First attempt: remove by product + color (case-insensitive)
+        let updatedCart = null;
+        if (normalizedColor) {
+            updatedCart = await Cart.findOneAndUpdate(
+                {
+                    user: req.user.id,
+                    'items': {
+                        $elemMatch: {
+                            product: productId,
+                            'color.name': { $regex: new RegExp(`^${normalizedColor}$`, 'i') }
+                        }
+                    }
                 },
-                $set: { updatedAt: Date.now() }
-            },
-            { new: true }
-        );
-        
-        if (!updatedCart) {
-            return res.status(404).json({
-                success: false,
-                message: 'Cart or item not found'
-            });
+                {
+                    $pull: { items: { product: productId, 'color.name': { $regex: new RegExp(`^${normalizedColor}$`, 'i') } } },
+                    $set: { updatedAt: Date.now() }
+                },
+                { new: true }
+            );
         }
-        
+
+        // Fallback: remove by product only if color-specific removal didn't match
+        if (!updatedCart) {
+            updatedCart = await Cart.findOneAndUpdate(
+                { user: req.user.id, 'items.product': productId },
+                { $pull: { items: { product: productId } }, $set: { updatedAt: Date.now() } },
+                { new: true }
+            );
+        }
+
+        if (!updatedCart) {
+            return res.status(404).json({ success: false, message: 'Cart or item not found' });
+        }
+
         // Re-fetch minimal cart (no populate) for response
         const freshCart = await Cart.findById(updatedCart._id).select('items').lean();
         const items = (freshCart.items || []).map(item => ({
@@ -438,14 +443,11 @@ router.delete('/remove/:productId', isAuthenticatedUser, catchAsyncErrors(async 
         }));
         const totalAmount = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
         const itemCount = items.reduce((sum, it) => sum + it.quantity, 0);
-        
-        res.status(200).json({ success: true, message: 'Item removed from cart', cart: { items, totalAmount, itemCount } });
+
+        return res.status(200).json({ success: true, message: 'Item removed from cart', cart: { items, totalAmount, itemCount } });
     } catch (error) {
         console.error('Remove from cart error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error removing item from cart'
-        });
+        res.status(500).json({ success: false, message: 'Error removing item from cart' });
     }
 }));
 
