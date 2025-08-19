@@ -538,6 +538,7 @@ productSchema.pre('save', async function(next) {
           console.log(`🗜️ Image ${i} not compressed:`, image.url ? image.url.substring(0, 50) + '...' : 'NO URL');
         }
       }
+      console.log('🗜️ Final images array after compression:', this.images.length, 'images');
     }
     
     // Compress color variant images
@@ -657,11 +658,18 @@ productSchema.post(['find', 'findOne', 'findById'], async function(docs) {
       
       // Decompress image URLs
       if (doc.images && doc.images.length > 0) {
-        for (let image of doc.images) {
+        console.log('🔓 Decompressing images:', doc.images.length, 'images');
+        for (let i = 0; i < doc.images.length; i++) {
+          const image = doc.images[i];
           if (image.url && image.url.startsWith('H4sI')) {
+            console.log(`🔓 Decompressing image ${i}:`, image.url.length, 'characters');
             image.url = await decompressText(image.url);
+            console.log(`🔓 Image ${i} decompressed to:`, image.url.length, 'characters');
+          } else {
+            console.log(`🔓 Image ${i} not compressed:`, image.url ? image.url.substring(0, 50) + '...' : 'NO URL');
           }
         }
+        console.log('🔓 Final images array after decompression:', doc.images.length, 'images');
       }
       
       // Decompress color variant images
