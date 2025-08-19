@@ -32,39 +32,11 @@ class AuthSwitcher {
         return !!(token && user);
     }
 
-    // Switch to customer context (from admin)
-    switchToCustomer() {
-        console.log('🔄 Switching from admin to customer context...');
-        
-        // Store admin context temporarily
-        const adminToken = localStorage.getItem(this.adminTokenKey);
-        const adminUser = localStorage.getItem(this.adminUserKey);
-        
-        if (adminToken && adminUser) {
-            localStorage.setItem('tempAdminToken', adminToken);
-            localStorage.setItem('tempAdminUser', adminUser);
-            console.log('💾 Admin context saved temporarily');
-        }
-        
-        // Clear admin context
-        localStorage.removeItem(this.adminTokenKey);
-        localStorage.removeItem(this.adminUserKey);
-        
-        // Check if customer context exists
-        if (this.isCustomerAuthenticated()) {
-            console.log('✅ Switched to customer context');
-            return true;
-        } else {
-            console.log('⚠️ No customer context found, redirecting to login');
-            return false;
-        }
-    }
-
     // Switch to admin context (from customer)
     switchToAdmin() {
         console.log('🔄 Switching from customer to admin context...');
         
-        // Store customer context temporarily
+        // Store customer context temporarily (but don't clear it)
         const customerToken = localStorage.getItem(this.customerTokenKey);
         const customerUser = localStorage.getItem(this.customerUserKey);
         
@@ -74,16 +46,44 @@ class AuthSwitcher {
             console.log('💾 Customer context saved temporarily');
         }
         
-        // Clear customer context
-        localStorage.removeItem(this.customerTokenKey);
-        localStorage.removeItem(this.customerUserKey);
+        // Don't clear customer context - allow concurrent sessions
+        // localStorage.removeItem(this.customerTokenKey);
+        // localStorage.removeItem(this.customerUserKey);
         
         // Check if admin context exists
         if (this.isAdminAuthenticated()) {
-            console.log('✅ Switched to admin context');
+            console.log('✅ Switched to admin context (customer session preserved)');
             return true;
         } else {
             console.log('⚠️ No admin context found, redirecting to login');
+            return false;
+        }
+    }
+
+    // Switch to customer context (from admin)
+    switchToCustomer() {
+        console.log('🔄 Switching from admin to customer context...');
+        
+        // Store admin context temporarily (but don't clear it)
+        const adminToken = localStorage.getItem(this.adminTokenKey);
+        const adminUser = localStorage.getItem(this.adminUserKey);
+        
+        if (adminToken && adminUser) {
+            localStorage.setItem('tempAdminToken', adminToken);
+            localStorage.setItem('tempAdminUser', adminUser);
+            console.log('💾 Admin context saved temporarily');
+        }
+        
+        // Don't clear admin context - allow concurrent sessions
+        // localStorage.removeItem(this.adminTokenKey);
+        // localStorage.removeItem(this.adminUserKey);
+        
+        // Check if customer context exists
+        if (this.isCustomerAuthenticated()) {
+            console.log('✅ Switched to customer context (admin session preserved)');
+            return true;
+        } else {
+            console.log('⚠️ No customer context found, redirecting to login');
             return false;
         }
     }

@@ -8,6 +8,20 @@ let productsCache = null;
 let lastLoadTime = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// Clear shop page cache
+function clearShopCache() {
+    productsCache = null;
+    lastLoadTime = 0;
+    console.log('🗑️ Cleared shop page cache');
+}
+
+// Force refresh shop products
+async function forceRefreshShopProducts() {
+    console.log('🔄 Force refreshing shop products...');
+    clearShopCache();
+    await loadProductsFromAPI(currentPage, productsPerPage);
+}
+
 // Pagination variables
 let totalPages = 1;
 let totalProducts = 0;
@@ -88,7 +102,9 @@ async function loadProductsFromAPI(page = 1, limit = productsPerPage) {
                 const timeout = timeoutAttempts[i];
                 console.log(`⏱️ Attempt ${i + 1}: Loading products with ${timeout}ms timeout...`);
                 
-                response = await api.getProducts(query, { timeoutMs: timeout });
+                // Add cache-busting parameter
+                const cacheBustQuery = query + (query.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                response = await api.getProducts(cacheBustQuery, { timeoutMs: timeout });
                 const end = performance.now();
                 console.log(`✅ Products API success in ${(end - start).toFixed(0)} ms with ${timeout}ms timeout`);
                 break;
@@ -388,7 +404,9 @@ async function loadAllProductsForFiltering(filterValue, sortValue, searchValue) 
         }
         
         // Load products with maximum allowed limit (20)
-        const response = await api.getProducts('?limit=20');
+        // Add cache-busting parameter
+        const cacheBustQuery = '?limit=20&_t=' + Date.now();
+        const response = await api.getProducts(cacheBustQuery);
         
         if (response.success) {
             const allProducts = response.products || [];
@@ -477,9 +495,30 @@ function renderCurrentPage() {
 
 // Get display price (with discount if applicable)
 function getDisplayPrice(product) {
+    // First check if discountInfo is available and active
     if (product.discountInfo && product.discountInfo.status === 'active') {
         return product.discountInfo.discountPrice;
     }
+    
+    // Fallback: check discount manually with real-time validation
+    if (product.discount > 0) {
+        const now = new Date();
+        let isActive = true;
+        
+        // Check start date
+        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+            isActive = false;
+        }
+        // Check end date
+        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+            isActive = false;
+        }
+        
+        if (isActive) {
+            return Math.round(product.price * (1 - product.discount / 100));
+        }
+    }
+    
     return product.price;
 }
 

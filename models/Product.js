@@ -304,6 +304,14 @@ productSchema.index({ createdAt: -1 });
 productSchema.index({ featured: 1 });
 productSchema.index({ 'colorVariants.isAvailable': 1 });
 
+// Additional indexes for better performance
+productSchema.index({ slug: 1 }); // For slug lookups
+productSchema.index({ tags: 1 }); // For tag searches
+productSchema.index({ price: 1, category: 1 }); // Compound index for filtered searches
+productSchema.index({ isDiscountActive: 1, discount: -1 }); // For discount queries
+productSchema.index({ seoKeywords: 1 }); // For SEO keyword searches
+productSchema.index({ 'specifications.features': 1 }); // For feature-based searches
+
 // Virtual for total stock across all colors
 productSchema.virtual('totalStock').get(function() {
   if (this.colorVariants && this.colorVariants.length > 0) {
@@ -420,10 +428,12 @@ productSchema.methods.getPrimaryImage = function() {
 
 // Method to check if discount is valid
 productSchema.methods.isDiscountValid = function() {
-  if (!this.isDiscountActive || this.discount <= 0) {
+  // First check if there's a discount value
+  if (this.discount <= 0) {
     return false;
   }
   
+  // Check date constraints regardless of isDiscountActive flag
   const now = new Date();
   
   if (this.discountStartDate && now < this.discountStartDate) {
@@ -434,12 +444,35 @@ productSchema.methods.isDiscountValid = function() {
     return false;
   }
   
+  // If we reach here, discount should be active
   return true;
+};
+
+// Method to get current discount status (real-time)
+productSchema.methods.getCurrentDiscountStatus = function() {
+  if (this.discount <= 0) {
+    return 'inactive';
+  }
+  
+  const now = new Date();
+  
+  if (this.discountStartDate && now < this.discountStartDate) {
+    return 'upcoming';
+  }
+  
+  if (this.discountEndDate && now > this.discountEndDate) {
+    return 'expired';
+  }
+  
+  return 'active';
 };
 
 // Method to get formatted discount info
 productSchema.methods.getDiscountInfo = function() {
-  if (!this.isDiscountValid()) {
+  // Use real-time status checking instead of relying on isDiscountActive
+  const currentStatus = this.getCurrentDiscountStatus();
+  
+  if (currentStatus !== 'active') {
     return null;
   }
   
@@ -450,7 +483,7 @@ productSchema.methods.getDiscountInfo = function() {
     discountPrice: this.discountPrice,
     savings: this.discountSavings,
     timeRemaining: this.discountTimeRemaining,
-    status: this.discountStatus
+    status: currentStatus
   };
 };
 
@@ -520,6 +553,47 @@ productSchema.pre('save', async function(next) {
     console.error('❌ Pre-save compression error:', error);
     next(error);
   }
+});
+
+// Pre-save middleware for stock calculation
+productSchema.pre('save', function(next) {
+  // Ensure stock is calculated from colorVariants if available
+  if (this.colorVariants && this.colorVariants.length > 0) {
+    const calculatedStock = this.colorVariants.reduce((sum, variant) => {
+      return sum + (parseInt(variant.stock) || 0);
+    }, 0);
+    this.stock = calculatedStock;
+    console.log('📦 Pre-save stock calculation:', {
+      colorVariants: this.colorVariants.map(v => ({ name: v.name, stock: v.stock })),
+      calculatedStock: calculatedStock
+    });
+  }
+  next();
+});
+
+// Post-find middleware to ensure stock consistency
+productSchema.post(['find', 'findOne', 'findById'], function(docs) {
+  if (!docs) return;
+  
+  const documents = Array.isArray(docs) ? docs : [docs];
+  
+  documents.forEach(doc => {
+    if (doc.colorVariants && doc.colorVariants.length > 0) {
+      const calculatedStock = doc.colorVariants.reduce((sum, variant) => {
+        return sum + (parseInt(variant.stock) || 0);
+      }, 0);
+      
+      // Only update if there's a mismatch
+      if (doc.stock !== calculatedStock) {
+        console.log('📦 Post-find stock correction:', {
+          product: doc.name,
+          oldStock: doc.stock,
+          newStock: calculatedStock
+        });
+        doc.stock = calculatedStock;
+      }
+    }
+  });
 });
 
 // Pre-save middleware for SEO optimization

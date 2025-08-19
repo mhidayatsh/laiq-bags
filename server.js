@@ -74,11 +74,12 @@ app.use(helmet({
         "https://js.razorpay.com",
         "https://js.stripe.com",
         "https://code.jquery.com",
-        "https://cdnjs.cloudflare.com"
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net"
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "https://images.unsplash.com", "https://randomuser.me", "https://via.placeholder.com"],
       frameSrc: [
         "'self'",
         "https://checkout.razorpay.com",
@@ -215,11 +216,24 @@ if (process.env.NODE_ENV === 'development') {
   }));
 
   // Serve favicon to avoid 404s
-  app.get('/favicon.ico', (req, res) => {
-    const iconPath = path.join(__dirname, 'assets', 'laiq-logo.png');
-    res.type('image/png');
+app.get('/favicon.ico', (req, res) => {
+  const iconPath = path.join(__dirname, 'favicon.ico');
+  if (fs.existsSync(iconPath)) {
+    res.type('image/x-icon');
     res.sendFile(iconPath);
-  });
+  } else {
+    // Fallback to logo if favicon doesn't exist
+    const logoPath = path.join(__dirname, 'assets', 'laiq-logo.png');
+    if (fs.existsSync(logoPath)) {
+      res.type('image/png');
+      res.sendFile(logoPath);
+    } else {
+      // Send a simple 1x1 transparent PNG as last resort
+      res.type('image/png');
+      res.send(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
+    }
+  }
+});
   
   // Serve HTML files properly
   app.get('*.html', (req, res) => {
@@ -284,15 +298,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// Root health check endpoint for Render
+// Root route - serve the main website
 app.get('/', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'Laiq Bags E-commerce API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || 'not set'
-  });
+  const indexPath = path.join(__dirname, 'index.html');
+  console.log('🏠 Serving main website:', indexPath);
+  
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // Fallback to JSON if index.html doesn't exist
+    res.json({
+      status: 'OK',
+      message: 'Laiq Bags E-commerce API is running',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 'not set'
+    });
+  }
 });
 
 // Health check endpoint
@@ -337,24 +359,76 @@ app.post('/api/newsletter/subscribe', validateInput, (req, res) => {
 // Public settings endpoint
 app.get('/api/settings', async (req, res) => {
   try {
+    console.log('🔍 Public settings request received');
+    
+    // Add cache control headers to prevent caching
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
     const Settings = require('./models/Settings');
-    const settings = await Settings.getSettings();
+    
+    // Get settings from database or return defaults
+    let settings = await Settings.findOne();
+    if (!settings) {
+      // Return default settings without creating in database
+      settings = {
+        websiteName: 'Laiq Bags',
+        websiteDescription: 'Premium bags and accessories',
+        contactEmail: 'info@laiqbags.com',
+        contactPhone: '+91 98765 43210',
+        whatsappNumber: '+91 99999 99999',
+        instagramHandle: '@laiq_bags_',
+        address: 'Mumbai, Maharashtra, India',
+        socialMedia: {
+          facebook: '',
+          instagram: '',
+          twitter: ''
+        },
+        theme: {
+          primaryColor: '#d4af37',
+          secondaryColor: '#f5f5dc'
+        }
+      };
+    } else {
+      // Ensure the settings object has the required fields
+      const settingsObj = settings.toObject ? settings.toObject() : settings;
+      settings = {
+        ...settingsObj,
+        whatsappNumber: settingsObj.whatsappNumber || '+91 99999 99999',
+        instagramHandle: settingsObj.instagramHandle || '@laiq_bags_'
+      };
+    }
+    
+    // Always ensure these fields are present in the response
+    const responseSettings = {
+      websiteName: settings.websiteName || 'Laiq Bags',
+      websiteDescription: settings.websiteDescription || 'Premium bags and accessories',
+      contactEmail: settings.contactEmail || 'info@laiqbags.com',
+      contactPhone: settings.contactPhone || '+91 98765 43210',
+      whatsappNumber: settings.whatsappNumber || '+91 99999 99999',
+      instagramHandle: settings.instagramHandle || '@laiq_bags_',
+      address: settings.address || 'Mumbai, Maharashtra, India',
+      socialMedia: settings.socialMedia || {},
+      theme: settings.theme || {
+        primaryColor: '#d4af37',
+        secondaryColor: '#f5f5dc'
+      }
+    };
+    
+    console.log('📤 Sending settings response with whatsappNumber:', responseSettings.whatsappNumber, 'and instagramHandle:', responseSettings.instagramHandle);
     
     res.status(200).json({
       success: true,
-      settings: {
-        websiteName: settings.websiteName,
-        contactEmail: settings.contactEmail,
-        instagramHandle: settings.instagramHandle,
-        whatsappNumber: settings.whatsappNumber,
-        address: settings.address
-      }
+      settings: responseSettings
     });
   } catch (error) {
-    console.error('Get settings error:', error);
+    console.error('❌ Error fetching settings:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching settings'
+      message: 'Error fetching settings',
+      error: error.message
     });
   }
 });
@@ -477,7 +551,13 @@ const startHttpsServer = (port) => {
   }
 };
 
-// Start servers function
+// Start HTTP server only (for development)
+const startHttpServer = () => {
+  startServer(PORT);
+  console.log(`🚀 Development HTTP server running on port ${PORT}`);
+};
+
+// Start servers function (for production)
 function startServers() {
   if (process.env.NODE_ENV === 'production') {
     startServer(PORT);
@@ -560,10 +640,8 @@ function connectWithRetry() {
       retryCount = 0;
     });
     
-    // Start servers after successful connection (only in development)
-    if (process.env.NODE_ENV !== 'production') {
-      startServers();
-    }
+    // MongoDB connection established successfully
+    console.log('✅ MongoDB ready for database operations');
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
@@ -589,6 +667,7 @@ if (process.env.NODE_ENV === 'production') {
   startServers();
   connectWithRetry();
 } else {
-  // In development, wait for MongoDB connection before starting server
+  // In development, start HTTP server immediately and connect to MongoDB in background
+  startHttpServer();
   connectWithRetry();
 }

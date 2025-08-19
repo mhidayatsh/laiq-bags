@@ -61,11 +61,18 @@ async function checkAdminAuth() {
     console.log('🔑 Admin token exists:', !!token);
     console.log('👤 Admin user data exists:', !!user);
     
+    // Check if customer is also logged in
+    const customerToken = localStorage.getItem('customerToken');
+    const customerUser = localStorage.getItem('customerUser');
+    
+    if (customerToken && customerUser) {
+        console.log('⚠️ Customer session detected alongside admin session');
+        // Show warning to user about concurrent sessions
+        showConcurrentSessionWarning();
+    }
+    
     // If no admin token, check for customer token (might be logged in as customer)
     if (!token) {
-        const customerToken = localStorage.getItem('customerToken');
-        const customerUser = localStorage.getItem('customerUser');
-        
         console.log('🔑 Customer token exists:', !!customerToken);
         console.log('👤 Customer user data exists:', !!customerUser);
         
@@ -103,70 +110,10 @@ async function checkAdminAuth() {
                 }
             } catch (error) {
                 console.error('❌ Error parsing customer data:', error);
+                return false;
             }
-        }
-    }
-    
-    if (!token) {
-        console.error('❌ No admin token found');
-        
-        // Show login button instead of auto-redirect
-        const welcomeElement = document.getElementById('admin-welcome');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        
-        if (welcomeElement) {
-            welcomeElement.textContent = 'Please login as admin';
-        }
-        
-        if (loginBtn) {
-            loginBtn.style.display = 'inline-block';
-            loginBtn.onclick = () => window.location.href = 'admin-login.html';
-        }
-        
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        
-        showToast('Please login as admin to access this panel', 'error');
-        return false;
-    }
-    
-    // If token exists but user data is missing, try to recover from token or API
-    if (!user) {
-        console.warn('⚠️ No admin user data found. Attempting recovery from token/API...');
-        // Try decoding JWT payload first (fast path)
-        try {
-            const payloadBase64 = token.split('.')[1];
-            const payloadJson = JSON.parse(atob(payloadBase64));
-            if (payloadJson && payloadJson.role === 'admin') {
-                const minimalUser = {
-                    _id: payloadJson.id || payloadJson._id || '',
-                    name: payloadJson.name || 'Admin',
-                    email: payloadJson.email || '',
-                    role: payloadJson.role || 'admin'
-                };
-                localStorage.setItem('user', JSON.stringify(minimalUser));
-                console.log('✅ Rehydrated admin user from token payload');
-            } else {
-                console.warn('⚠️ Token payload role is not admin or missing.');
-            }
-        } catch (e) {
-            console.warn('⚠️ JWT decode failed, will try /auth/me:', e.message);
-        }
-
-        // If still no user in storage, try fetching profile
-        if (!localStorage.getItem('user')) {
-            try {
-                const me = await api.getProfile();
-                if (me && me.success && me.user && me.user.role === 'admin') {
-                    localStorage.setItem('user', JSON.stringify(me.user));
-                    console.log('✅ Loaded admin user via /auth/me');
-                }
-            } catch (_) {
-                // ignore; handled below
-            }
-        }
-
-        if (!localStorage.getItem('user')) {
+        } else {
+            console.log('❌ No authentication found');
             showToast('Please login as admin to access this panel', 'error');
             
             // Show login button
@@ -189,97 +136,75 @@ async function checkAdminAuth() {
         }
     }
     
-    try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        console.log('👤 Parsed user data:', userData);
-        
-        if (!userData.role) {
-            console.error('❌ User role not found');
-            showToast('Authentication error. Please login again.', 'error');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+    // If we have admin token, verify it's valid
+    if (token && user) {
+        try {
+            const userData = JSON.parse(user);
+            console.log('✅ Admin authentication verified:', userData.email);
             
-            // Show login button
+            // Update UI to show admin is logged in
             const welcomeElement = document.getElementById('admin-welcome');
             const loginBtn = document.getElementById('login-btn');
             const logoutBtn = document.getElementById('logout-btn');
             
             if (welcomeElement) {
-                welcomeElement.textContent = 'Please login as admin';
+                welcomeElement.textContent = `Welcome, ${userData.name || 'Admin'}!`;
             }
             
-            if (loginBtn) {
-                loginBtn.style.display = 'inline-block';
-                loginBtn.onclick = () => window.location.href = 'admin-login.html';
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (logoutBtn) {
+                logoutBtn.style.display = 'inline-block';
+                logoutBtn.onclick = logout;
             }
             
-            if (logoutBtn) logoutBtn.style.display = 'none';
-            
+            return true;
+        } catch (error) {
+            console.error('❌ Error parsing admin user data:', error);
             return false;
         }
-        
-        if (userData.role !== 'admin') {
-            console.error('❌ User is not admin:', userData.role);
-            showToast('Access denied. Admin role required.', 'error');
-            
-            // Show login button
-            const welcomeElement = document.getElementById('admin-welcome');
-            const loginBtn = document.getElementById('login-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            
-            if (welcomeElement) {
-                welcomeElement.textContent = 'Please login as admin';
-            }
-            
-            if (loginBtn) {
-                loginBtn.style.display = 'inline-block';
-                loginBtn.onclick = () => window.location.href = 'admin-login.html';
-            }
-            
-            if (logoutBtn) logoutBtn.style.display = 'none';
-            
-            return false;
-        }
-        
-        console.log('✅ Admin authentication successful:', userData.email);
-        
-        // Update welcome message
-        const welcomeElement = document.getElementById('admin-welcome');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        
-        if (welcomeElement) {
-            welcomeElement.textContent = `Welcome, ${userData.name || 'Admin'}`;
-        }
-        
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'inline-block';
-        
-        return true;
-    } catch (error) {
-        console.error('❌ Error parsing user data:', error);
-        showToast('Authentication error. Please login again.', 'error');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        
-        // Show login button
-        const welcomeElement = document.getElementById('admin-welcome');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        
-        if (welcomeElement) {
-            welcomeElement.textContent = 'Please login as admin';
-        }
-        
-        if (loginBtn) {
-            loginBtn.style.display = 'inline-block';
-            loginBtn.onclick = () => window.location.href = 'admin-login.html';
-        }
-        
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        
-        return false;
     }
+    
+    return false;
+}
+
+// Show warning about concurrent sessions
+function showConcurrentSessionWarning() {
+    // Check if warning already shown
+    if (localStorage.getItem('concurrentSessionWarningShown')) {
+        return;
+    }
+    
+    // Create warning modal
+    const warningModal = document.createElement('div');
+    warningModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    warningModal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+            <div class="flex items-center mb-4">
+                <svg class="w-6 h-6 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-900">Session Notice</h3>
+            </div>
+            <p class="text-gray-600 mb-4">
+                You have both customer and admin sessions active. This is now supported and both sessions will be preserved.
+            </p>
+            <div class="flex justify-end">
+                <button onclick="this.closest('.fixed').remove(); localStorage.setItem('concurrentSessionWarningShown', 'true');" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Got it
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(warningModal);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (warningModal.parentNode) {
+            warningModal.remove();
+        }
+    }, 10000);
 }
 
 // Initialize admin panel
@@ -295,6 +220,28 @@ document.addEventListener('DOMContentLoaded', async function() {
     window.reloadProducts = () => {
         loadProducts();
     };
+    
+    // Force refresh admin dashboard data
+    async function refreshAdminData() {
+        try {
+            console.log('🔄 Refreshing admin dashboard data...');
+            
+            // Clear API cache first
+            if (api && typeof api.clearProductCache === 'function') {
+                api.clearProductCache();
+            }
+            
+            // Reload products and discounts
+            await Promise.all([
+                loadProducts(),
+                loadDiscounts()
+            ]);
+            
+            console.log('✅ Admin dashboard data refreshed');
+        } catch (error) {
+            console.error('❌ Error refreshing admin data:', error);
+        }
+    }
     
     // Check authentication
     if (!(await checkAdminAuth())) return;
@@ -417,13 +364,16 @@ function initializeNavigation() {
     // Logout button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'admin-login.html';
-            }
-        });
+        logoutBtn.addEventListener('click', logout);
+    }
+}
+
+// Logout function
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'admin-login.html';
     }
 }
 
@@ -2993,6 +2943,9 @@ async function saveSettings(e) {
             // Update frontend immediately
             updateFrontendWithSettings(settingsData);
             
+            // Force refresh settings on all open pages
+            forceRefreshSettingsOnAllPages(settingsData);
+            
             console.log('✅ Settings saved and frontend updated');
         } else {
             showToast('Failed to save settings', 'error');
@@ -3036,6 +2989,28 @@ function updateFrontendWithSettings(settings) {
     });
     
     console.log('✅ Frontend updated with new settings');
+}
+
+// Force refresh settings on all open pages
+function forceRefreshSettingsOnAllPages(settings) {
+    console.log('🔄 Broadcasting settings update to all open pages...');
+    
+    // Use localStorage to communicate with other tabs/pages
+    const settingsUpdate = {
+        timestamp: Date.now(),
+        settings: settings,
+        action: 'refresh_settings'
+    };
+    
+    // Store the update in localStorage
+    localStorage.setItem('settingsUpdate', JSON.stringify(settingsUpdate));
+    
+    // Dispatch a custom event to notify other tabs
+    window.dispatchEvent(new CustomEvent('settingsUpdated', {
+        detail: settingsUpdate
+    }));
+    
+    console.log('✅ Settings update broadcasted');
 }
 
 // Show toast notification
@@ -4083,15 +4058,34 @@ async function loadDiscounts() {
         const response = await api.getAdminProducts({ page: 1, limit: 100 });
         const allProducts = response.products || [];
         
-        // Filter products with active discounts - more robust logic
+        // Filter products with active discounts using real-time validation
         discounts = allProducts.filter(product => {
             const hasDiscount = product.discount && product.discount > 0;
-            const isActive = product.isDiscountActive === true || product.isDiscountActive === undefined; // Default to true if undefined
-            const notExpired = !product.discountEndDate || new Date(product.discountEndDate) > new Date();
             
-            console.log(`🔍 Product: ${product.name}, Discount: ${product.discount}, Active: ${product.isDiscountActive}, Expired: ${!notExpired}`);
+            if (!hasDiscount) {
+                console.log(`🔍 Product: ${product.name}, Discount: ${product.discount} - No discount`);
+                return false;
+            }
             
-            return hasDiscount && isActive && notExpired;
+            // Use real-time validation instead of relying on isDiscountActive flag
+            const now = new Date();
+            let isActive = true;
+            let reason = '';
+            
+            // Check start date
+            if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+                isActive = false;
+                reason = 'Discount not started yet';
+            }
+            // Check end date
+            else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+                isActive = false;
+                reason = 'Discount expired';
+            }
+            
+            console.log(`🔍 Product: ${product.name}, Discount: ${product.discount}%, Active: ${isActive}${reason ? ` (${reason})` : ''}`);
+            
+            return isActive;
         });
         
         renderDiscountsTable();

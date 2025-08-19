@@ -214,7 +214,14 @@ router.get('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
                 featured: product.featured,
                 bestSeller: product.bestSeller,
                 newArrival: product.newArrival,
-                createdAt: product.createdAt
+                createdAt: product.createdAt,
+                // Include discount fields
+                discount: product.discount,
+                discountType: product.discountType,
+                discountStartDate: product.discountStartDate,
+                discountEndDate: product.discountEndDate,
+                isDiscountActive: product.isDiscountActive,
+                discountInfo: product.discountInfo
             }))
         };
         console.log('✅ Admin products response:', { 
@@ -307,6 +314,23 @@ router.post('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async 
         const product = await Product.create(productData);
         
         console.log('✅ Product created successfully:', product._id);
+        
+        // Clear server-side cache for products
+        try {
+            // Clear products cache if it exists
+            if (global.productsCache) {
+                global.productsCache.clear();
+                console.log('🗑️ Cleared server-side products cache');
+            }
+            
+            // Clear admin products cache if it exists
+            if (global.adminProductsCache) {
+                global.adminProductsCache.clear();
+                console.log('🗑️ Cleared server-side admin products cache');
+            }
+        } catch (cacheError) {
+            console.warn('⚠️ Error clearing cache:', cacheError);
+        }
         
         res.status(201).json({
             success: true,
@@ -428,6 +452,23 @@ router.put('/products/:id', adminAuth, catchAsyncErrors(async (req, res) => {
         
         console.log('✅ Product updated successfully:', product._id);
         
+        // Clear server-side cache for products
+        try {
+            // Clear products cache if it exists
+            if (global.productsCache) {
+                global.productsCache.clear();
+                console.log('🗑️ Cleared server-side products cache');
+            }
+            
+            // Clear admin products cache if it exists
+            if (global.adminProductsCache) {
+                global.adminProductsCache.clear();
+                console.log('🗑️ Cleared server-side admin products cache');
+            }
+        } catch (cacheError) {
+            console.warn('⚠️ Error clearing cache:', cacheError);
+        }
+        
         res.status(200).json({
             success: true,
             product
@@ -478,6 +519,23 @@ router.delete('/products/:id', isAuthenticatedUser, adminOnly, catchAsyncErrors(
         }
         
         await product.deleteOne();
+        
+        // Clear server-side cache for products
+        try {
+            // Clear products cache if it exists
+            if (global.productsCache) {
+                global.productsCache.clear();
+                console.log('🗑️ Cleared server-side products cache');
+            }
+            
+            // Clear admin products cache if it exists
+            if (global.adminProductsCache) {
+                global.adminProductsCache.clear();
+                console.log('🗑️ Cleared server-side admin products cache');
+            }
+        } catch (cacheError) {
+            console.warn('⚠️ Error clearing cache:', cacheError);
+        }
         
         res.status(200).json({
             success: true,
@@ -1001,51 +1059,86 @@ router.get('/analytics', isAuthenticatedUser, adminOnly, catchAsyncErrors(async 
     }
 }));
 
-// Get website settings (admin)
-router.get('/settings', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (req, res) => {
+// Get website settings
+router.get('/settings', catchAsyncErrors(async (req, res) => {
     try {
-        const settings = await Settings.getSettings();
+        console.log('🔍 Settings request received');
+        
+        // Add cache control headers to prevent caching
+        res.set({
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        });
+        
+        // Get settings from database or return defaults
+        let settings = await Settings.findOne();
+        
+        if (!settings) {
+            // Create default settings if none exist
+            settings = new Settings({
+                websiteName: 'Laiq Bags',
+                websiteDescription: 'Premium bags and accessories',
+                contactEmail: 'info@laiqbags.com',
+                contactPhone: '+91 98765 43210',
+                address: 'Mumbai, Maharashtra, India',
+                socialMedia: {
+                    facebook: '',
+                    instagram: '',
+                    twitter: ''
+                },
+                theme: {
+                    primaryColor: '#d4af37',
+                    secondaryColor: '#f5f5dc'
+                }
+            });
+            await settings.save();
+            console.log('✅ Default settings created');
+        }
         
         res.status(200).json({
             success: true,
-            settings
+            settings: {
+                websiteName: settings.websiteName || 'Laiq Bags',
+                websiteDescription: settings.websiteDescription || 'Premium bags and accessories',
+                contactEmail: settings.contactEmail || 'info@laiqbags.com',
+                contactPhone: settings.contactPhone || '+91 98765 43210',
+                whatsappNumber: settings.whatsappNumber || '+91 99999 99999',
+                instagramHandle: settings.instagramHandle || '@laiq_bags_',
+                address: settings.address || 'Mumbai, Maharashtra, India',
+                socialMedia: settings.socialMedia || {},
+                theme: settings.theme || {
+                    primaryColor: '#d4af37',
+                    secondaryColor: '#f5f5dc'
+                }
+            }
         });
     } catch (error) {
-        console.error('Get settings error:', error);
+        console.error('❌ Error fetching settings:', error);
         res.status(500).json({
             success: false,
-            message: 'Error fetching settings'
+            message: 'Error fetching settings',
+            error: error.message
         });
     }
 }));
 
-// Update website settings (admin)
-router.put('/settings', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (req, res) => {
+// Update website settings
+router.put('/settings', adminAuth, catchAsyncErrors(async (req, res) => {
     try {
-        const { websiteName, contactEmail, instagramHandle, whatsappNumber, address } = req.body;
+        console.log('🔍 Update settings request received:', req.body);
         
         let settings = await Settings.findOne();
+        
         if (!settings) {
-            // Create new settings if none exist
-            settings = new Settings({
-                websiteName,
-                contactEmail,
-                instagramHandle,
-                whatsappNumber,
-                address,
-                updatedBy: req.user._id
-            });
-        } else {
-            // Update existing settings
-            settings.websiteName = websiteName;
-            settings.contactEmail = contactEmail;
-            settings.instagramHandle = instagramHandle;
-            settings.whatsappNumber = whatsappNumber;
-            settings.address = address;
-            settings.updatedBy = req.user._id;
+            settings = new Settings();
         }
         
+        // Update settings with provided data
+        Object.assign(settings, req.body);
         await settings.save();
+        
+        console.log('✅ Settings updated successfully');
         
         res.status(200).json({
             success: true,
@@ -1053,10 +1146,11 @@ router.put('/settings', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
             settings
         });
     } catch (error) {
-        console.error('Update settings error:', error);
+        console.error('❌ Error updating settings:', error);
         res.status(500).json({
             success: false,
-            message: 'Error updating settings'
+            message: 'Error updating settings',
+            error: error.message
         });
     }
 }));

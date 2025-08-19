@@ -1,5 +1,5 @@
 {
-  "name": "laiq-bags-backend",
+  "name": "claiq-bags-backend",
   "version": "1.0.0",
   "description": "Backend API for Laiq Bags e-commerce website",
   "main": "server.js",
@@ -31,6 +31,7 @@
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.16",
+    "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
@@ -47,6 +48,7 @@
     "rate-limit-redis": "^4.2.1",
     "razorpay": "^2.9.6",
     "redis": "^5.7.0",
+    "sharp": "^0.33.5",
     "stripe": "^13.11.0",
     "ua-parser-js": "^2.0.4"
   },

@@ -79,9 +79,30 @@ function loadLocalFeaturedProducts() {
 
 // Get display price (with discount if applicable)
 function getDisplayPrice(product) {
+    // First check if discountInfo is available and active
     if (product.discountInfo && product.discountInfo.status === 'active') {
         return product.discountInfo.discountPrice;
     }
+    
+    // Fallback: check discount manually with real-time validation
+    if (product.discount > 0) {
+        const now = new Date();
+        let isActive = true;
+        
+        // Check start date
+        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+            isActive = false;
+        }
+        // Check end date
+        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+            isActive = false;
+        }
+        
+        if (isActive) {
+            return Math.round(product.price * (1 - product.discount / 100));
+        }
+    }
+    
     return product.price;
 }
 

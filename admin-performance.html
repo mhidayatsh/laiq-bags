@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Dashboard - LAIQ BAGS Admin</title>
+    <link href="css/styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .performance-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .performance-table th,
+        .performance-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .performance-table th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        .status-good { color: #10b981; }
+        .status-warning { color: #f59e0b; }
+        .status-error { color: #ef4444; }
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center">
+                        <img src="assets/laiq-logo.png" alt="LAIQ BAGS" class="h-8 w-auto">
+                        <h1 class="ml-3 text-xl font-semibold text-gray-900">Performance Dashboard</h1>
+                    </div>
+                                <div class="flex items-center space-x-4">
+                <button id="refreshBtn" class="refresh-btn">🔄 Refresh Data</button>
+                <a href="admin-login.html" class="text-blue-600 hover:text-blue-800 font-semibold">🔐 Login</a>
+                <a href="admin.html" class="text-gray-600 hover:text-gray-900">← Back to Admin</a>
+            </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading">
+                <div class="text-2xl mb-4">⏳</div>
+                <p>Loading performance data...</p>
+            </div>
+
+            <!-- Performance Data -->
+            <div id="performanceData" class="hidden">
+                <!-- Key Metrics -->
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="uptimeValue">--</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="requestsValue">--</div>
+                        <div class="metric-label">Total Requests</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="rpsValue">--</div>
+                        <div class="metric-label">Requests/Second</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="errorRateValue">--</div>
+                        <div class="metric-label">Error Rate</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold mb-4">Top Endpoints</h3>
+                        <canvas id="endpointsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="text-lg font-semibold mb-4">Database Performance</h3>
+                        <canvas id="dbChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Slow Queries -->
+                <div class="table-container">
+                    <h3 class="text-lg font-semibold mb-4">Slow Queries (>1s)</h3>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th>Duration</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slowQueriesTable">
+                            <tr>
+                                <td colspan="3" class="text-center text-gray-500">No slow queries detected</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Top Endpoints Table -->
+                <div class="table-container">
+                    <h3 class="text-lg font-semibold mb-4">Top Endpoints by Request Count</h3>
+                    <table class="performance-table">
+                        <thead>
+                            <tr>
+                                <th>Endpoint</th>
+                                <th>Requests</th>
+                                <th>Avg Duration</th>
+                                <th>Errors</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="endpointsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="hidden">
+                <div class="text-center py-12">
+                    <div class="text-6xl mb-4">❌</div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Failed to Load Performance Data</h2>
+                    <p class="text-gray-600 mb-6" id="errorMessage">Please check your admin authentication and try again.</p>
+                    <button onclick="loadPerformanceData()" class="refresh-btn">Try Again</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        let endpointsChart, dbChart;
+
+        // Load performance data
+        async function loadPerformanceData() {
+            const loadingState = document.getElementById('loadingState');
+            const performanceData = document.getElementById('performanceData');
+            const errorState = document.getElementById('errorState');
+
+            loadingState.classList.remove('hidden');
+            performanceData.classList.add('hidden');
+            errorState.classList.add('hidden');
+
+            try {
+                // Check if admin is logged in - try multiple token sources
+                let token = localStorage.getItem('adminToken') || 
+                           localStorage.getItem('token') || 
+                           sessionStorage.getItem('adminToken') || 
+                           sessionStorage.getItem('token');
+                
+                if (!token) {
+                    throw new Error('Admin not authenticated. Please login first.');
+                }
+
+                const response = await fetch('/api/products/performance/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Admin authentication required. Please login to admin panel first. Click the "Login" button above.');
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to load performance data');
+                }
+
+                displayPerformanceData(data.performance);
+                
+                loadingState.classList.add('hidden');
+                performanceData.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Performance data error:', error);
+                document.getElementById('errorMessage').textContent = error.message;
+                
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+            }
+        }
+
+        // Display performance data
+        function displayPerformanceData(performance) {
+            const { summary, topEndpoints, slowQueries, database } = performance;
+
+            // Update key metrics
+            document.getElementById('uptimeValue').textContent = formatUptime(summary.uptime);
+            document.getElementById('requestsValue').textContent = summary.requests.total.toLocaleString();
+            document.getElementById('rpsValue').textContent = summary.requests.perSecond;
+            document.getElementById('errorRateValue').textContent = summary.requests.errorRate;
+
+            // Update charts
+            updateEndpointsChart(topEndpoints);
+            updateDbChart(database);
+
+            // Update tables
+            updateSlowQueriesTable(slowQueries);
+            updateEndpointsTable(topEndpoints);
+        }
+
+        // Format uptime
+        function formatUptime(uptime) {
+            if (uptime.hours > 0) {
+                return `${uptime.hours}h ${uptime.minutes}m`;
+            } else if (uptime.minutes > 0) {
+                return `${uptime.minutes}m ${uptime.seconds}s`;
+            } else {
+                return `${uptime.seconds}s`;
+            }
+        }
+
+        // Update endpoints chart
+        function updateEndpointsChart(endpoints) {
+            const ctx = document.getElementById('endpointsChart').getContext('2d');
+            
+            if (endpointsChart) {
+                endpointsChart.destroy();
+            }
+
+            const labels = endpoints.slice(0, 8).map(e => e.endpoint.replace('GET /api/products', 'Products').replace('POST /api/products', 'Create Product'));
+            const data = endpoints.slice(0, 8).map(e => e.count);
+
+            endpointsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Requests',
+                        data: data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update database chart
+        function updateDbChart(dbMetrics) {
+            const ctx = document.getElementById('dbChart').getContext('2d');
+            
+            if (dbChart) {
+                dbChart.destroy();
+            }
+
+            const labels = dbMetrics.slice(0, 6).map(m => m.operation.replace('DB:products:', ''));
+            const data = dbMetrics.slice(0, 6).map(m => m.avgDuration);
+
+            dbChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#8b5cf6',
+                            '#06b6d4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update slow queries table
+        function updateSlowQueriesTable(slowQueries) {
+            const tbody = document.getElementById('slowQueriesTable');
+            
+            if (slowQueries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500">No slow queries detected</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = slowQueries.map(query => `
+                <tr>
+                    <td>${query.operation}</td>
+                    <td class="status-error">${query.duration}ms</td>
+                    <td>${new Date(query.timestamp).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update endpoints table
+        function updateEndpointsTable(endpoints) {
+            const tbody = document.getElementById('endpointsTable');
+            
+            tbody.innerHTML = endpoints.map(endpoint => {
+                const status = endpoint.errorCount === 0 ? 'status-good' : 
+                              endpoint.errorCount < 5 ? 'status-warning' : 'status-error';
+                const statusText = endpoint.errorCount === 0 ? '✅ Good' : 
+                                  endpoint.errorCount < 5 ? '⚠️ Warning' : '❌ Error';
+                
+                return `
+                    <tr>
+                        <td>${endpoint.endpoint}</td>
+                        <td>${endpoint.count.toLocaleString()}</td>
+                        <td>${endpoint.avgDuration.toFixed(2)}ms</td>
+                        <td>${endpoint.errorCount}</td>
+                        <td class="${status}">${statusText}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Event listeners
+        document.getElementById('refreshBtn').addEventListener('click', loadPerformanceData);
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadPerformanceData, 30000);
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if we have a token in URL (from login redirect)
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (token) {
+                // Store the token and remove from URL
+                localStorage.setItem('adminToken', token);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            loadPerformanceData();
+        });
+    </script>
+</body>
+</html>

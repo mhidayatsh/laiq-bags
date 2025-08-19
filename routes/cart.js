@@ -187,9 +187,25 @@ router.post('/add', isAuthenticatedUser, cartLimiter, catchAsyncErrors(async (re
             }
         }
         
-        // Calculate final price with discount
-        const finalPrice = product.discount > 0 && product.isDiscountActive ? 
-            product.price * (1 - product.discount / 100) : product.price;
+        // Calculate final price with discount (real-time validation)
+        let finalPrice = product.price;
+        if (product.discount > 0) {
+          const now = new Date();
+          let isActive = true;
+          
+          // Check start date
+          if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+            isActive = false;
+          }
+          // Check end date
+          else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+            isActive = false;
+          }
+          
+          if (isActive) {
+            finalPrice = product.price * (1 - product.discount / 100);
+          }
+        }
         
         console.log('💰 Price calculation:', {
             originalPrice: product.price,

@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
+const { productLimiter } = require('../middleware/rateLimiter');
+const { performanceMonitor } = require('../utils/performanceMonitor');
+const cacheManager = require('../utils/cache');
 
 const router = express.Router();
 
@@ -26,7 +29,24 @@ const withTimeout = (promise, ms, label = 'operation') => {
 };
 
 // Get all products => /api/products
-router.get('/', async (req, res) => {
+router.get('/', productLimiter, async (req, res) => {
+  // Check if this is a cache-busting request
+  const isCacheBusting = req.query._t || req.query.timestamp;
+  
+  if (isCacheBusting) {
+    // Disable caching for cache-busting requests
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  } else {
+    // Add cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+    res.set('ETag', `products-${Date.now()}`);
+  }
+  
+  // Start performance monitoring
+  const timer = performanceMonitor.startTimer('get-all-products');
+  
   try {
     // If identical request was served recently, return quickly
     // Cache key from querystring
@@ -174,6 +194,7 @@ router.get('/', async (req, res) => {
           material: 1,
           size: 1,
           colors: 1,
+          stock: 1,
           featured: 1,
           bestSeller: 1,
           newArrival: 1,
@@ -244,37 +265,50 @@ router.get('/', async (req, res) => {
     // Add discount info and ensure images array shape expected by client
     const productsWithDiscount = products.map(product => {
       let discountInfo = null;
-      if (product.isDiscountActive && product.discount > 0) {
-        const discountPrice = Math.round(product.price - (product.price * product.discount / 100));
-        let status = 'active';
+      
+      // Use real-time discount validation instead of relying on isDiscountActive
+      if (product.discount > 0) {
         const now = new Date();
+        let status = 'active';
+        
+        // Check start date
         if (product.discountStartDate && now < new Date(product.discountStartDate)) {
           status = 'upcoming';
-        } else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+        } 
+        // Check end date
+        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
           status = 'expired';
         }
-        // Compute timeRemaining for countdowns
-        let timeRemaining = null;
-        if (product.discountEndDate) {
-          const endDate = new Date(product.discountEndDate);
-          const diff = endDate - now;
-          if (diff > 0) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            timeRemaining = { days, hours, minutes };
+        
+        // Only provide discount info if status is active
+        if (status === 'active') {
+          const discountPrice = Math.round(product.price - (product.price * product.discount / 100));
+          
+          // Compute timeRemaining for countdowns
+          let timeRemaining = null;
+          if (product.discountEndDate) {
+            const endDate = new Date(product.discountEndDate);
+            const diff = endDate - now;
+            if (diff > 0) {
+              const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+              const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              timeRemaining = { days, hours, minutes };
+            }
           }
+          
+          discountInfo = {
+            type: 'percentage',
+            value: `${product.discount}%`,
+            originalPrice: product.price,
+            discountPrice,
+            savings: Math.round(product.price * product.discount / 100),
+            status,
+            timeRemaining
+          };
         }
-        discountInfo = {
-          type: 'percentage',
-          value: `${product.discount}%`,
-          originalPrice: product.price,
-          discountPrice,
-          savings: Math.round(product.price * product.discount / 100),
-          status,
-          timeRemaining
-        };
       }
+      
       return {
         ...product,
         images: undefined,
@@ -302,6 +336,10 @@ router.get('/', async (req, res) => {
     // Update warm cache for future timeouts
     setWarmCache(payload);
 
+    // End performance monitoring
+    const duration = performanceMonitor.endTimer('get-all-products');
+    performanceMonitor.trackQuery('products', 'find', duration);
+
     res.status(200).json(payload);
   } catch (error) {
     console.error('Get products error:', error);
@@ -323,80 +361,28 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get products with active discounts => /api/products/discounts
-router.get('/discounts/active', async (req, res) => {
-  try {
-    const products = await Product.find({
-      isDiscountActive: true,
-      discount: { $gt: 0 }
-    });
-
-    const productsWithDiscountInfo = products.map(product => {
-      const productObj = product.toObject();
-      productObj.discountInfo = product.getDiscountInfo();
-      return productObj;
-    });
-
-    res.status(200).json({
-      success: true,
-      count: productsWithDiscountInfo.length,
-      products: productsWithDiscountInfo
-    });
-  } catch (error) {
-    console.error('Get discounted products error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error getting discounted products'
-    });
-  }
-});
-
-// Get products by discount percentage => /api/products/discounts/:percentage
-router.get('/discounts/:percentage', async (req, res) => {
-  try {
-    const percentage = parseInt(req.params.percentage);
-    
-    if (isNaN(percentage) || percentage < 0 || percentage > 100) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid discount percentage'
-      });
-    }
-
-    const products = await Product.find({
-      isDiscountActive: true,
-      discount: percentage,
-      discountType: 'percentage'
-    });
-
-    const productsWithDiscountInfo = products.map(product => {
-      const productObj = product.toObject();
-      productObj.discountInfo = product.getDiscountInfo();
-      return productObj;
-    });
-
-    res.status(200).json({
-      success: true,
-      count: productsWithDiscountInfo.length,
-      discountPercentage: percentage,
-      products: productsWithDiscountInfo
-    });
-  } catch (error) {
-    console.error('Get products by discount error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error getting products by discount'
-    });
-  }
-});
-
 // Get single product details => /api/products/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', productLimiter, async (req, res) => {
+  // Check if this is a cache-busting request
+  const isCacheBusting = req.query._t || req.query.timestamp;
+  
+  if (isCacheBusting) {
+    // Disable caching for cache-busting requests
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  } else {
+    // Add cache headers for better performance
+    res.set('Cache-Control', 'public, max-age=600'); // 10 minutes cache for individual products
+    res.set('ETag', `product-${req.params.id}-${Date.now()}`);
+  }
+  
   try {
     const { id } = req.params;
     
-    // Check if it's a slug (contains letters) or ObjectId
-    const isSlug = /[a-zA-Z]/.test(id);
+    // Check if it's a slug (contains letters but not a valid ObjectId) or ObjectId
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    const isSlug = !isValidObjectId && /[a-zA-Z]/.test(id);
     
     let matchQuery;
     if (isSlug) {
@@ -469,6 +455,7 @@ router.get('/:id', async (req, res) => {
           seoKeywords: 1, // SEO keywords
           specifications: 1, // include specs so features can render
           price: 1,
+          stock: 1,
           category: 1,
           type: 1,
           size: 1,
@@ -498,33 +485,186 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const product = results[0];
+    const productObj = results[0];
 
     // Attach discount info similar to list route
     let discountInfo = null;
-    if (product.isDiscountActive && product.discount > 0) {
-      const discountPrice = Math.round(product.price - (product.price * product.discount / 100));
-      let status = 'active';
+    if (productObj.discount > 0) {
       const now = new Date();
-      if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+      let status = 'active';
+      
+      // Check start date
+      if (productObj.discountStartDate && now < new Date(productObj.discountStartDate)) {
         status = 'upcoming';
-      } else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+      } 
+      // Check end date
+      else if (productObj.discountEndDate && now > new Date(productObj.discountEndDate)) {
         status = 'expired';
       }
-      discountInfo = {
-        type: 'percentage',
-        value: `${product.discount}%`,
-        originalPrice: product.price,
-        discountPrice,
-        savings: Math.round(product.price * product.discount / 100),
-        status
-      };
+      
+      // Only provide discount info if status is active
+      if (status === 'active') {
+        const discountPrice = Math.round(productObj.price - (productObj.price * productObj.discount / 100));
+        discountInfo = {
+          type: 'percentage',
+          value: `${productObj.discount}%`,
+          originalPrice: productObj.price,
+          discountPrice,
+          savings: Math.round(productObj.price * productObj.discount / 100),
+          status
+        };
+      }
     }
 
-    return res.status(200).json({ success: true, product: { ...product, discountInfo } });
+    // Add structured data for SEO
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": productObj.name,
+      "description": productObj.description,
+      "brand": {
+        "@type": "Brand",
+        "name": "LAIQ BAGS"
+      },
+      "category": productObj.category,
+      "image": productObj.images?.map(img => img.url) || [],
+      "offers": {
+        "@type": "Offer",
+        "price": productObj.price,
+        "priceCurrency": "INR",
+        "availability": productObj.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "seller": {
+          "@type": "Organization",
+          "name": "Laiq Bags"
+        }
+      }
+    };
+
+    // Add reviews if available
+    if (productObj.reviews && productObj.reviews.length > 0) {
+      structuredData.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": productObj.ratings || 0,
+        "reviewCount": productObj.numOfReviews || 0
+      };
+      
+      structuredData.review = productObj.reviews.slice(0, 5).map(review => ({
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": review.name
+        },
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": review.rating
+        },
+        "reviewBody": review.comment
+      }));
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      product: { ...productObj, discountInfo },
+      structuredData 
+    });
   } catch (error) {
     console.error('Get product error:', error);
     res.status(500).json({ success: false, message: 'Error getting product' });
+  }
+});
+
+// Performance monitoring endpoint (admin only)
+router.get('/performance/stats', isAuthenticatedUser, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const summary = performanceMonitor.getSummary();
+    const topEndpoints = performanceMonitor.getTopEndpoints(10);
+    const slowQueries = performanceMonitor.getSlowQueries(10);
+    const dbPerformance = performanceMonitor.getDatabasePerformance();
+    const cachePerformance = performanceMonitor.getCachePerformance();
+
+    res.status(200).json({
+      success: true,
+      performance: {
+        summary,
+        topEndpoints,
+        slowQueries,
+        database: dbPerformance,
+        cache: cachePerformance
+      }
+    });
+  } catch (error) {
+    console.error('Performance stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting performance stats'
+    });
+  }
+});
+
+// Get products with active discounts => /api/products/discounts/active
+router.get('/discounts/active', async (req, res) => {
+  try {
+    const products = await Product.find({
+      isDiscountActive: true,
+      discount: { $gt: 0 }
+    });
+
+    const productsWithDiscountInfo = products.map(product => {
+      const productObj = product.toObject();
+      productObj.discountInfo = product.getDiscountInfo();
+      return productObj;
+    });
+
+    res.status(200).json({
+      success: true,
+      count: productsWithDiscountInfo.length,
+      products: productsWithDiscountInfo
+    });
+  } catch (error) {
+    console.error('Get discounted products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting discounted products'
+    });
+  }
+});
+
+// Get products by discount percentage => /api/products/discounts/:percentage
+router.get('/discounts/:percentage', async (req, res) => {
+  try {
+    const percentage = parseInt(req.params.percentage);
+    
+    if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid discount percentage'
+      });
+    }
+
+    const products = await Product.find({
+      isDiscountActive: true,
+      discount: percentage,
+      discountType: 'percentage'
+    });
+
+    const productsWithDiscountInfo = products.map(product => {
+      const productObj = product.toObject();
+      productObj.discountInfo = product.getDiscountInfo();
+      return productObj;
+    });
+
+    res.status(200).json({
+      success: true,
+      count: productsWithDiscountInfo.length,
+      discountPercentage: percentage,
+      products: productsWithDiscountInfo
+    });
+  } catch (error) {
+    console.error('Get products by discount error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting products by discount'
+    });
   }
 });
 
@@ -565,14 +705,27 @@ router.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, res
 
     // Recalculate stock on backend to ensure consistency with colorVariants
     if (Array.isArray(req.body.colorVariants)) {
-      req.body.stock = req.body.colorVariants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+      const calculatedStock = req.body.colorVariants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+      req.body.stock = calculatedStock;
+      console.log('📦 Stock calculation:', {
+        colorVariants: req.body.colorVariants.map(v => ({ name: v.name, stock: v.stock })),
+        calculatedStock: calculatedStock
+      });
+    } else {
+      // If no colorVariants, ensure stock is at least 0
+      req.body.stock = req.body.stock || 0;
     }
 
-    product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-      useFindAndModify: false
-    });
+    // Use findOneAndUpdate with runValidators to ensure proper validation
+    product = await Product.findOneAndUpdate(
+      { _id: req.params.id }, 
+      req.body, 
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false
+      }
+    );
 
     const productObj = product.toObject();
     productObj.discountInfo = product.getDiscountInfo();

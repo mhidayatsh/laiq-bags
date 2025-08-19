@@ -14,7 +14,7 @@ const sampleProducts = [
     price: 2499,
     images: [{
       public_id: "sample1",
-      url: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80"
+              url: "/assets/placeholder-bag-1.jpg"
     }],
     category: "backpack",
     type: "backpack",
@@ -25,7 +25,12 @@ const sampleProducts = [
     bestSeller: true,
     colors: ["Black", "Brown", "Navy"],
     specifications: {
-      dimensions: "35 × 25 × 12 cm",
+      dimensions: {
+        length: "35",
+        width: "25", 
+        height: "12",
+        display: "35 × 25 × 12 cm"
+      },
       weight: "1.2 kg",
       capacity: "25L",
       features: ["Laptop compartment", "Water bottle holder", "Anti-theft design"]
@@ -37,7 +42,7 @@ const sampleProducts = [
     price: 1799,
     images: [{
       public_id: "sample2",
-      url: "https://images.unsplash.com/photo-1526178613658-3f1622045557?auto=format&fit=crop&w=400&q=80"
+              url: "/assets/placeholder-bag-2.jpg"
     }],
     category: "sling",
     type: "sling",
@@ -47,7 +52,12 @@ const sampleProducts = [
     featured: true,
     colors: ["Brown", "Black"],
     specifications: {
-      dimensions: "25 × 18 × 8 cm",
+      dimensions: {
+        length: "25",
+        width: "18",
+        height: "8", 
+        display: "25 × 18 × 8 cm"
+      },
       weight: "0.8 kg",
       capacity: "8L",
       features: ["Adjustable strap", "Multiple pockets", "Premium leather"]
@@ -59,7 +69,7 @@ const sampleProducts = [
     price: 2199,
     images: [{
       public_id: "sample3",
-      url: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80"
+              url: "/assets/placeholder-bag-3.jpg"
     }],
     category: "handbag",
     type: "handbag",
@@ -69,7 +79,12 @@ const sampleProducts = [
     newArrival: true,
     colors: ["Beige", "Gray", "Black"],
     specifications: {
-      dimensions: "35 × 25 × 10 cm",
+      dimensions: {
+        length: "35",
+        width: "25",
+        height: "10",
+        display: "35 × 25 × 10 cm"
+      },
       weight: "0.9 kg",
       capacity: "20L",
       features: ["Reusable", "Eco-friendly", "Spacious"]
@@ -80,8 +95,8 @@ const sampleProducts = [
 // Sample admin user
 const adminUser = {
   name: "Admin User",
-  email: "admin@laiqbags.com",
-  password: "admin123",
+  email: "mdhidayatullahsheikh786@gmail.com",
+  password: "Mdhidayat786@",
   phone: "9876543210",
   role: "admin",
   emailVerified: true,
@@ -137,8 +152,8 @@ async function seedData() {
 
     console.log('✅ Sample data seeded successfully!');
     console.log('\n📋 Login Credentials:');
-    console.log('Email: admin@laiqbags.com');
-    console.log('Password: admin123');
+    console.log('Email: mdhidayatullahsheikh786@gmail.com');
+    console.log('Password: Mdhidayat786@');
     console.log('\n🔗 API URL: http://localhost:3001/api');
     
     process.exit(0);

@@ -5,6 +5,185 @@ let guestCart = []
 let guestWishlist = []
 let settings = {}
 
+// Auto-clear caches on page load if needed
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we need to clear caches (e.g., after admin updates)
+    const shouldClearCache = sessionStorage.getItem('clearCacheOnNextLoad');
+    if (shouldClearCache) {
+        console.log('🔄 Auto-clearing caches on page load...');
+        clearAllCaches();
+        sessionStorage.removeItem('clearCacheOnNextLoad');
+    }
+});
+
+// Force refresh customer page data
+async function refreshCustomerData() {
+    try {
+        console.log('🔄 Refreshing customer page data...');
+        
+        // Clear API cache first
+        if (api && typeof api.clearProductCache === 'function') {
+            api.clearProductCache();
+        }
+        
+        // Reload page data based on current page
+        const currentPage = window.location.pathname;
+        
+        if (currentPage.includes('index.html') || currentPage === '/') {
+            // Home page - reload featured products
+            if (typeof loadFeaturedProducts === 'function') {
+                await loadFeaturedProducts();
+            }
+        } else if (currentPage.includes('shop.html')) {
+            // Shop page - reload products with cache clearing
+            if (typeof clearShopCache === 'function') {
+                clearShopCache();
+            }
+            if (typeof forceRefreshShopProducts === 'function') {
+                await forceRefreshShopProducts();
+            } else if (typeof loadProductsFromAPI === 'function') {
+                await loadProductsFromAPI();
+            }
+        } else if (currentPage.includes('product.html')) {
+            // Product page - reload product details with cache clearing
+            if (typeof clearProductCache === 'function') {
+                clearProductCache();
+            }
+            if (typeof forceRefreshProductDetails === 'function') {
+                await forceRefreshProductDetails();
+            } else if (typeof loadProductFromAPI === 'function') {
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('id');
+                if (productId) {
+                    await loadProductFromAPI(productId);
+                }
+            }
+        }
+        
+        console.log('✅ Customer page data refreshed');
+    } catch (error) {
+        console.error('❌ Error refreshing customer data:', error);
+    }
+}
+
+// Global refresh function - can be called from any page
+window.refreshPageData = async function() {
+    try {
+        console.log('🔄 Refreshing page data...');
+        
+        // Clear API cache first
+        if (api && typeof api.clearProductCache === 'function') {
+            api.clearProductCache();
+        }
+        
+        // Check if we're on admin page
+        const isAdminPage = window.location.pathname.includes('admin') || 
+                           document.querySelector('[data-admin-page]');
+        
+        if (isAdminPage) {
+            // Admin page - refresh admin data
+            if (typeof refreshAdminData === 'function') {
+                await refreshAdminData();
+            } else if (typeof loadProducts === 'function') {
+                await loadProducts();
+            }
+        } else {
+            // Customer page - refresh customer data
+            await refreshCustomerData();
+        }
+        
+        console.log('✅ Page data refreshed successfully');
+    } catch (error) {
+        console.error('❌ Error refreshing page data:', error);
+    }
+};
+
+// Force hard refresh function - for when normal refresh doesn't work
+window.forceHardRefresh = function() {
+    console.log('🔄 Force hard refresh...');
+    window.location.reload(true);
+};
+
+// Smart refresh function - tries normal refresh first, then hard refresh if needed
+window.smartRefresh = async function() {
+    try {
+        console.log('🔄 Smart refresh starting...');
+        
+        // First try normal refresh
+        await refreshPageData();
+        
+        // Wait a moment to see if data updated
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Check if we need to force a hard refresh
+        // This is a simple check - you can make it more sophisticated
+        const needsHardRefresh = false; // Add logic here if needed
+        
+        if (needsHardRefresh) {
+            console.log('🔄 Normal refresh didn\'t work, forcing hard refresh...');
+            forceHardRefresh();
+        } else {
+            console.log('✅ Smart refresh completed successfully');
+        }
+    } catch (error) {
+        console.error('❌ Smart refresh failed, forcing hard refresh:', error);
+        forceHardRefresh();
+    }
+};
+
+// Aggressive cache clearing function
+window.clearAllCaches = function() {
+    console.log('🗑️ Clearing all caches...');
+    
+    // Clear API cache
+    if (api && typeof api.clearProductCache === 'function') {
+        api.clearProductCache();
+    }
+    
+    // Clear page-specific caches
+    if (typeof clearShopCache === 'function') {
+        clearShopCache();
+    }
+    
+    if (typeof clearProductCache === 'function') {
+        clearProductCache();
+    }
+    
+    // Clear localStorage caches
+    try {
+        localStorage.removeItem('productsCache');
+        localStorage.removeItem('productCache');
+        localStorage.removeItem('shopCache');
+        console.log('🗑️ Cleared localStorage caches');
+    } catch (e) {
+        console.warn('⚠️ Could not clear localStorage:', e);
+    }
+    
+    // Clear sessionStorage
+    try {
+        sessionStorage.clear();
+        console.log('🗑️ Cleared sessionStorage');
+    } catch (e) {
+        console.warn('⚠️ Could not clear sessionStorage:', e);
+    }
+    
+    console.log('✅ All caches cleared');
+};
+
+// Force refresh with cache clearing
+window.forceRefreshWithCacheClear = async function() {
+    console.log('🔄 Force refresh with cache clearing...');
+    
+    // Clear all caches first
+    clearAllCaches();
+    
+    // Wait a moment
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Force hard refresh
+    forceHardRefresh();
+};
+
 // Global flags to prevent multiple simultaneous calls
 let isBackendSyncInProgress = false
 let isCartLoading = false
@@ -202,6 +381,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Don't await; let it run and enhance state later
             initializeCustomerAuth().catch(err => console.error('❌ Auth init failed:', err))
         }
+        
+        // Listen for settings updates from admin panel
+        listenForSettingsUpdates()
 
         // 3) If logged-in, do backend sync soon after without blocking UI
         if (isCustomerLoggedIn() && !isBackendSyncInProgress) {
@@ -715,6 +897,53 @@ function updateWebsiteWithSettings() {
     console.log('✅ Website updated with settings')
 }
 
+// Listen for settings updates from admin panel
+function listenForSettingsUpdates() {
+    console.log('👂 Listening for settings updates...');
+    
+    // Listen for custom events
+    window.addEventListener('settingsUpdated', (event) => {
+        console.log('🔄 Settings update received via event:', event.detail);
+        handleSettingsUpdate(event.detail.settings);
+    });
+    
+    // Check localStorage for updates periodically
+    setInterval(() => {
+        const settingsUpdate = localStorage.getItem('settingsUpdate');
+        if (settingsUpdate) {
+            try {
+                const update = JSON.parse(settingsUpdate);
+                const lastUpdate = localStorage.getItem('lastSettingsUpdate');
+                
+                // Only process if this is a new update
+                if (!lastUpdate || update.timestamp > parseInt(lastUpdate)) {
+                    console.log('🔄 Settings update detected in localStorage:', update);
+                    localStorage.setItem('lastSettingsUpdate', update.timestamp.toString());
+                    handleSettingsUpdate(update.settings);
+                }
+            } catch (error) {
+                console.error('❌ Error parsing settings update:', error);
+            }
+        }
+    }, 2000); // Check every 2 seconds
+}
+
+// Handle settings update
+function handleSettingsUpdate(newSettings) {
+    console.log('🔄 Applying settings update:', newSettings);
+    
+    // Update the global settings object
+    settings = { ...settings, ...newSettings };
+    
+    // Update the website with new settings
+    updateWebsiteWithSettings();
+    
+    // Show a notification to the user
+    showToast('Website settings have been updated!', 'info');
+    
+    console.log('✅ Settings update applied successfully');
+}
+
 // Update footer with settings
 function updateFooterWithSettings() {
     const footer = document.querySelector('footer')
@@ -759,8 +988,8 @@ function initializeNavbar() {
 
 // Cart functionality
 function initializeCart() {
-    // Cart icon handler
-    const cartIcon = document.querySelector('#cart-btn, .cart-icon, [data-cart-btn], button[onclick*="cart"], a[href*="cart"]')
+    // Cart icon handler - expanded selectors
+    const cartIcon = document.querySelector('#cart-btn, .cart-icon, [data-cart-btn], button[onclick*="cart"], a[href*="cart"], .cart-button, [data-cart], .shopping-cart, .cart-link')
     if (cartIcon) {
         cartIcon.addEventListener('click', function(e) {
             e.preventDefault()
@@ -768,11 +997,11 @@ function initializeCart() {
         })
         console.log('✅ Cart icon handler added')
     } else {
-        console.warn('⚠️ Cart icon not found')
+        console.warn('⚠️ Cart icon not found - this is normal on pages without cart functionality')
     }
     
-    // Mobile cart link handler
-    const mobileCartLink = document.querySelector('#mobile-cart-link, .mobile-cart-link, [data-mobile-cart], a[href*="cart"]')
+    // Mobile cart link handler - expanded selectors
+    const mobileCartLink = document.querySelector('#mobile-cart-link, .mobile-cart-link, [data-mobile-cart], a[href*="cart"], .mobile-cart, .mobile-cart-btn')
     if (mobileCartLink) {
         mobileCartLink.addEventListener('click', function(e) {
             e.preventDefault()
@@ -780,7 +1009,7 @@ function initializeCart() {
         })
         console.log('✅ Mobile cart link handler added')
     } else {
-        console.warn('⚠️ Mobile cart link not found')
+        console.warn('⚠️ Mobile cart link not found - this is normal on pages without mobile cart functionality')
     }
     
     // Create cart drawer
@@ -1267,8 +1496,8 @@ function handleRemoveFromCart(e) {
 
 // Wishlist functionality
 function initializeWishlist() {
-    // Wishlist icon handler
-    const wishlistIcon = document.querySelector('#wishlist-btn, .wishlist-icon, [data-wishlist-btn], button[onclick*="wishlist"], a[href*="wishlist"]')
+    // Wishlist icon handler - expanded selectors
+    const wishlistIcon = document.querySelector('#wishlist-btn, .wishlist-icon, [data-wishlist-btn], button[onclick*="wishlist"], a[href*="wishlist"], .wishlist-button, [data-wishlist], .favorites, .wishlist-link')
     
     if (wishlistIcon) {
         wishlistIcon.addEventListener('click', (e) => {
@@ -1278,11 +1507,11 @@ function initializeWishlist() {
             toggleWishlistDrawer()
         })
     } else {
-        console.warn('⚠️ Wishlist icon not found')
+        console.warn('⚠️ Wishlist icon not found - this is normal on pages without wishlist functionality')
     }
     
-    // Mobile wishlist link handler
-    const mobileWishlistLink = document.querySelector('#mobile-wishlist-link, .mobile-wishlist-link, [data-mobile-wishlist]')
+    // Mobile wishlist link handler - expanded selectors
+    const mobileWishlistLink = document.querySelector('#mobile-wishlist-link, .mobile-wishlist-link, [data-mobile-wishlist], .mobile-wishlist, .mobile-wishlist-btn')
     if (mobileWishlistLink) {
         mobileWishlistLink.addEventListener('click', (e) => {
             e.preventDefault()
@@ -1291,7 +1520,7 @@ function initializeWishlist() {
             toggleWishlistDrawer()
         })
     } else {
-        console.warn('⚠️ Mobile wishlist link not found')
+        console.warn('⚠️ Mobile wishlist link not found - this is normal on pages without mobile wishlist functionality')
     }
     
     // Create wishlist drawer
@@ -1363,13 +1592,31 @@ function toggleWishlistDrawer() {
 
 // Get display price (with discount if applicable)
 function getDisplayPrice(product) {
+    // First check if discountInfo is available and active
     if (product.discountInfo && product.discountInfo.status === 'active') {
-        return product.discountInfo.discountPrice
+        return product.discountInfo.discountPrice;
     }
-    if (product.discount > 0 && product.isDiscountActive) {
-        return Math.round(product.price * (1 - product.discount / 100))
+    
+    // Fallback: check discount manually with real-time validation
+    if (product.discount > 0) {
+        const now = new Date();
+        let isActive = true;
+        
+        // Check start date
+        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+            isActive = false;
+        }
+        // Check end date
+        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+            isActive = false;
+        }
+        
+        if (isActive) {
+            return Math.round(product.price * (1 - product.discount / 100));
+        }
     }
-    return product.price
+    
+    return product.price;
 }
 
 async function renderWishlistDrawer(items = null) {

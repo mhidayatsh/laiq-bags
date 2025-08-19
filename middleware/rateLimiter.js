@@ -101,6 +101,24 @@ const adminLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Product endpoints rate limiter
+const productLimiter = rateLimit({
+  store,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10000, // 10,000 requests per 15 minutes
+  message: {
+    success: false,
+    message: 'Too many product requests, please try again later.',
+    retryAfter: 900
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    // Use product ID if available for more specific rate limiting
+    return req.params.id ? `${req.ip}-${req.params.id}` : req.ip;
+  }
+});
+
 // File upload rate limiter
 const uploadLimiter = rateLimit({
   store,
@@ -170,6 +188,7 @@ module.exports = {
   authLimiter,
   passwordResetLimiter,
   adminLimiter,
+  productLimiter,
   uploadLimiter,
   orderLimiter,
   cartLimiter,

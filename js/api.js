@@ -422,6 +422,20 @@ class ApiService {
                 body: JSON.stringify(productData)
             });
             console.log('✅ Product created successfully:', response);
+            
+            // Clear product-related cache after successful creation
+            if (response.success) {
+                this.clearProductCache();
+                
+                // Set flag for customer pages to clear cache on next load
+                try {
+                    sessionStorage.setItem('clearCacheOnNextLoad', 'true');
+                    console.log('🏷️ Set cache clear flag for customer pages');
+                } catch (e) {
+                    console.warn('⚠️ Could not set cache clear flag:', e);
+                }
+            }
+            
             return response;
         } catch (error) {
             console.error('❌ Error creating product:', error);
@@ -442,16 +456,46 @@ class ApiService {
     }
 
     async updateProduct(productId, productData) {
-        return await this.request(`/admin/products/${productId}`, {
+        const response = await this.request(`/admin/products/${productId}`, {
             method: 'PUT',
             body: JSON.stringify(productData)
         });
+        
+        // Clear product-related cache after successful update
+        if (response.success) {
+            this.clearProductCache();
+            
+            // Set flag for customer pages to clear cache on next load
+            try {
+                sessionStorage.setItem('clearCacheOnNextLoad', 'true');
+                console.log('🏷️ Set cache clear flag for customer pages');
+            } catch (e) {
+                console.warn('⚠️ Could not set cache clear flag:', e);
+            }
+        }
+        
+        return response;
     }
 
     async deleteProduct(productId) {
-        return await this.request(`/admin/products/${productId}`, {
+        const response = await this.request(`/admin/products/${productId}`, {
             method: 'DELETE'
         });
+        
+        // Clear product-related cache after successful deletion
+        if (response.success) {
+            this.clearProductCache();
+            
+            // Set flag for customer pages to clear cache on next load
+            try {
+                sessionStorage.setItem('clearCacheOnNextLoad', 'true');
+                console.log('🏷️ Set cache clear flag for customer pages');
+            } catch (e) {
+                console.warn('⚠️ Could not set cache clear flag:', e);
+            }
+        }
+        
+        return response;
     }
 
     async getAdminOrders(queryParams = '') {
@@ -480,9 +524,10 @@ class ApiService {
     // Settings Methods
     async getSettings() {
         // This is a public endpoint, should not require admin auth
-        // Let's assume there's a public settings endpoint
         try {
-            const response = await this.request('/settings', {}); // No token needed, but will be sent if available
+            // Add cache busting parameter to prevent caching
+            const cacheBuster = Date.now();
+            const response = await this.request(`/settings?cb=${cacheBuster}`, {}); // Cache busting
             if (response.success) {
                 return response;
             } else {
@@ -856,6 +901,23 @@ class ApiService {
 
     clearCache() {
         this.cache.clear();
+    }
+
+    clearProductCache() {
+        // Clear all product-related cache entries
+        const keysToDelete = [];
+        for (const [key, value] of this.cache.entries()) {
+            if (key.includes('/products') || key.includes('/admin/products')) {
+                keysToDelete.push(key);
+            }
+        }
+        
+        keysToDelete.forEach(key => {
+            this.cache.delete(key);
+            console.log('🗑️ Cleared product cache:', key);
+        });
+        
+        console.log(`🗑️ Cleared ${keysToDelete.length} product cache entries`);
     }
 
     // Merge Guest Wishlist with User Wishlist

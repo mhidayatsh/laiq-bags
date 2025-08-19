@@ -3,6 +3,26 @@ let currentProduct = null;
 let productCache = new Map();
 const PRODUCT_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
+// Clear product page cache
+function clearProductCache() {
+    productCache.clear();
+    console.log('🗑️ Cleared product page cache');
+}
+
+// Force refresh product details
+async function forceRefreshProductDetails() {
+    console.log('🔄 Force refreshing product details...');
+    clearProductCache();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    
+    if (productId) {
+        await loadProductFromAPI(productId);
+        renderProductDetail();
+    }
+}
+
 // Initialize product page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('📦 Product detail page initialized');
@@ -44,7 +64,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('❌ Error loading product:', error);
         hideLoading();
-        showError('Failed to load product details. Please try again.');
+        
+        // Check if it's a "Product not found" error
+        if (error.message && error.message.includes('Product not found')) {
+            showProductNotFound();
+        } else {
+            showError('Failed to load product details. Please try again.');
+        }
     }
 });
 
@@ -138,7 +164,8 @@ async function loadProductFromAPI(productId) {
             return;
         }
         
-        const response = await api.getProduct(productId);
+        // Add cache-busting parameter
+        const response = await api.getProduct(productId + '?_t=' + Date.now());
         console.log('📦 API Response:', response);
         
         if (!response || !response.product) {
@@ -181,11 +208,15 @@ async function loadProductFromAPI(productId) {
         // Final fallback to local data
         console.log('⚠️ Using local data as final fallback');
         const localProducts = PRODUCTS || [];
+        
+        // Try to find product by ID (for both numeric and ObjectId formats)
         currentProduct = localProducts.find(p => p.id == productId);
         
+        // If not found by ID, show product not found page
         if (!currentProduct) {
-            console.error('❌ Product not found in local data either');
-            throw new Error('Product not found');
+            console.warn('⚠️ Product not found in local data');
+            showProductNotFound();
+            return;
         }
         
         console.log('✅ Product loaded from local data:', currentProduct.name);
@@ -396,22 +427,64 @@ function fillProductInfo(product) {
     const productDiscount = document.getElementById('product-discount');
     
     if (productPrice) {
-            console.log('🔍 Discount check:', { 
-        discount: product.discount, 
-        isDiscountActive: product.isDiscountActive,
-        discountInfo: product.discountInfo,
-        shouldShowDiscount: product.discount > 0 && product.isDiscountActive
-    });
+        console.log('🔍 Discount check:', { 
+            discount: product.discount, 
+            isDiscountActive: product.isDiscountActive,
+            discountInfo: product.discountInfo,
+            shouldShowDiscount: product.discountInfo && product.discountInfo.status === 'active'
+        });
         
-        const finalPrice = product.discount > 0 && product.isDiscountActive ? 
-            product.price * (1 - product.discount / 100) : product.price;
+        // Use discountInfo if available, otherwise fallback to manual calculation
+        let finalPrice = product.price;
+        if (product.discountInfo && product.discountInfo.status === 'active') {
+            finalPrice = product.discountInfo.discountPrice;
+        } else if (product.discount > 0) {
+            // Fallback: check discount manually with real-time validation
+            const now = new Date();
+            let isActive = true;
+            
+            // Check start date
+            if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+                isActive = false;
+            }
+            // Check end date
+            else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+                isActive = false;
+            }
+            
+            if (isActive) {
+                finalPrice = product.price * (1 - product.discount / 100);
+            }
+        }
+        
         productPrice.textContent = `₹${finalPrice.toLocaleString()}`;
         console.log('✅ Product price filled:', `₹${finalPrice.toLocaleString()}`);
     } else {
         console.error('❌ Product price element not found');
     }
     
-    if (productOriginalPrice && product.discount > 0 && product.isDiscountActive) {
+    // Check if discount should be shown using discountInfo
+    let shouldShowDiscount = false;
+    if (product.discountInfo && product.discountInfo.status === 'active') {
+        shouldShowDiscount = true;
+    } else if (product.discount > 0) {
+        // Fallback: check discount manually with real-time validation
+        const now = new Date();
+        let isActive = true;
+        
+        // Check start date
+        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+            isActive = false;
+        }
+        // Check end date
+        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+            isActive = false;
+        }
+        
+        shouldShowDiscount = isActive;
+    }
+    
+    if (productOriginalPrice && shouldShowDiscount) {
         productOriginalPrice.textContent = `₹${product.price.toLocaleString()}`;
         productOriginalPrice.classList.remove('hidden');
         console.log('✅ Original price shown');
@@ -420,7 +493,7 @@ function fillProductInfo(product) {
         console.log('✅ Original price hidden (no active discount)');
     }
     
-    if (productDiscount && product.discount > 0 && product.isDiscountActive) {
+    if (productDiscount && shouldShowDiscount) {
         productDiscount.textContent = `${product.discount}% OFF`;
         productDiscount.classList.remove('hidden');
         console.log('✅ Discount badge shown');
@@ -1209,9 +1282,25 @@ async function handleAddToCart(e) {
             color: colorObject
         });
         
-        // Calculate final price with discount
-        const finalPrice = currentProduct.discount > 0 && currentProduct.isDiscountActive ? 
-            currentProduct.price * (1 - currentProduct.discount / 100) : currentProduct.price;
+        // Calculate final price with real-time discount validation
+        let finalPrice = currentProduct.price;
+        if (currentProduct.discount > 0) {
+            const now = new Date();
+            let isActive = true;
+            
+            // Check start date
+            if (currentProduct.discountStartDate && now < new Date(currentProduct.discountStartDate)) {
+                isActive = false;
+            }
+            // Check end date
+            else if (currentProduct.discountEndDate && now > new Date(currentProduct.discountEndDate)) {
+                isActive = false;
+            }
+            
+            if (isActive) {
+                finalPrice = currentProduct.price * (1 - currentProduct.discount / 100);
+            }
+        }
         
         console.log('💰 Product price calculation for cart:', {
             originalPrice: currentProduct.price,
@@ -1286,9 +1375,25 @@ function handleWishlistToggle(e) {
         removeFromWishlist(productId);
         showToast('Removed from wishlist', 'info');
     } else {
-        // Calculate final price with discount
-        const finalPrice = currentProduct.discount > 0 && currentProduct.isDiscountActive ? 
-            currentProduct.price * (1 - currentProduct.discount / 100) : currentProduct.price;
+        // Calculate final price with real-time discount validation
+        let finalPrice = currentProduct.price;
+        if (currentProduct.discount > 0) {
+            const now = new Date();
+            let isActive = true;
+            
+            // Check start date
+            if (currentProduct.discountStartDate && now < new Date(currentProduct.discountStartDate)) {
+                isActive = false;
+            }
+            // Check end date
+            else if (currentProduct.discountEndDate && now > new Date(currentProduct.discountEndDate)) {
+                isActive = false;
+            }
+            
+            if (isActive) {
+                finalPrice = currentProduct.price * (1 - currentProduct.discount / 100);
+            }
+        }
         
         // Create product data with discounted price
         const productData = {
@@ -1572,4 +1677,52 @@ function addProductStructuredData(product) {
     script.setAttribute('data-product-schema', 'true');
     script.textContent = JSON.stringify(structuredData);
     document.head.appendChild(script);
+} 
+
+// Show product not found error
+function showProductNotFound() {
+    console.log('❌ Showing product not found error');
+    
+    // Hide loading state
+    hideLoading();
+    
+    // Get the product content container
+    const productContent = document.getElementById('product-content');
+    if (!productContent) {
+        console.error('❌ Product content container not found');
+        return;
+    }
+    
+    // Clear existing content and show error
+    productContent.innerHTML = `
+        <div class="min-h-screen flex items-center justify-center">
+            <div class="text-center space-y-6">
+                <div class="text-6xl mb-4">😕</div>
+                <h1 class="text-3xl font-bold text-charcoal mb-4">Product Not Found</h1>
+                <p class="text-lg text-charcoal/70 mb-8 max-w-md mx-auto">
+                    Sorry, the product you're looking for doesn't exist or may have been removed.
+                </p>
+                <div class="space-x-4">
+                    <a href="shop.html" class="inline-block bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                        Browse All Products
+                    </a>
+                    <a href="index.html" class="inline-block border border-charcoal/20 text-charcoal px-6 py-3 rounded-lg font-semibold hover:border-gold hover:text-gold transition-colors">
+                        Go Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Update page title
+    document.title = 'Product Not Found - LAIQ BAGS';
+    
+    // Update meta description
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.name = 'description';
+        document.head.appendChild(metaDescription);
+    }
+    metaDescription.content = 'Product not found. Browse our collection of premium bags and accessories.';
 } 

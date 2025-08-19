@@ -18,7 +18,7 @@ router.post('/register', [
   body('name').trim().isLength({ min: 2, max: 30 }).withMessage('Name must be between 2 and 30 characters'),
   body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/)
     .withMessage('Password must contain uppercase, lowercase, number and special character'),
   body('phone').matches(/^[0-9]{10}$/).withMessage('Please enter a valid 10-digit phone number')
 ], async (req, res) => {
@@ -485,7 +485,10 @@ router.get('/verify-email/:token', async (req, res) => {
 router.post('/customer/register', [
   body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Name must be between 2 and 50 characters'),
   body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/)
+    .withMessage('Password must contain uppercase, lowercase, number and special character'),
+  body('phone').matches(/^[0-9]{10}$/).withMessage('Please enter a valid 10-digit phone number')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -507,19 +510,54 @@ router.post('/customer/register', [
       });
     }
 
+    // Handle address - convert string to object structure if needed
+    let addressObj = {};
+    if (address && typeof address === 'string') {
+      addressObj = {
+        street: address,
+        city: '',
+        state: '',
+        pincode: '',
+        country: 'India'
+      };
+    } else if (address && typeof address === 'object') {
+      addressObj = address;
+    }
+
     // Create customer user (role: user)
     const user = await User.create({
       name,
       email,
       password,
       phone,
-      address,
+      address: addressObj,
       role: 'user' // Customer role
     });
 
     sendToken(user, 201, res);
   } catch (error) {
     console.error('Customer registration error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      return res.status(400).json({
+        success: false,
+        errors
+      });
+    }
+    
+    // Handle duplicate email error
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error in registration'

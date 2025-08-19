@@ -36,7 +36,7 @@ async function fixBlobUrls() {
         for (let i = 0; i < product.images.length; i++) {
           if (product.images[i].url && product.images[i].url.startsWith('blob:')) {
             console.log(`  🔄 Found blob URL in product ${product.name}: ${product.images[i].url}`);
-            product.images[i].url = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80';
+            product.images[i].url = '/assets/placeholder-bag-1.jpg';
             product.images[i].public_id = 'placeholder-image';
             needsUpdate = true;
           }
@@ -50,7 +50,7 @@ async function fixBlobUrls() {
             for (let i = 0; i < variant.images.length; i++) {
               if (variant.images[i] && variant.images[i].startsWith('blob:')) {
                 console.log(`  🔄 Found blob URL in color variant of ${product.name}: ${variant.images[i]}`);
-                variant.images[i] = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80';
+                variant.images[i] = '/assets/placeholder-bag-1.jpg';
                 needsUpdate = true;
               }
             }
@@ -77,7 +77,7 @@ async function fixBlobUrls() {
         for (let i = 0; i < order.orderItems.length; i++) {
           if (order.orderItems[i].image && order.orderItems[i].image.startsWith('blob:')) {
             console.log(`  🔄 Found blob URL in order ${order._id}: ${order.orderItems[i].image}`);
-            order.orderItems[i].image = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80';
+            order.orderItems[i].image = '/assets/placeholder-bag-1.jpg';
             needsUpdate = true;
           }
         }
