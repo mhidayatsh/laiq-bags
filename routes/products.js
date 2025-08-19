@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const zlib = require('zlib');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const { productLimiter } = require('../middleware/rateLimiter');
 const { performanceMonitor } = require('../utils/performanceMonitor');
@@ -398,62 +399,16 @@ router.get('/:id', productLimiter, async (req, res) => {
 
     const pipeline = [
       { $match: matchQuery },
-      // Sanitize top-level images: drop data:image and compressed H4sI
-      {
-        $addFields: {
-          images: {
-            $filter: {
-              input: { $ifNull: ['$images', []] },
-              as: 'img',
-              cond: {
-                $and: [
-                  { $ne: [{ $substrBytes: [{ $ifNull: ['$$img.url', ''] }, 0, 10] }, 'data:image'] },
-                  { $ne: [{ $substrBytes: [{ $ifNull: ['$$img.url', ''] }, 0, 4] }, 'H4sI'] }
-                ]
-              }
-            }
-          }
-        }
-      },
-      // Sanitize colorVariants images similarly
-      {
-        $addFields: {
-          colorVariants: {
-            $map: {
-              input: { $ifNull: ['$colorVariants', []] },
-              as: 'cv',
-              in: {
-                name: '$$cv.name',
-                code: '$$cv.code',
-                stock: '$$cv.stock',
-                isAvailable: '$$cv.isAvailable',
-                images: {
-                  $filter: {
-                    input: { $ifNull: ['$$cv.images', []] },
-                    as: 'cimg',
-                    cond: {
-                      $and: [
-                        { $ne: [{ $substrBytes: [{ $ifNull: ['$$cimg.url', ''] }, 0, 10] }, 'data:image'] },
-                        { $ne: [{ $substrBytes: [{ $ifNull: ['$$cimg.url', ''] }, 0, 4] }, 'H4sI'] }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      // Project necessary fields only
+      // Keep images as-is; we'll handle decompression after aggregation
       {
         $project: {
           name: 1,
           slug: 1,
-          description: 1, // full description for product page
-          metaDescription: 1, // SEO meta description
-          seoTitle: 1, // SEO title
-          seoKeywords: 1, // SEO keywords
-          specifications: 1, // include specs so features can render
+          description: 1,
+          metaDescription: 1,
+          seoTitle: 1,
+          seoKeywords: 1,
+          specifications: 1,
           price: 1,
           stock: 1,
           category: 1,
@@ -486,6 +441,34 @@ router.get('/:id', productLimiter, async (req, res) => {
     }
 
     const productObj = results[0];
+
+    // Decompress any compressed (H4sI...) image URLs so the client can render them
+    const decompressIfNeeded = (value) => {
+      try {
+        if (!value || typeof value !== 'string' || !value.startsWith('H4sI')) return value;
+        const buffer = Buffer.from(value, 'base64');
+        const decompressed = zlib.gunzipSync(buffer).toString();
+        return decompressed;
+      } catch (_) {
+        return value;
+      }
+    };
+
+    if (Array.isArray(productObj.images)) {
+      productObj.images = productObj.images.map(img => ({
+        ...img,
+        url: decompressIfNeeded(img?.url)
+      }));
+    }
+
+    if (Array.isArray(productObj.colorVariants)) {
+      productObj.colorVariants = productObj.colorVariants.map(variant => ({
+        ...variant,
+        images: Array.isArray(variant.images)
+          ? variant.images.map(img => ({ ...img, url: decompressIfNeeded(img?.url) }))
+          : []
+      }));
+    }
 
     // Attach discount info similar to list route
     let discountInfo = null;
