@@ -1257,12 +1257,16 @@ async function saveProduct() {
         const images = [];
         const imageInputs = document.querySelectorAll('.image-input');
         
+        console.log('🔍 Found image inputs:', imageInputs.length);
+        
         for (let index = 0; index < imageInputs.length; index++) {
             const input = imageInputs[index];
             
             if (input.files && input.files[0]) {
                 // New file uploaded
                 const file = input.files[0];
+                console.log(`📸 Input ${index} has new file:`, file.name, file.size);
+                
                 // Find the radio button for this specific image input
                 const imageItem = input.closest('.image-upload-item');
                 const primaryRadio = imageItem?.querySelector('input[name="primaryImage"]');
@@ -1281,6 +1285,8 @@ async function saveProduct() {
                 });
             } else if (input.dataset.existingImage) {
                 // Existing image (from edit mode)
+                console.log(`📸 Input ${index} has existing image data:`, input.dataset.existingImage ? 'YES' : 'NO');
+                
                 const imageItem = input.closest('.image-upload-item');
                 const primaryRadio = imageItem?.querySelector('input[name="primaryImage"]');
                 const isPrimary = primaryRadio?.checked || 
@@ -1295,6 +1301,8 @@ async function saveProduct() {
                     alt: existingImage.alt || `Product Image ${index + 1}`,
                     isPrimary: isPrimary
                 });
+            } else {
+                console.log(`📸 Input ${index} has no file or existing image data`);
             }
         }
         
@@ -1500,6 +1508,7 @@ async function saveProduct() {
             }
             
             console.log('✅ Product operation successful:', response);
+            console.log('📸 Response data:', response);
             closeProductModal();
             
             // Reload products
