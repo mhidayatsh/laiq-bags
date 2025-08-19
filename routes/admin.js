@@ -9,6 +9,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const ApiFeatures = require('../utils/apiFeatures');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const jwt = require('jsonwebtoken');
+const zlib = require('zlib');
 const { normalizeImageUrlForProduct } = require('../utils/imageOptimizer');
 
 // Verify Cart model is properly loaded
@@ -166,6 +167,18 @@ router.get('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
             Product.estimatedDocumentCount()
         ]);
 
+        // Helper to decompress if compressed (H4sI...)
+        const decompressIfNeeded = (value) => {
+            try {
+                if (!value || typeof value !== 'string' || !value.startsWith('H4sI')) return value;
+                const buffer = Buffer.from(value, 'base64');
+                const decompressed = zlib.gunzipSync(buffer);
+                return `data:image/jpeg;base64,${decompressed.toString('base64')}`;
+            } catch (_) {
+                return value;
+            }
+        };
+
         const productsWithCalculatedStock = products.map(product => {
             let totalStock = 0;
             if (product.colorVariants && Array.isArray(product.colorVariants)) {
@@ -179,10 +192,17 @@ router.get('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
                 ? product.description.substring(0, 200) + '...' 
                 : product.description;
             
+            // Decompress images if needed
+            const decompressedImages = product.images ? product.images.map(img => ({
+                ...img,
+                url: decompressIfNeeded(img.url)
+            })) : [];
+            
             return { 
                 ...product, 
                 description: limitedDescription,
-                calculatedStock: totalStock 
+                calculatedStock: totalStock,
+                images: decompressedImages
             };
         });
         

@@ -258,8 +258,8 @@ router.get('/', productLimiter, async (req, res) => {
       try {
         if (!value || typeof value !== 'string' || !value.startsWith('H4sI')) return value;
         const buffer = Buffer.from(value, 'base64');
-        const decompressed = zlib.gunzipSync(buffer).toString();
-        return decompressed;
+        const decompressed = zlib.gunzipSync(buffer);
+        return `data:image/jpeg;base64,${decompressed.toString('base64')}`;
       } catch (_) {
         return value;
       }
@@ -450,8 +450,8 @@ router.get('/:id', productLimiter, async (req, res) => {
       try {
         if (!value || typeof value !== 'string' || !value.startsWith('H4sI')) return value;
         const buffer = Buffer.from(value, 'base64');
-        const decompressed = zlib.gunzipSync(buffer).toString();
-        return decompressed;
+        const decompressed = zlib.gunzipSync(buffer);
+        return `data:image/jpeg;base64,${decompressed.toString('base64')}`;
       } catch (_) {
         return value;
       }
