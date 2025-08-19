@@ -234,6 +234,20 @@ app.get('/favicon.ico', (req, res) => {
     }
   }
 });
+
+  // Serve web manifest with proper MIME type
+  app.get('/site.webmanifest', (req, res) => {
+    const manifestPath = path.join(__dirname, 'site.webmanifest');
+    console.log('📱 Serving web manifest:', manifestPath);
+    
+    if (fs.existsSync(manifestPath)) {
+      res.setHeader('Content-Type', 'application/manifest+json');
+      res.sendFile(manifestPath);
+    } else {
+      console.log('❌ Web manifest not found:', manifestPath);
+      res.status(404).json({ error: 'Web manifest not found' });
+    }
+  });
   
   // Serve HTML files properly
   app.get('*.html', (req, res) => {
@@ -435,6 +449,20 @@ app.get('/api/settings', async (req, res) => {
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
+  // Serve web manifest with proper MIME type (before static files)
+  app.get('/site.webmanifest', (req, res) => {
+    const manifestPath = path.join(__dirname, 'site.webmanifest');
+    console.log('📱 Serving web manifest (production):', manifestPath);
+    
+    if (fs.existsSync(manifestPath)) {
+      res.setHeader('Content-Type', 'application/manifest+json');
+      res.sendFile(manifestPath);
+    } else {
+      console.log('❌ Web manifest not found (production):', manifestPath);
+      res.status(404).json({ error: 'Web manifest not found' });
+    }
+  });
+  
   app.use(express.static(path.join(__dirname, '../')));
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
