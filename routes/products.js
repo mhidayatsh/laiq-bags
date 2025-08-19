@@ -153,7 +153,7 @@ router.get('/', productLimiter, async (req, res) => {
     // Pagination values
     const skip = (currentPage - 1) * resPerPage;
 
-    // Aggregation pipeline to minimize payload (compute a safe 'image' and drop big base64/compressed URLs)
+    // Aggregation pipeline: compute primary image
     const basePipeline = [
       { $match: matchQuery },
       // Derive primaryImage (prefer isPrimary, else first)
@@ -223,18 +223,7 @@ router.get('/', productLimiter, async (req, res) => {
           'colorVariants.code': 1,
           'colorVariants.stock': 1,
           'colorVariants.isAvailable': 1,
-          image: {
-            $cond: [
-              {
-                $or: [
-                  { $eq: [{ $substrBytes: [{ $ifNull: ['$imageUrl', ''] }, 0, 10] }, 'data:image'] },
-                  { $eq: [{ $substrBytes: [{ $ifNull: ['$imageUrl', ''] }, 0, 4] }, 'H4sI'] }
-                ]
-              },
-              null,
-              '$imageUrl'
-            ]
-          }
+          image: '$imageUrl'
         }
       }
     ];
@@ -264,6 +253,18 @@ router.get('/', productLimiter, async (req, res) => {
     const products = facet.results || [];
 
     // Add discount info and ensure images array shape expected by client
+    // Helper to decompress if compressed (H4sI...)
+    const decompressIfNeeded = (value) => {
+      try {
+        if (!value || typeof value !== 'string' || !value.startsWith('H4sI')) return value;
+        const buffer = Buffer.from(value, 'base64');
+        const decompressed = zlib.gunzipSync(buffer).toString();
+        return decompressed;
+      } catch (_) {
+        return value;
+      }
+    };
+
     const productsWithDiscount = products.map(product => {
       let discountInfo = null;
       
@@ -312,6 +313,8 @@ router.get('/', productLimiter, async (req, res) => {
       
       return {
         ...product,
+        // Keep only one image field for cards
+        image: decompressIfNeeded(product.image),
         images: undefined,
         discountInfo
       };
