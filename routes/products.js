@@ -728,6 +728,8 @@ router.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, res
       req.body.stock = req.body.stock || 0;
     }
 
+    console.log('🔄 About to update database with images:', req.body.images ? req.body.images.length : 'NO IMAGES');
+    
     // Use findOneAndUpdate with runValidators to ensure proper validation
     product = await Product.findOneAndUpdate(
       { _id: req.params.id }, 

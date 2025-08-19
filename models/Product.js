@@ -526,10 +526,16 @@ productSchema.pre('save', async function(next) {
     
     // Compress image URLs if they are base64 data URLs
     if (this.images && this.images.length > 0) {
-      for (let image of this.images) {
+      console.log('🗜️ Processing images in pre-save hook:', this.images.length);
+      for (let i = 0; i < this.images.length; i++) {
+        const image = this.images[i];
         if (image.url && image.url.startsWith('data:image/') && image.url.length > 10000) {
-          console.log('🗜️ Compressing image URL:', image.url.length, 'characters');
+          console.log(`🗜️ Compressing image ${i} URL:`, image.url.length, 'characters');
+          const originalUrl = image.url;
           image.url = await compressText(image.url);
+          console.log(`🗜️ Image ${i} compressed from ${originalUrl.length} to ${image.url.length} characters`);
+        } else {
+          console.log(`🗜️ Image ${i} not compressed:`, image.url ? image.url.substring(0, 50) + '...' : 'NO URL');
         }
       }
     }
