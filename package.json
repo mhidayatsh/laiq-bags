@@ -4,18 +4,21 @@
   "description": "Backend API for Laiq Bags e-commerce website",
   "main": "server.js",
   "scripts": {
+    "render-build": "npm install",
     "start": "node server.js",
-    "dev": "nodemon server.js",
+    "render-build": "npm install",
+    "dev": "NODE_ENV=development node server.js",
     "seed": "node scripts/seedData.js",
     "build:css": "tailwindcss -i ./css/tailwind.css -o ./css/styles.css --watch",
     "build:css:prod": "tailwindcss -i ./css/tailwind.css -o ./css/styles.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1",
     "monitor": "node scripts/monitor-server.js",
     "quick-fix": "node scripts/quick-fix.js",
-    "restart": "bash restart.sh",
+    "restart": "pkill -f 'node server.js' && npm start",
     "test-order": "node scripts/test-order-display.js",
     "test-color": "node scripts/test-color-display.js",
-    "test-auth": "node scripts/test-auth-switching.js"
+    "test-auth": "node scripts/test-auth-switching.js",
+    "prod": "NODE_ENV=production node server.js"
   },
   "keywords": [
     "e-commerce",

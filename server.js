@@ -208,10 +208,40 @@ if (process.env.NODE_ENV === 'development') {
     maxAge: '1d',
     etag: true,
     setHeaders: (res, path) => {
-      // Set proper MIME type for MP4 videos
+      // Set proper MIME types for different file types
       if (path.endsWith('.mp4')) {
         res.set('Content-Type', 'video/mp4');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.set('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.png')) {
+        res.set('Content-Type', 'image/png');
+      } else if (path.endsWith('.gif')) {
+        res.set('Content-Type', 'image/gif');
+      } else if (path.endsWith('.webp')) {
+        res.set('Content-Type', 'image/webp');
+      } else if (path.endsWith('.svg')) {
+        res.set('Content-Type', 'image/svg+xml');
+      } else if (path.endsWith('.ico')) {
+        res.set('Content-Type', 'image/x-icon');
       }
+    }
+  }));
+
+  // Serve CSS files with proper MIME type
+  app.use('/css', express.static(path.join(__dirname, 'css'), {
+    maxAge: '1d',
+    etag: true,
+    setHeaders: (res, path) => {
+      res.set('Content-Type', 'text/css');
+    }
+  }));
+
+  // Serve JavaScript files with proper MIME type
+  app.use('/js', express.static(path.join(__dirname, 'js'), {
+    maxAge: '1d',
+    etag: true,
+    setHeaders: (res, path) => {
+      res.set('Content-Type', 'application/javascript');
     }
   }));
 
@@ -431,7 +461,7 @@ app.get('/api/settings', async (req, res) => {
       }
     };
     
-    console.log('📤 Sending settings response with whatsappNumber:', responseSettings.whatsappNumber, 'and instagramHandle:', responseSettings.instagramHandle);
+    console.log('📤 Sending settings response');
     
     res.status(200).json({
       success: true,
@@ -463,9 +493,69 @@ if (process.env.NODE_ENV === 'production') {
     }
   });
   
-  app.use(express.static(path.join(__dirname, '../')));
+  // Serve static files with proper MIME types in production
+  app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+    maxAge: '1d',
+    etag: true,
+    setHeaders: (res, path) => {
+      // Set proper MIME types for different file types
+      if (path.endsWith('.mp4')) {
+        res.set('Content-Type', 'video/mp4');
+      } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.set('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.png')) {
+        res.set('Content-Type', 'image/png');
+      } else if (path.endsWith('.gif')) {
+        res.set('Content-Type', 'image/gif');
+      } else if (path.endsWith('.webp')) {
+        res.set('Content-Type', 'image/webp');
+      } else if (path.endsWith('.svg')) {
+        res.set('Content-Type', 'image/svg+xml');
+      } else if (path.endsWith('.ico')) {
+        res.set('Content-Type', 'image/x-icon');
+      }
+    }
+  }));
+
+  // Serve CSS files with proper MIME type
+  app.use('/css', express.static(path.join(__dirname, 'css'), {
+    maxAge: '1d',
+    etag: true,
+    setHeaders: (res, path) => {
+      res.set('Content-Type', 'text/css');
+    }
+  }));
+
+  // Serve JavaScript files with proper MIME type
+  app.use('/js', express.static(path.join(__dirname, 'js'), {
+    maxAge: '1d',
+    etag: true,
+    setHeaders: (res, path) => {
+      res.set('Content-Type', 'application/javascript');
+    }
+  }));
+
+  // Serve favicon
+  app.get('/favicon.ico', (req, res) => {
+    const iconPath = path.join(__dirname, 'favicon.ico');
+    if (fs.existsSync(iconPath)) {
+      res.type('image/x-icon');
+      res.sendFile(iconPath);
+    } else {
+      const logoPath = path.join(__dirname, 'assets', 'laiq-logo.png');
+      if (fs.existsSync(logoPath)) {
+        res.type('image/png');
+        res.sendFile(logoPath);
+      } else {
+        res.type('image/png');
+        res.send(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
+      }
+    }
+  });
+  
+  app.use(express.static(path.join(__dirname)));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
   });
 }
 
@@ -608,28 +698,38 @@ const MAX_RETRIES = 5;
 const RETRY_DELAY = 5000; // 5 seconds
 
 function connectWithRetry() {
-  mongoose.connect(process.env.MONGODB_URI, {
+  const mongoOptions = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 10000, // Increased to 10s
-    socketTimeoutMS: 60000, // Increased to 60s
-    connectTimeoutMS: 10000, // Increased to 10s
-    maxPoolSize: 5, // Reduced from 10
-    minPoolSize: 1, // Reduced from 2
-    maxIdleTimeMS: 15000, // Reduced from 30s
+    serverSelectionTimeoutMS: 30000, // Increased to 30s
+    socketTimeoutMS: 120000, // Increased to 120s
+    connectTimeoutMS: 30000, // Increased to 30s
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    maxIdleTimeMS: 30000,
     retryWrites: true,
     retryReads: true,
     w: 'majority',
-    heartbeatFrequencyMS: 5000, // Reduced from 10s
+    heartbeatFrequencyMS: 10000,
     // Connection-level timeouts
     serverApi: {
       version: '1',
       strict: true,
       deprecationErrors: true,
     },
-    // Aggressive connection management
-    bufferCommands: false, // Disable buffering
-  })
+    // Better connection management
+    bufferCommands: true,
+    // DNS resolution settings
+    family: 4, // Force IPv4
+    // Additional connection options
+    keepAlive: true,
+    keepAliveInitialDelay: 300000 // 5 minutes
+  };
+
+  console.log('🔗 Attempting to connect to MongoDB...');
+  console.log('📡 Connection string:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 50) + '...' : 'NOT SET');
+  
+  mongoose.connect(process.env.MONGODB_URI, mongoOptions)
   .then(() => {
     console.log('✅ Connected to MongoDB');
     retryCount = 0;

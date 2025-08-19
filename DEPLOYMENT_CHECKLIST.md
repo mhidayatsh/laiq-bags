@@ -1,122 +1,36 @@
-# 🚀 **Deployment Checklist - Laiq Bags**
+# Production Deployment Checklist
 
-## ✅ **Step-by-Step Deployment Progress**
+## ✅ Pre-Deployment Checks
+- [ ] MongoDB Atlas connection string is correct
+- [ ] All environment variables are set
+- [ ] SSL certificates are configured (if using HTTPS)
+- [ ] Domain DNS is pointing to the server
+- [ ] Firewall allows port 3001 (or configured port)
 
-### **Phase 1: Repository Setup ✅**
-- [x] Initialize Git repository
-- [x] Create .gitignore file
-- [x] Make initial commit
-- [ ] Create GitHub repository
-- [ ] Push code to GitHub
+## 🚀 Deployment Steps
+1. Upload all files to production server
+2. Install dependencies: `npm install`
+3. Set environment variables
+4. Start server: `npm run prod` or `./start-production.sh`
+5. Test all endpoints
 
-### **Phase 2: Production Credentials**
-- [ ] Set up MongoDB Atlas
-- [ ] Get Razorpay live keys
-- [ ] Configure email service
-- [ ] Generate secure secrets
+## 🧪 Post-Deployment Tests
+- [ ] Main page loads correctly
+- [ ] Static files (CSS, JS, images) load
+- [ ] API endpoints respond
+- [ ] Database operations work
+- [ ] Payment gateway integration works
+- [ ] Email functionality works
 
-### **Phase 3: Render Deployment**
-- [ ] Create Render account
-- [ ] Connect GitHub repository
-- [ ] Configure environment variables
-- [ ] Deploy application
-- [ ] Test deployment
+## 🔧 Troubleshooting
+- Check server logs: `tail -f server.log`
+- Test MongoDB connection: `node test-mongodb-connection.js`
+- Run health check: `node health-check.js`
+- Run comprehensive tests: `node test-server.js`
 
-### **Phase 4: Domain & SSL**
-- [ ] Add custom domain (optional)
-- [ ] Configure DNS records
-- [ ] Verify SSL certificate
-- [ ] Test HTTPS access
-
-### **Phase 5: Testing & Launch**
-- [ ] Test admin panel
-- [ ] Test payment processing
-- [ ] Test email functionality
-- [ ] Test user registration
-- [ ] Monitor performance
-
----
-
-## 🎯 **Current Status: Ready for GitHub**
-
-**Next Step: Create GitHub Repository**
-
-### **Quick GitHub Setup:**
-1. Go to https://github.com
-2. Click "New repository"
-3. Name: `laiq-bags`
-4. Description: "Laiq Bags e-commerce website"
-5. Make it Public
-6. Don't initialize with README (we already have one)
-7. Click "Create repository"
-
-### **Then run these commands:**
-```bash
-git remote add origin https://github.com/YOUR_USERNAME/laiq-bags.git
-git push -u origin main
-```
-
----
-
-## 🔧 **Production Credentials Needed**
-
-### **1. MongoDB Atlas:**
-- [ ] Sign up at mongodb.com/atlas
-- [ ] Create free cluster
-- [ ] Get connection string
-- [ ] Replace in environment variables
-
-### **2. Razorpay Live Keys:**
-- [ ] Login to razorpay.com
-- [ ] Complete KYC
-- [ ] Generate live API keys
-- [ ] Replace in environment variables
-
-### **3. Email Service:**
-- [ ] Enable 2FA on Gmail
-- [ ] Generate app password
-- [ ] Replace in environment variables
-
----
-
-## ⚡ **Quick Commands**
-
-### **After GitHub Repository:**
-```bash
-# Add remote and push
-git remote add origin https://github.com/YOUR_USERNAME/laiq-bags.git
-git push -u origin main
-```
-
-### **Test Environment Variables:**
-```bash
-# Test your setup
-node -e "
-require('dotenv').config({ path: './config.env.production' });
-console.log('✅ MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Missing');
-console.log('✅ Razorpay Key:', process.env.RAZORPAY_KEY_ID ? 'Set' : 'Missing');
-console.log('✅ Email Config:', process.env.EMAIL_USER ? 'Set' : 'Missing');
-console.log('✅ JWT Secret:', process.env.JWT_SECRET ? 'Set' : 'Missing');
-"
-```
-
----
-
-## 🎉 **Estimated Timeline**
-
-- **GitHub Setup**: 5 minutes
-- **MongoDB Atlas**: 10 minutes
-- **Razorpay Setup**: 15 minutes
-- **Email Setup**: 5 minutes
-- **Render Deployment**: 15 minutes
-- **Testing**: 10 minutes
-
-**Total Time: 60 minutes**
-
----
-
-## 🚀 **Ready to Deploy!**
-
-**Your website is ready for production deployment!**
-
-**Next: Create GitHub repository and get production credentials! 🎯**
+## 📞 Support
+If issues persist, check:
+1. Server logs for error messages
+2. MongoDB Atlas dashboard for connection issues
+3. Network connectivity and firewall settings
+4. Environment variable configuration
