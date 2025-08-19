@@ -416,7 +416,7 @@ router.put('/password/reset/:token', async (req, res) => {
     }
 
     // Validate password strength
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
     if (!passwordRegex.test(req.body.password)) {
       return res.status(400).json({
         success: false,
@@ -894,7 +894,7 @@ router.put('/customer/reset-password/:token', async (req, res) => {
         }
         
         // Enforce strong password policy to match schema
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
         if (!passwordRegex.test(password)) {
             console.log('❌ Password does not meet complexity requirements');
             return res.status(400).json({
@@ -1169,7 +1169,7 @@ router.put('/admin/reset-password/:token', async (req, res) => {
     }
 
     // Validate password strength
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
     if (!passwordRegex.test(req.body.password)) {
       return res.status(400).json({
         success: false,
