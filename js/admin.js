@@ -5160,63 +5160,8 @@ function handleImageUpdate(productId) {
         colorContainer.innerHTML = '';
     }
     
-    // Reload the product data
+    // Reload the product data using the original edit flow
     setTimeout(() => {
-        editProduct(productId);
+        openProductModal(productId);
     }, 500);
-}
-
-// Enhanced edit product function with better image handling
-async function editProduct(productId) {
-    try {
-        console.log('✏️ Editing product:', productId);
-        currentEditingProductId = productId;
-        
-        // Show modal
-        const modal = document.getElementById('product-modal');
-        modal.classList.remove('hidden');
-        
-        // Show loading state
-        const modalContent = modal.querySelector('.modal-content');
-        modalContent.innerHTML = `
-            <div class="flex items-center justify-center p-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
-                <span class="ml-2">Loading product...</span>
-            </div>
-        `;
-        
-        // Fetch product data
-        const response = await api.getProduct(productId);
-        const product = response.product;
-        
-        console.log('📦 Filling form with product data:', product);
-        
-        // Restore modal content
-        modalContent.innerHTML = `
-            <div class="modal-header">
-                <h3 class="text-xl font-semibold">Edit Product</h3>
-                <button onclick="closeProductModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <form id="product-form" class="space-y-6">
-                <!-- Form content will be loaded here -->
-            </form>
-        `;
-        
-        // Load form content
-        await loadProductForm();
-        
-        // Fill form with product data
-        fillProductForm(product);
-        
-        console.log('✅ Product form loaded and filled successfully');
-        
-    } catch (error) {
-        console.error('❌ Error editing product:', error);
-        showToast('Error loading product', 'error');
-        closeProductModal();
-    }
 }
