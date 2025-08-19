@@ -444,11 +444,9 @@ router.put('/products/:id', adminAuth, catchAsyncErrors(async (req, res) => {
         
         console.log('📦 Final update data:', updateData);
         
-        // Update product
-        product = await Product.findByIdAndUpdate(req.params.id, updateData, {
-            new: true,
-            runValidators: true
-        });
+        // Update product using save() so pre-save hooks (compression, stock calc) run
+        product.set(updateData);
+        await product.save();
         
         console.log('✅ Product updated successfully:', product._id);
         
