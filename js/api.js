@@ -13,6 +13,11 @@ function resolveApiBaseUrl() {
         return `${origin}/api`;
       }
 
+      // For production/live websites, use the same origin
+      if (!isLocalHost) {
+        return `${origin}/api`;
+      }
+
       // If the page itself is HTTPS (e.g. https://localhost:3443), prefer HTTPS API
       if (isHttps) {
         return 'https://localhost:3443/api';
@@ -158,7 +163,7 @@ class ApiService {
                     const apiIsHttp = typeof this.baseURL === 'string' && this.baseURL.startsWith('http://');
                     if (isHttpsPage && apiIsHttp) {
                         console.warn('Mixed content blocked: page is HTTPS but API is HTTP');
-                        throw new Error('Mixed content blocked - Use https://localhost:3443 (site) or switch API to HTTPS, or open the site on http://localhost:3001');
+                        throw new Error('Mixed content blocked - Use HTTPS for both site and API, or open the site on http://localhost:3001');
                     }
                 } catch (_) {
                     // ignore detection errors
