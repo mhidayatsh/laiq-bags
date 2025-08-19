@@ -1116,7 +1116,21 @@ function fillProductForm(productId) {
 function fillProductImages(images) {
     console.log('📸 Filling product images:', images);
     const imageContainer = document.querySelector('#image-upload-container .grid');
+    
+    if (!imageContainer) {
+        console.error('❌ Image container grid not found!');
+        return;
+    }
+    
     imageContainer.innerHTML = '';
+    
+    // Ensure images is an array
+    if (!Array.isArray(images)) {
+        console.warn('⚠️ Images is not an array, converting to empty array');
+        images = [];
+    }
+    
+    console.log(`📸 Processing ${images.length} images`);
     
     if (!images || images.length === 0) {
         console.log('📸 No images to fill, adding empty image upload item');
@@ -1148,7 +1162,14 @@ function fillProductImages(images) {
     }
     
     images.forEach((image, index) => {
-        console.log(`📸 Creating image item ${index}:`, image);
+        console.log(`📸 Creating image item ${index}:`, {
+            public_id: image.public_id,
+            alt: image.alt,
+            isPrimary: image.isPrimary,
+            urlLength: image.url ? image.url.length : 0,
+            urlPreview: image.url ? image.url.substring(0, 50) + '...' : 'NO URL'
+        });
+        
         const imageItem = document.createElement('div');
         imageItem.className = 'image-upload-item border-2 border-dashed border-gray-300 rounded-lg p-4 text-center';
         imageItem.innerHTML = `
@@ -1173,9 +1194,25 @@ function fillProductImages(images) {
         
         imageContainer.appendChild(imageItem);
         initializeImageUploadItem(imageItem);
+        console.log(`📸 Image item ${index} added to DOM`);
     });
     
     console.log(`📸 Created ${images.length} image items`);
+    
+    // Debug: Check what's actually in the DOM
+    const actualImageItems = document.querySelectorAll('#image-upload-container .image-upload-item');
+    console.log(`🔍 Debug: Found ${actualImageItems.length} image items in DOM`);
+    actualImageItems.forEach((item, index) => {
+        const input = item.querySelector('.image-input');
+        const hasExistingData = input && input.dataset.existingImage;
+        console.log(`  DOM Item ${index}: ${hasExistingData ? 'Has existing data' : 'No existing data'}`);
+    });
+    
+    // Ensure the add image button is visible
+    const addImageBtn = document.getElementById('add-image-btn');
+    if (addImageBtn) {
+        addImageBtn.style.display = 'block';
+    }
 }
 
 // Fill color variants
@@ -1258,6 +1295,16 @@ async function saveProduct() {
         const imageInputs = document.querySelectorAll('.image-input');
         
         console.log('🔍 Found image inputs:', imageInputs.length);
+        
+        // Debug: Log all image inputs
+        imageInputs.forEach((input, index) => {
+            console.log(`  Input ${index}:`, {
+                hasFiles: input.files && input.files.length > 0,
+                hasExistingData: !!input.dataset.existingImage,
+                fileCount: input.files ? input.files.length : 0,
+                existingDataLength: input.dataset.existingImage ? input.dataset.existingImage.length : 0
+            });
+        });
         
         for (let index = 0; index < imageInputs.length; index++) {
             const input = imageInputs[index];
@@ -1509,10 +1556,27 @@ async function saveProduct() {
             
             console.log('✅ Product operation successful:', response);
             console.log('📸 Response data:', response);
+            
+            // Check if the response contains the updated product with images
+            if (response.product && response.product.images) {
+                console.log('📸 Updated product images count:', response.product.images.length);
+                response.product.images.forEach((img, index) => {
+                    console.log(`  Image ${index + 1}: ${img.public_id} (Primary: ${img.isPrimary})`);
+                });
+            }
+            
             closeProductModal();
             
             // Reload products
             loadProducts();
+            
+            // Force reload the form if we're editing
+            if (currentEditingProductId) {
+                console.log('🔄 Force reloading form for edited product...');
+                setTimeout(() => {
+                    handleImageUpdate(currentEditingProductId);
+                }, 1000);
+            }
             
         } catch (error) {
             console.error('❌ Error saving product:', error);
@@ -5071,5 +5135,88 @@ function initializeContactMessages() {
             e.preventDefault();
             sendReply();
         });
+    }
+}
+
+// Function to properly handle image updates
+function handleImageUpdate(productId) {
+    console.log('🔄 Handling image update for product:', productId);
+    
+    // Clear the current form
+    const form = document.getElementById('product-form');
+    if (form) {
+        form.reset();
+    }
+    
+    // Clear the image container
+    const imageContainer = document.querySelector('#image-upload-container .grid');
+    if (imageContainer) {
+        imageContainer.innerHTML = '';
+    }
+    
+    // Clear color variants
+    const colorContainer = document.getElementById('color-variants-container');
+    if (colorContainer) {
+        colorContainer.innerHTML = '';
+    }
+    
+    // Reload the product data
+    setTimeout(() => {
+        editProduct(productId);
+    }, 500);
+}
+
+// Enhanced edit product function with better image handling
+async function editProduct(productId) {
+    try {
+        console.log('✏️ Editing product:', productId);
+        currentEditingProductId = productId;
+        
+        // Show modal
+        const modal = document.getElementById('product-modal');
+        modal.classList.remove('hidden');
+        
+        // Show loading state
+        const modalContent = modal.querySelector('.modal-content');
+        modalContent.innerHTML = `
+            <div class="flex items-center justify-center p-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+                <span class="ml-2">Loading product...</span>
+            </div>
+        `;
+        
+        // Fetch product data
+        const response = await api.getProduct(productId);
+        const product = response.product;
+        
+        console.log('📦 Filling form with product data:', product);
+        
+        // Restore modal content
+        modalContent.innerHTML = `
+            <div class="modal-header">
+                <h3 class="text-xl font-semibold">Edit Product</h3>
+                <button onclick="closeProductModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="product-form" class="space-y-6">
+                <!-- Form content will be loaded here -->
+            </form>
+        `;
+        
+        // Load form content
+        await loadProductForm();
+        
+        // Fill form with product data
+        fillProductForm(product);
+        
+        console.log('✅ Product form loaded and filled successfully');
+        
+    } catch (error) {
+        console.error('❌ Error editing product:', error);
+        showToast('Error loading product', 'error');
+        closeProductModal();
     }
 }

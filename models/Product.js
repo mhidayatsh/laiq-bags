@@ -8,7 +8,7 @@ const gunzip = util.promisify(zlib.gunzip);
 
 // Compression middleware
 const compressText = async (text) => {
-  if (!text || text.length < 1000) return text; // Don't compress small text
+  if (!text || text.length < 500) return text; // Don't compress small text
   try {
     const compressed = await gzip(text);
     return compressed.toString('base64');
@@ -529,7 +529,7 @@ productSchema.pre('save', async function(next) {
       console.log('🗜️ Processing images in pre-save hook:', this.images.length);
       for (let i = 0; i < this.images.length; i++) {
         const image = this.images[i];
-        if (image.url && image.url.startsWith('data:image/') && image.url.length > 10000) {
+        if (image.url && image.url.startsWith('data:image/') && image.url.length > 5000) {
           console.log(`🗜️ Compressing image ${i} URL:`, image.url.length, 'characters');
           const originalUrl = image.url;
           image.url = await compressText(image.url);
@@ -546,7 +546,7 @@ productSchema.pre('save', async function(next) {
       for (let variant of this.colorVariants) {
         if (variant.images && variant.images.length > 0) {
           for (let image of variant.images) {
-            if (image.url && image.url.startsWith('data:image/') && image.url.length > 10000) {
+            if (image.url && image.url.startsWith('data:image/') && image.url.length > 5000) {
               console.log('🗜️ Compressing color variant image URL:', image.url.length, 'characters');
               image.url = await compressText(image.url);
             }
