@@ -1567,6 +1567,107 @@ router.delete('/customer/addresses/:id', isAuthenticatedUser, async (req, res) =
   }
 });
 
+// Admin login => /api/auth/admin/login
+router.post('/admin/login', authLimiter, [
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email'),
+  body('password').notEmpty().withMessage('Password is required')
+], async (req, res) => {
+  try {
+    console.log('🔐 Admin login attempt for:', req.body.email);
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array());
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const { email, password } = req.body;
+
+    // Check if email and password is entered by user
+    if (!email || !password) {
+      console.log('❌ Missing email or password');
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter email & password'
+      });
+    }
+
+    // Finding user in database
+    const user = await User.findOne({ email }).select('+password');
+    console.log('👤 Admin user found:', user ? 'Yes' : 'No');
+
+    if (!user) {
+      console.log('❌ Admin user not found for email:', email);
+      return res.status(401).json({
+        success: false,
+        message: 'Email address not found. Please check your email or contact administrator.'
+      });
+    }
+
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      console.log('❌ Non-admin trying to access admin login:', email);
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
+    // Check if account is locked
+    if (user.isLocked) {
+      console.log('🔒 Admin account locked for:', email);
+      return res.status(423).json({
+        success: false,
+        message: 'Account is temporarily locked due to too many failed login attempts. Please try again later.',
+        lockUntil: user.lockUntil
+      });
+    }
+
+    // Check if password is correct or not
+    console.log('🔍 Comparing admin passwords...');
+    const isPasswordMatched = await user.comparePassword(password);
+    console.log('🔍 Admin password match result:', isPasswordMatched);
+
+    if (!isPasswordMatched) {
+      console.log('❌ Admin password mismatch for user:', email);
+      
+      // Increment login attempts
+      await user.incLoginAttempts();
+      
+      // Check if account should be locked
+      const updatedUser = await User.findOne({ email });
+      if (updatedUser.isLocked) {
+        return res.status(423).json({
+          success: false,
+          message: 'Account locked due to too many failed login attempts. Please try again later.',
+          lockUntil: updatedUser.lockUntil
+        });
+      }
+      
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect password. Please check your password and try again.',
+        remainingAttempts: 5 - (updatedUser.loginAttempts || 0)
+      });
+    }
+
+    // Reset login attempts on successful login
+    await user.resetLoginAttempts();
+    
+    console.log('✅ Admin login successful for:', email);
+    sendToken(user, 200, res);
+  } catch (error) {
+    console.error('❌ Admin login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 // Get public settings => /api/settings
 router.get('/settings', async (req, res) => {
   try {

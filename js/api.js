@@ -221,7 +221,7 @@ class ApiService {
     }
 
     async adminLogin(email, password) {
-        return this.request('/auth/login', {
+        return this.request('/auth/admin/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
