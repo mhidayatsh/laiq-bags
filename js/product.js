@@ -341,7 +341,6 @@ function renderProductDetail() {
             productContent.appendChild(productDetails);
             console.log('✅ Product details element created');
         }
-    }
     
     if (productDetails) {
         console.log('✅ Product details element found:', productDetails);
@@ -393,7 +392,7 @@ function renderProductDetail() {
     
     // Update wishlist button state
     updateWishlistButton();
-}
+} // End of renderProductDetail function
 
 // Fill basic product information
 function fillProductInfo(product) {
