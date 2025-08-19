@@ -9,13 +9,13 @@ function showLoginError(message) {
   // Create new error message
   const errorDiv = document.createElement('div');
   errorDiv.id = 'login-error';
-  errorDiv.className = 'mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm';
+  errorDiv.className = 'mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm animate-pulse';
   errorDiv.innerHTML = `
     <div class="flex items-center">
-      <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+      <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
       </svg>
-      ${message}
+      <span class="font-medium">${message}</span>
     </div>
   `;
   
@@ -23,6 +23,41 @@ function showLoginError(message) {
   const form = document.getElementById('login-form');
   if (form) {
     form.parentNode.insertBefore(errorDiv, form.nextSibling);
+  }
+  
+  // Auto-remove error after 5 seconds
+  setTimeout(() => {
+    if (errorDiv && errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+  }, 5000);
+}
+
+// Function to show success message
+function showLoginSuccess(message) {
+  // Remove any existing error message
+  const existingError = document.getElementById('login-error');
+  if (existingError) {
+    existingError.remove();
+  }
+  
+  // Create new success message
+  const successDiv = document.createElement('div');
+  successDiv.id = 'login-error'; // Reuse same ID for consistency
+  successDiv.className = 'mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
+  successDiv.innerHTML = `
+    <div class="flex items-center">
+      <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+      </svg>
+      <span class="font-medium">${message}</span>
+    </div>
+  `;
+  
+  // Insert success message after the form
+  const form = document.getElementById('login-form');
+  if (form) {
+    form.parentNode.insertBefore(successDiv, form.nextSibling);
   }
 }
 
@@ -33,18 +68,34 @@ function initializePasswordToggle() {
   const passwordEye = document.getElementById('password-eye');
   const passwordEyeSlash = document.getElementById('password-eye-slash');
   
-  if (togglePassword && passwordInput) {
-    togglePassword.addEventListener('click', function() {
+  if (togglePassword && passwordInput && passwordEye && passwordEyeSlash) {
+    console.log('🔍 Password toggle elements found, initializing...');
+    
+    togglePassword.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
       const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       passwordInput.setAttribute('type', type);
       
       if (type === 'text') {
         passwordEye.classList.add('hidden');
         passwordEyeSlash.classList.remove('hidden');
+        console.log('👁️ Password shown');
       } else {
         passwordEye.classList.remove('hidden');
         passwordEyeSlash.classList.add('hidden');
+        console.log('🙈 Password hidden');
       }
+    });
+    
+    console.log('✅ Password toggle functionality initialized');
+  } else {
+    console.error('❌ Password toggle elements not found:', {
+      togglePassword: !!togglePassword,
+      passwordInput: !!passwordInput,
+      passwordEye: !!passwordEye,
+      passwordEyeSlash: !!passwordEyeSlash
     });
   }
 }
@@ -85,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           // Show success message
-          showToast('Login successful! Redirecting...', 'success');
+          showLoginSuccess('Login successful! Redirecting...');
           
           // Redirect to home page
           setTimeout(() => {
@@ -99,21 +150,27 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ Customer login failed:', error);
         
         let errorMessage = 'Login failed. Please try again.';
+        let isSpecificError = false;
         
-        // Check for specific error types
-        if (error.message.includes('Email address not found')) {
-          errorMessage = 'Email address not found. Please check your email or register a new account.';
-        } else if (error.message.includes('Incorrect password')) {
-          errorMessage = 'Incorrect password. Please check your password and try again.';
-        } else if (error.message.includes('Access denied')) {
-          errorMessage = 'This email is registered as admin. Please use admin login instead.';
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Network error. Please check your internet connection and try again.';
+        // Check for specific error types with better messages
+        if (error.message.includes('Email address not found') || error.message.includes('User not found')) {
+          errorMessage = '❌ Email address not found. Please check your email or register a new account.';
+          isSpecificError = true;
+        } else if (error.message.includes('Incorrect password') || error.message.includes('Invalid password')) {
+          errorMessage = '❌ Incorrect password. Please check your password and try again.';
+          isSpecificError = true;
+        } else if (error.message.includes('Access denied') || error.message.includes('admin')) {
+          errorMessage = '❌ This email is registered as admin. Please use admin login instead.';
+          isSpecificError = true;
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          errorMessage = '❌ Network error. Please check your internet connection and try again.';
+          isSpecificError = true;
         } else if (error.message.includes('Rate limit exceeded')) {
           // Extract retry time from error message
           const retryMatch = error.message.match(/(\d+) seconds/);
           const retrySeconds = retryMatch ? retryMatch[1] : 60;
-          errorMessage = `Too many login attempts. Please wait ${retrySeconds} seconds before trying again.`;
+          errorMessage = `⏰ Too many login attempts. Please wait ${retrySeconds} seconds before trying again.`;
+          isSpecificError = true;
           
           // Disable form for retry period
           const submitBtn = document.querySelector('button[type="submit"]');
@@ -135,18 +192,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (errorDiv) {
               errorDiv.innerHTML = `
                 <div class="flex items-center">
-                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                   </svg>
-                  You can now try logging in again.
+                  <span class="font-medium">✅ You can now try logging in again.</span>
                 </div>
               `;
-              errorDiv.className = 'mt-4 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg text-sm';
+              errorDiv.className = 'mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm';
             }
           }, retrySeconds * 1000);
+        } else if (error.message.includes('400') || error.message.includes('401')) {
+          errorMessage = '❌ Invalid email or password. Please check your credentials and try again.';
+          isSpecificError = true;
+        } else if (error.message.includes('500') || error.message.includes('server')) {
+          errorMessage = '❌ Server error. Please try again later or contact support.';
+          isSpecificError = true;
         }
         
-        showLoginError(errorMessage);
+        // Show error with appropriate styling
+        if (isSpecificError) {
+          showLoginError(errorMessage);
+        } else {
+          showLoginError(`❌ ${errorMessage} (${error.message})`);
+        }
       }
     });
   }
