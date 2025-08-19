@@ -66,6 +66,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Render product details first, then hide loader after first paint (or main image load)
         console.log('🎨 Starting to render product details');
         renderProductDetail();
+        
+        // Wait for images to load or show fallbacks
+        await waitForImagesOrFallbacks();
+        
         await waitForFirstContentReady(5000);
         console.log('✅ Product content ready, hiding loading state');
         hideLoading();
@@ -157,6 +161,38 @@ function waitForFirstContentReady(timeoutMs = 5000) {
         } else {
             setTimeout(finish, 300); // No image found; brief delay then continue
         }
+    });
+}
+
+// Wait for images to load or show fallbacks
+async function waitForImagesOrFallbacks(timeout = 3000) {
+    return new Promise((resolve) => {
+        const startTime = Date.now();
+        
+        const checkImages = () => {
+            const mainImage = document.getElementById('main-product-image');
+            const imageGallery = document.getElementById('image-gallery');
+            
+            if (mainImage && imageGallery) {
+                // Check if main image has loaded or if fallbacks are set
+                if (mainImage.src && mainImage.src !== '' && 
+                    (mainImage.src.includes('placeholder') || mainImage.complete)) {
+                    console.log('✅ Images ready or fallbacks set, resolving');
+                    resolve();
+                    return;
+                }
+            }
+            
+            if (Date.now() - startTime > timeout) {
+                console.log('⏰ Image timeout reached, resolving anyway');
+                resolve();
+                return;
+            }
+            
+            setTimeout(checkImages, 100);
+        };
+        
+        checkImages();
     });
 }
 
@@ -540,25 +576,46 @@ function fillProductImages(product) {
     const images = product.images || [];
     console.log('📸 Found', images.length, 'images');
     
+    // If no images, use placeholder
+    if (images.length === 0) {
+        console.warn('⚠️ No images found for product, using placeholder');
+        setFallbackImages(mainImage, imageGallery, product.name);
+        return;
+    }
+    
     const primaryImage = images.find(img => img.isPrimary) || images[0];
     
-    if (primaryImage) {
+    if (primaryImage && primaryImage.url) {
         mainImage.src = primaryImage.url;
         mainImage.alt = primaryImage.alt || product.name;
         console.log('✅ Main image set:', primaryImage.url);
+        
+        // Add error handling for main image
+        mainImage.onerror = function() {
+            console.warn('⚠️ Main image failed to load, using fallback');
+            this.src = '/assets/placeholder-bag-1.jpg';
+            this.alt = `${product.name} - Image not available`;
+        };
     } else {
-        console.error('❌ No images found for product');
+        console.warn('⚠️ Primary image has no URL, using fallback');
+        setFallbackImages(mainImage, imageGallery, product.name);
         return;
     }
     
     // Create image gallery
     imageGallery.innerHTML = '';
     images.forEach((image, index) => {
+        if (!image.url) {
+            console.warn(`⚠️ Image ${index + 1} has no URL, skipping`);
+            return;
+        }
+        
         const thumbnail = document.createElement('div');
         thumbnail.className = 'aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-gold transition-colors';
         thumbnail.innerHTML = `
             <img src="${image.url}" alt="${image.alt || `Product Image ${index + 1}`}" 
-                 class="w-full h-full object-cover">
+                 class="w-full h-full object-cover"
+                 onerror="this.src='/assets/placeholder-bag-1.jpg'; this.alt='Image not available';">
         `;
         
         thumbnail.addEventListener('click', () => {
@@ -584,6 +641,57 @@ function fillProductImages(product) {
     });
     
     console.log('✅ Image gallery created with', images.length, 'thumbnails');
+}
+
+// Set fallback images when product has no images or images fail to load
+function setFallbackImages(mainImage, imageGallery, productName) {
+    console.log('🖼️ Setting fallback images for:', productName);
+    
+    // Set main image to placeholder
+    mainImage.src = '/assets/placeholder-bag-1.jpg';
+    mainImage.alt = `${productName} - Image not available`;
+    
+    // Create gallery with placeholder images
+    imageGallery.innerHTML = '';
+    
+    // Add 2-3 placeholder images to gallery
+    const placeholderImages = [
+        '/assets/placeholder-bag-1.jpg',
+        '/assets/placeholder-bag-2.jpg',
+        '/assets/placeholder-bag-3.jpg'
+    ];
+    
+    placeholderImages.forEach((placeholder, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-gold transition-colors';
+        thumbnail.innerHTML = `
+            <img src="${placeholder}" alt="Placeholder Image ${index + 1}" 
+                 class="w-full h-full object-cover">
+        `;
+        
+        thumbnail.addEventListener('click', () => {
+            mainImage.src = placeholder;
+            mainImage.alt = `Placeholder Image ${index + 1}`;
+            
+            // Update active thumbnail
+            imageGallery.querySelectorAll('div').forEach(thumb => {
+                thumb.classList.remove('border-gold');
+                thumb.classList.add('border-transparent');
+            });
+            thumbnail.classList.remove('border-transparent');
+            thumbnail.classList.add('border-gold');
+        });
+        
+        // Set first image as active
+        if (index === 0) {
+            thumbnail.classList.remove('border-transparent');
+            thumbnail.classList.add('border-gold');
+        }
+        
+        imageGallery.appendChild(thumbnail);
+    });
+    
+    console.log('✅ Fallback images set');
 }
 
 // Fill color selection
