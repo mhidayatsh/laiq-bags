@@ -39,12 +39,7 @@ router.get('/', isAuthenticatedUser, async (req, res) => {
                                 isDiscountActive: 1,
                                 discountType: 1,
                                 discountAmount: 1,
-                                image: {
-                                    $ifNull: [
-                                        { $arrayElemAt: ["$images.url", { $indexOfArray: ["$images.isPrimary", true] }] },
-                                        { $arrayElemAt: ["$images.url", 0] }
-                                    ]
-                                },
+                                images: 1,
                                 createdAt: 1,
                             }
                         }
@@ -69,12 +64,38 @@ router.get('/', isAuthenticatedUser, async (req, res) => {
         }
         
         const wishlist = userWithWishlist[0].wishlist;
+        
+        // Decompress H4sI URLs in wishlist images
+        const decompressedWishlist = wishlist.map(product => {
+            if (product.images && Array.isArray(product.images)) {
+                const decompressedImages = product.images.map(image => {
+                    if (image.url && image.url.startsWith('H4sI')) {
+                        try {
+                            const zlib = require('zlib');
+                            const buffer = Buffer.from(image.url, 'base64');
+                            const decompressed = zlib.gunzipSync(buffer);
+                            return {
+                                ...image,
+                                url: `data:image/jpeg;base64,${decompressed.toString('base64')}`
+                            };
+                        } catch (error) {
+                            console.error('Error decompressing image URL:', error);
+                            return image;
+                        }
+                    }
+                    return image;
+                });
+                return { ...product, images: decompressedImages };
+            }
+            return product;
+        });
+        
         const duration = Date.now() - startedAt;
         console.log(`✅ Wishlist loaded in ${duration}ms: ${wishlist.length} items`);
 
         res.status(200).json({
             success: true,
-            wishlist: wishlist,
+            wishlist: decompressedWishlist,
             count: wishlist.length,
             message: 'Wishlist retrieved successfully'
         });

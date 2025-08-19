@@ -1015,9 +1015,13 @@
                 const hasDiscount = displayPrice < originalPrice;
                 const discountPercentage = hasDiscount ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0;
                 
+                // Get primary image or first image
+                const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
+                const imageUrl = primaryImage?.url || 'https://via.placeholder.com/300x200?text=Product';
+                
                 return `
                   <div class="bg-white border border-beige rounded-lg overflow-hidden">
-                    <img src="${product.images?.[0]?.url || product.image || 'https://via.placeholder.com/300x200?text=Product'}" 
+                    <img src="${imageUrl}" 
                          alt="${product.name}" class="w-full h-48 object-cover">
                     <div class="p-4">
                       <h3 class="font-semibold mb-2">${product.name}</h3>
@@ -1030,7 +1034,7 @@
                       </div>
                       <div class="flex gap-2">
                         <button class="add-to-cart-btn bg-gold text-white px-3 py-1 rounded text-sm hover:bg-charcoal transition-colors" 
-                                data-id="${product._id}" data-name="${product.name}" data-price="${displayPrice}" data-image="${product.images?.[0]?.url || product.image}">
+                                data-id="${product._id}" data-name="${product.name}" data-price="${displayPrice}" data-image="${imageUrl}">
                           Add to Cart
                         </button>
                         <button class="remove-wishlist-btn text-red-500 hover:text-gold text-sm" data-id="${product._id}">
