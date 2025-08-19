@@ -29,8 +29,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('🔍 Current URL:', window.location.href);
     console.log('🔍 URL Search Params:', window.location.search);
     
-    // Wait a bit for DOM to be fully ready
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for DOM to be fully ready and all elements to be available
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Double-check that critical elements exist
+    const criticalElements = ['product-content', 'loading-state', 'error-state'];
+    const missingElements = criticalElements.filter(id => !document.getElementById(id));
+    
+    if (missingElements.length > 0) {
+        console.error('❌ Critical elements missing:', missingElements);
+        console.error('❌ Available elements:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+        return;
+    }
     
     try {
         // Get product ID from URL
@@ -237,16 +247,19 @@ function renderProductDetail() {
     let productDetails = document.getElementById('product-details');
     console.log('🔍 Looking for product-details element...');
     console.log('🔍 Document ready state:', document.readyState);
-    console.log('🔍 All elements with id:', document.querySelectorAll('[id]'));
     
     // If element not found, try to create it
     if (!productDetails) {
         console.log('⚠️ Product details element not found, trying to create it...');
         const productContent = document.getElementById('product-content');
-        if (productContent) {
-            productDetails = document.createElement('div');
-            productDetails.id = 'product-details';
-            productDetails.className = 'grid grid-cols-1 lg:grid-cols-2 gap-12';
+        if (!productContent) {
+            console.error('❌ Product content element not found - cannot create product details');
+            return;
+        }
+        
+        productDetails = document.createElement('div');
+        productDetails.id = 'product-details';
+        productDetails.className = 'grid grid-cols-1 lg:grid-cols-2 gap-12';
             productDetails.innerHTML = `
                 <!-- Product Images -->
                 <div class="space-y-4">
