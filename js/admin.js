@@ -1324,12 +1324,39 @@ async function saveProduct() {
                 
                 // Convert file to base64 data URL instead of blob URL
                 const imageUrl = await convertFileToDataURL(file);
-                images.push({
-                    public_id: `admin-upload-${Date.now()}-${index}`,
-                    url: imageUrl,
-                    alt: `Product Image ${index + 1}`,
-                    isPrimary: isPrimary
-                });
+                
+                // Check image size and compress if needed
+                const sizeInBytes = Math.ceil((imageUrl.length * 3) / 4);
+                const sizeInMB = sizeInBytes / (1024 * 1024);
+                
+                if (sizeInMB > 1) {
+                    console.warn(`⚠️ Large image detected: ${sizeInMB.toFixed(2)}MB. Compressing to prevent server errors.`);
+                    // For very large images, we'll reduce quality significantly
+                    const compressedUrl = await compressImageQuality(imageUrl, 0.5);
+                    images.push({
+                        public_id: `admin-upload-${Date.now()}-${index}`,
+                        url: compressedUrl,
+                        alt: `Product Image ${index + 1}`,
+                        isPrimary: isPrimary
+                    });
+                } else if (sizeInMB > 0.5) {
+                    console.log(`📸 Moderately large image: ${sizeInMB.toFixed(2)}MB. Compressing slightly.`);
+                    // For moderately large images, reduce quality slightly
+                    const compressedUrl = await compressImageQuality(imageUrl, 0.7);
+                    images.push({
+                        public_id: `admin-upload-${Date.now()}-${index}`,
+                        url: compressedUrl,
+                        alt: `Product Image ${index + 1}`,
+                        isPrimary: isPrimary
+                    });
+                } else {
+                    images.push({
+                        public_id: `admin-upload-${Date.now()}-${index}`,
+                        url: imageUrl,
+                        alt: `Product Image ${index + 1}`,
+                        isPrimary: isPrimary
+                    });
+                }
             } else if (input.dataset.existingImage) {
                 // Existing image (from edit mode)
                 console.log(`📸 Input ${index} has existing image data:`, input.dataset.existingImage ? 'YES' : 'NO');
@@ -1473,13 +1500,24 @@ async function saveProduct() {
                     const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
                     console.log(`📸 Image size: ${sizeInMB}MB`);
                     
-                    // Warn if image is too large
-                    if (sizeInMB > 2) {
-                        console.warn(`⚠️ Large image detected: ${sizeInMB}MB. Consider reducing image size.`);
-                        // Try to compress by reducing quality
+                    // Warn if image is too large and reduce quality
+                    if (sizeInMB > 1) {
+                        console.warn(`⚠️ Large image detected: ${sizeInMB}MB. Reducing quality to prevent server errors.`);
+                        // Reduce quality to prevent 502 errors
                         return {
                             public_id: img.public_id,
-                            url: img.url.replace(/q=\d+/, 'q=60'), // Reduce quality to 60%
+                            url: img.url.replace(/q=\d+/, 'q=50'), // Reduce quality to 50%
+                            alt: img.alt || 'Product Image',
+                            isPrimary: img.isPrimary || false
+                        };
+                    }
+                    
+                    // For moderately large images, reduce quality slightly
+                    if (sizeInMB > 0.5) {
+                        console.log(`📸 Moderately large image: ${sizeInMB}MB. Reducing quality slightly.`);
+                        return {
+                            public_id: img.public_id,
+                            url: img.url.replace(/q=\d+/, 'q=70'), // Reduce quality to 70%
                             alt: img.alt || 'Product Image',
                             isPrimary: img.isPrimary || false
                         };
@@ -1581,7 +1619,29 @@ async function saveProduct() {
         } catch (error) {
             console.error('❌ Error saving product:', error);
             
-            // Show specific error message
+            // Handle specific error types
+            if (error.message && error.message.includes('502')) {
+                console.error('🚨 502 Bad Gateway Error - Server overloaded');
+                showToast('Server is temporarily overloaded. Please try again in a moment or reduce image size.', 'error');
+                
+                // Suggest reducing image size
+                const largeImages = productData.images.filter(img => {
+                    if (img.url && img.url.startsWith('data:image/')) {
+                        const sizeInBytes = Math.ceil((img.url.length * 3) / 4);
+                        const sizeInMB = sizeInBytes / (1024 * 1024);
+                        return sizeInMB > 0.5;
+                    }
+                    return false;
+                });
+                
+                if (largeImages.length > 0) {
+                    console.warn(`⚠️ Large images detected: ${largeImages.length} images over 0.5MB`);
+                    showToast(`Large images detected. Consider reducing image size to prevent server errors.`, 'warning');
+                }
+            } else {
+                // Show generic error message
+                showToast('Failed to save product. Please try again.', 'error');
+            }
             let errorMessage = 'Error saving product';
             if (error.message.includes('PayloadTooLargeError')) {
                 errorMessage = 'Product data is too large. Please reduce image sizes or remove some images.';
@@ -4153,6 +4213,30 @@ function convertFileToDataURL(file) {
             reject(new Error('Failed to read file'));
         };
         reader.readAsDataURL(file);
+    });
+}
+
+// Compress image quality to reduce size
+async function compressImageQuality(dataUrl, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            // Draw image on canvas
+            ctx.drawImage(img, 0, 0);
+            
+            // Convert to compressed data URL
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressedDataUrl);
+        };
+        img.onerror = reject;
+        img.src = dataUrl;
     });
 } 
 
