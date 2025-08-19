@@ -694,6 +694,18 @@ router.post('/new', isAuthenticatedUser, authorizeRoles('admin'), async (req, re
 // Update Product => /api/products/:id
 router.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, res) => {
   try {
+    console.log('🔄 Updating product:', req.params.id);
+    console.log('📸 Request body images:', req.body.images ? req.body.images.length : 'NO IMAGES');
+    if (req.body.images) {
+      req.body.images.forEach((img, index) => {
+        console.log(`📸 Image ${index}:`, {
+          public_id: img.public_id,
+          url: img.url ? img.url.substring(0, 50) + '...' : 'NO URL',
+          isPrimary: img.isPrimary
+        });
+      });
+    }
+    
     let product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -726,6 +738,18 @@ router.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, res
         useFindAndModify: false
       }
     );
+
+    console.log('✅ Product updated successfully');
+    console.log('📸 Updated product images:', product.images ? product.images.length : 'NO IMAGES');
+    if (product.images) {
+      product.images.forEach((img, index) => {
+        console.log(`📸 Updated image ${index}:`, {
+          public_id: img.public_id,
+          url: img.url ? img.url.substring(0, 50) + '...' : 'NO URL',
+          isPrimary: img.isPrimary
+        });
+      });
+    }
 
     const productObj = product.toObject();
     productObj.discountInfo = product.getDiscountInfo();
