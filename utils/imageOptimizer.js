@@ -1,6 +1,7 @@
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs').promises;
+const zlib = require('zlib');
 
 // Image optimization configuration
 const IMAGE_CONFIGS = {
@@ -167,5 +168,39 @@ module.exports = {
   isValidImage,
   createPlaceholder,
   IMAGE_CONFIGS,
-  SUPPORTED_FORMATS
+  SUPPORTED_FORMATS,
+  // Convert data URL or compressed data URL into optimized file under uploads and return URL
+  normalizeImageUrlForProduct: async (url, productId, index = 0) => {
+    try {
+      if (!url) return url;
+      // Decompress if needed
+      if (typeof url === 'string' && url.startsWith('H4sI')) {
+        try {
+          const buffer = Buffer.from(url, 'base64');
+          url = zlib.gunzipSync(buffer).toString();
+        } catch (_) {}
+      }
+      // Keep non-data URLs as-is
+      if (!String(url).startsWith('data:image/')) return url;
+      const match = String(url).match(/^data:(image\/(png|jpe?g|webp|avif));base64,(.+)$/i);
+      if (!match) return url;
+      const base64Payload = match[3];
+      const inputBuffer = Buffer.from(base64Payload, 'base64');
+      // Prepare destination
+      const safeProductId = String(productId || 'temp');
+      const destDir = path.join(__dirname, '..', 'uploads', 'products', safeProductId);
+      await fs.mkdir(destDir, { recursive: true });
+      const fileBase = `img-${Date.now()}-${index}`;
+      const destPath = path.join(destDir, `${fileBase}.webp`);
+      // Optimize and save
+      await sharp(inputBuffer)
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toFile(destPath);
+      return `/uploads/products/${safeProductId}/${fileBase}.webp`;
+    } catch (error) {
+      console.error('normalizeImageUrlForProduct error:', error);
+      return url;
+    }
+  }
 };

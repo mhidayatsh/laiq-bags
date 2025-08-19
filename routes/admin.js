@@ -9,6 +9,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const ApiFeatures = require('../utils/apiFeatures');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const jwt = require('jsonwebtoken');
+const { normalizeImageUrlForProduct } = require('../utils/imageOptimizer');
 
 // Verify Cart model is properly loaded
 console.log('🔍 Cart model loaded:', typeof Cart);
@@ -310,7 +311,22 @@ router.post('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async 
         };
         
         console.log('📦 Final product data:', productData);
-        
+        // Normalize images for create (convert data/compressed URLs to files)
+        if (Array.isArray(productData.images)) {
+            const normalized = [];
+            for (let i = 0; i < productData.images.length; i++) {
+                const img = productData.images[i] || {};
+                const normalizedUrl = await normalizeImageUrlForProduct(img.url, (req.user && req.user._id ? req.user._id.toString() : 'temp'), i);
+                normalized.push({
+                    public_id: img.public_id || `admin-upload-${Date.now()}-${i}`,
+                    url: normalizedUrl || img.url,
+                    alt: img.alt || 'Product Image',
+                    isPrimary: Boolean(img.isPrimary)
+                });
+            }
+            productData.images = normalized;
+        }
+
         const product = await Product.create(productData);
         
         console.log('✅ Product created successfully:', product._id);
@@ -433,13 +449,28 @@ router.put('/products/:id', adminAuth, catchAsyncErrors(async (req, res) => {
         // Calculate total stock from color variants
         const totalStock = colorVariants.reduce((sum, variant) => sum + variant.stock, 0);
         
+        // Normalize images for update
+        let normalizedImages = product.images;
+        if (req.body.images && Array.isArray(req.body.images)) {
+            normalizedImages = [];
+            for (let i = 0; i < req.body.images.length; i++) {
+                const img = req.body.images[i] || {};
+                const normalizedUrl = await normalizeImageUrlForProduct(img.url, product._id.toString(), i);
+                normalizedImages.push({
+                    public_id: img.public_id || `admin-upload-${Date.now()}-${i}`,
+                    url: normalizedUrl || img.url,
+                    alt: img.alt || 'Product Image',
+                    isPrimary: Boolean(img.isPrimary)
+                });
+            }
+        }
+
         // Prepare update data
         const updateData = {
             ...req.body,
             colorVariants: colorVariants,
             stock: totalStock, // Set total stock from color variants
-            // Ensure images array exists
-            images: req.body.images && Array.isArray(req.body.images) ? req.body.images : product.images
+            images: normalizedImages
         };
         
         console.log('📦 Final update data:', updateData);
