@@ -719,6 +719,7 @@ function renderProducts() {
                 <div class="relative">
                     <a href="product.html?id=${productId}" class="block">
                         <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low"
+                             onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
                     <button class="wishlist-btn absolute top-3 right-3 bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-all ${isInWishlist(productId) ? 'text-red-500' : 'text-charcoal/60'}" 

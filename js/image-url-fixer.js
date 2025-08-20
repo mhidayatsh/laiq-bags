@@ -25,6 +25,13 @@ function replaceUnsplashUrl(url) {
         }
     }
     
+    // Normalize site-relative URLs (strip origin if same-origin was saved)
+    try {
+        const loc = typeof window !== 'undefined' ? window.location.origin : null;
+        if (loc && url.startsWith(loc + '/')) {
+            return url.replace(loc, '');
+        }
+    } catch (_) {}
     return url;
 }
 

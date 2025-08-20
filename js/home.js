@@ -266,7 +266,9 @@ function renderFeaturedProducts() {
             <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div class="relative">
                     <a href="product.html?id=${productId}" class="block">
-                        <img src="${imgSrc}" alt="${product.name}" 
+                        <img src="${imgSrc}" alt="${product.name}"
+                             loading="lazy" decoding="async" fetchpriority="low"
+                             onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
                     
