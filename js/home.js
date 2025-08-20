@@ -534,12 +534,12 @@ function initializeTestimonialCarousel() {
             const slideWidth = wrapper.clientWidth;
             // Set each slide to exactly the wrapper width
             slides.forEach(slide => {
-                slide.style.flex = '0 0 100%';
+                slide.style.boxSizing = 'border-box';
+                slide.style.flex = `0 0 ${slideWidth}px`;
                 slide.style.minWidth = slideWidth + 'px';
                 slide.style.maxWidth = slideWidth + 'px';
             });
-            // Set track width to total
-            track.style.width = (slideWidth * slides.length) + 'px';
+            // Track width adjusts naturally from children; keep transform in sync
             // Keep current slide in view after resize
             track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
         };
