@@ -27,6 +27,22 @@ let totalPages = 1;
 let totalProducts = 0;
 let isLoading = false;
 
+// Show loader on the products grid (used for initial load and pagination)
+function showShopLoader() {
+    const productsGrid = document.getElementById('products-grid');
+    if (productsGrid) {
+        productsGrid.innerHTML = '<div id="products-loading-state" class="col-span-full text-center py-12"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div><p class="text-charcoal/60">Loading products...</p></div>';
+    }
+}
+
+// Hide the loader if it is present
+function hideShopLoader() {
+    const loader = document.getElementById('products-loading-state');
+    if (loader && loader.parentNode) {
+        loader.parentNode.removeChild(loader);
+    }
+}
+
 // Initialize shop page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛍️ Shop page initialized');
@@ -88,6 +104,8 @@ async function loadProductsFromAPI(page = 1, limit = productsPerPage) {
     
     isLoading = true;
     const start = performance.now();
+    // Show loader for initial load and pagination
+    showShopLoader();
     
     try {
         const query = buildQueryParams(page, limit);
@@ -175,6 +193,8 @@ async function loadProductsFromAPI(page = 1, limit = productsPerPage) {
         }
     } finally {
         isLoading = false;
+        // Ensure loader is removed if still present
+        hideShopLoader();
     }
 }
 
