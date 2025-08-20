@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Start countdown timers
         startCountdownTimers();
+
+        // Init testimonials carousel
+        initializeTestimonialCarousel();
         
         console.log('✅ Home page ready');
     } catch (error) {
@@ -509,3 +512,72 @@ function generateStars(rating) {
     
     return starsHTML;
 } 
+
+// Testimonials carousel
+function initializeTestimonialCarousel() {
+    try {
+        const track = document.getElementById('testimonial-track');
+        const prevBtn = document.getElementById('testimonial-prev');
+        const nextBtn = document.getElementById('testimonial-next');
+        const wrapper = document.getElementById('testimonial-carousel');
+        if (!track || !wrapper) return;
+
+        const slides = Array.from(track.children);
+        if (slides.length === 0) return;
+
+        let currentIndex = 0;
+        let autoTimer = null;
+
+        const goTo = (index) => {
+            currentIndex = (index + slides.length) % slides.length;
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        };
+
+        const next = () => goTo(currentIndex + 1);
+        const prev = () => goTo(currentIndex - 1);
+
+        nextBtn && nextBtn.addEventListener('click', next);
+        prevBtn && prevBtn.addEventListener('click', prev);
+
+        // Auto-rotate every 6s
+        const startAuto = () => {
+            stopAuto();
+            autoTimer = setInterval(next, 6000);
+        };
+        const stopAuto = () => {
+            if (autoTimer) clearInterval(autoTimer);
+            autoTimer = null;
+        };
+        startAuto();
+
+        // Pause on hover (desktop)
+        wrapper.addEventListener('mouseenter', stopAuto);
+        wrapper.addEventListener('mouseleave', startAuto);
+
+        // Touch swipe (mobile)
+        let touchStartX = 0;
+        let touchDeltaX = 0;
+        wrapper.addEventListener('touchstart', (e) => {
+            stopAuto();
+            touchStartX = e.touches[0].clientX;
+            touchDeltaX = 0;
+        }, { passive: true });
+        wrapper.addEventListener('touchmove', (e) => {
+            touchDeltaX = e.touches[0].clientX - touchStartX;
+        }, { passive: true });
+        wrapper.addEventListener('touchend', () => {
+            if (Math.abs(touchDeltaX) > 40) {
+                if (touchDeltaX < 0) next(); else prev();
+            }
+            startAuto();
+        });
+
+        // Reset transform on resize (keeps correct position)
+        window.addEventListener('resize', () => goTo(currentIndex));
+
+        // Initial position
+        goTo(0);
+    } catch (e) {
+        console.warn('Testimonials carousel init failed:', e);
+    }
+}
