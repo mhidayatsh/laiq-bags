@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const { uploadImage, deleteImage } = require('../utils/cloudinary');
 const zlib = require('zlib');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const { productLimiter } = require('../middleware/rateLimiter');
@@ -659,6 +660,26 @@ router.post('/new', isAuthenticatedUser, authorizeRoles('admin'), async (req, re
   try {
     req.body.createdBy = req.user.id;
 
+    // If images are present and are data URLs or remote URLs, upload them to Cloudinary
+    if (Array.isArray(req.body.images) && req.body.images.length > 0) {
+      const uploaded = [];
+      for (const img of req.body.images) {
+        const source = img?.url || img; // support {url,...} or raw url
+        const uploadedImg = await uploadImage(source, { folder: 'laiq-bags/products' });
+        if (uploadedImg) {
+          uploaded.push({
+            public_id: uploadedImg.public_id,
+            url: uploadedImg.url,
+            alt: img.alt || 'Product Image',
+            isPrimary: Boolean(img.isPrimary)
+          });
+        }
+      }
+      if (uploaded.length > 0) {
+        req.body.images = uploaded;
+      }
+    }
+
     const product = await Product.create(req.body);
 
     const productObj = product.toObject();
@@ -716,10 +737,35 @@ router.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, res
 
     console.log('🔄 About to update database with images:', req.body.images ? req.body.images.length : 'NO IMAGES');
     
+    // If images contain data URLs or new remote URLs, upload to Cloudinary
+    if (Array.isArray(req.body.images)) {
+      const processed = [];
+      for (const img of req.body.images) {
+        if (img.public_id && img.url) {
+          // Existing Cloudinary image - keep as-is
+          processed.push(img);
+          continue;
+        }
+        const source = img?.url || img;
+        const uploadedImg = await uploadImage(source, { folder: 'laiq-bags/products' });
+        if (uploadedImg) {
+          processed.push({
+            public_id: uploadedImg.public_id,
+            url: uploadedImg.url,
+            alt: img.alt || 'Product Image',
+            isPrimary: Boolean(img.isPrimary)
+          });
+        }
+      }
+      if (processed.length > 0) {
+        req.body.images = processed;
+      }
+    }
+
     // Use findOneAndUpdate with runValidators to ensure proper validation
     product = await Product.findOneAndUpdate(
-      { _id: req.params.id }, 
-      req.body, 
+      { _id: req.params.id },
+      req.body,
       {
         new: true,
         runValidators: true,
@@ -905,6 +951,15 @@ router.delete('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, 
         success: false,
         message: 'Product not found'
       });
+    }
+
+    // Try to delete images from Cloudinary
+    if (product.images && product.images.length > 0) {
+      for (const img of product.images) {
+        if (img.public_id) {
+          await deleteImage(img.public_id);
+        }
+      }
     }
 
     await product.deleteOne();
