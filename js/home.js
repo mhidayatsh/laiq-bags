@@ -527,17 +527,44 @@ function initializeTestimonialCarousel() {
 
         let currentIndex = 0;
         let autoTimer = null;
+        let isAnimating = false;
+
+        // Enforce one-slide-per-view sizing
+        const applySizes = () => {
+            const slideWidth = wrapper.clientWidth;
+            // Set each slide to exactly the wrapper width
+            slides.forEach(slide => {
+                slide.style.flex = '0 0 100%';
+                slide.style.minWidth = slideWidth + 'px';
+                slide.style.maxWidth = slideWidth + 'px';
+            });
+            // Set track width to total
+            track.style.width = (slideWidth * slides.length) + 'px';
+            // Keep current slide in view after resize
+            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+        };
 
         const goTo = (index) => {
+            if (isAnimating) return;
+            isAnimating = true;
+            const slideWidth = wrapper.clientWidth;
             currentIndex = (index + slides.length) % slides.length;
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            // Unlock after CSS transition
+            setTimeout(() => { isAnimating = false; }, 520);
         };
 
         const next = () => goTo(currentIndex + 1);
         const prev = () => goTo(currentIndex - 1);
 
-        nextBtn && nextBtn.addEventListener('click', next);
-        prevBtn && prevBtn.addEventListener('click', prev);
+        const onManual = (fn) => {
+            stopAuto();
+            fn();
+            startAuto();
+        };
+
+        nextBtn && nextBtn.addEventListener('click', () => onManual(next));
+        prevBtn && prevBtn.addEventListener('click', () => onManual(prev));
 
         // Auto-rotate every 6s
         const startAuto = () => {
@@ -572,10 +599,11 @@ function initializeTestimonialCarousel() {
             startAuto();
         });
 
-        // Reset transform on resize (keeps correct position)
-        window.addEventListener('resize', () => goTo(currentIndex));
+        // Recalculate sizes on resize and keep position
+        window.addEventListener('resize', applySizes);
 
         // Initial position
+        applySizes();
         goTo(0);
     } catch (e) {
         console.warn('Testimonials carousel init failed:', e);
