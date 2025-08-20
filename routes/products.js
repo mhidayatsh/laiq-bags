@@ -737,28 +737,56 @@ router.put('/:id', isAuthenticatedUser, authorizeRoles('admin'), async (req, res
 
     console.log('🔄 About to update database with images:', req.body.images ? req.body.images.length : 'NO IMAGES');
     
-    // If images contain data URLs or new remote URLs, upload to Cloudinary
+    // If images are provided, process them; otherwise do NOT overwrite existing images
     if (Array.isArray(req.body.images)) {
-      const processed = [];
-      for (const img of req.body.images) {
-        if (img.public_id && img.url) {
-          // Existing Cloudinary image - keep as-is
-          processed.push(img);
-          continue;
+      // Filter out empty/placeholder entries
+      const incoming = req.body.images.filter(Boolean);
+      const hasMeaningfulImages = incoming.some((img) => {
+        const src = (img && (img.url || img)) || '';
+        if (!src || typeof src !== 'string') return false;
+        // Ignore placeholder data svg often used as default
+        return !src.startsWith('data:image/svg+xml');
+      });
+
+      if (!hasMeaningfulImages) {
+        // Do not modify images on the document when no real images were sent
+        delete req.body.images;
+      } else {
+        const processed = [];
+        for (const img of incoming) {
+          const src = img?.url || img;
+          if (img && img.public_id && img.url) {
+            // Existing Cloudinary image - keep as-is
+            processed.push(img);
+            continue;
+          }
+          const uploadedImg = await uploadImage(src, { folder: 'laiq-bags/products' });
+          if (uploadedImg) {
+            processed.push({
+              public_id: uploadedImg.public_id,
+              url: uploadedImg.url,
+              alt: img.alt || 'Product Image',
+              isPrimary: Boolean(img.isPrimary)
+            });
+          }
         }
-        const source = img?.url || img;
-        const uploadedImg = await uploadImage(source, { folder: 'laiq-bags/products' });
-        if (uploadedImg) {
-          processed.push({
-            public_id: uploadedImg.public_id,
-            url: uploadedImg.url,
-            alt: img.alt || 'Product Image',
-            isPrimary: Boolean(img.isPrimary)
-          });
+
+        // Ensure we do not accidentally erase images if processing yields none
+        if (processed.length > 0) {
+          // Ensure exactly one primary image
+          const primaryCount = processed.filter(i => i.isPrimary).length;
+          if (primaryCount === 0) processed[0].isPrimary = true;
+          if (primaryCount > 1) {
+            let set = false;
+            for (const i of processed) {
+              if (!set && i.isPrimary) { set = true; continue; }
+              i.isPrimary = false;
+            }
+          }
+          req.body.images = processed;
+        } else {
+          delete req.body.images;
         }
-      }
-      if (processed.length > 0) {
-        req.body.images = processed;
       }
     }
 

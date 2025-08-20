@@ -1484,12 +1484,8 @@ async function saveProduct() {
             material: formData.get('material'),
             size: formData.get('size'),
             description: formData.get('description') || form.querySelector('textarea[name="description"]')?.value || '',
-            images: images.length > 0 ? images : [{ 
-                public_id: 'admin-upload-' + Date.now(),
-                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMDAgMTIwQzE1NS44MiAxMjAgMTIwIDE1NS44MiAxMjAgMjAwQzEyMCAyNDQuMTggMTU1LjgyIDI4MCAyMDAgMjgwQzI0NC4xOCAyODAgMjgwIDI0NC4xOCAyODAgMjAwQzI4MCAxNTUuODIgMjQ0LjE4IDEyMCAyMDAgMTIwWk0yMDAgMjYwQzE3Ny45MDkgMjYwIDE2MCAyNDIuMDkxIDE2MCAyMjBDMTYwIDE5Ny45MDkgMTc3LjkwOSAxODAgMjAwIDE4MEMyMjIuMDkxIDE4MCAyNDAgMTk3LjkwOSAyNDAgMjIwQzI0MCAyNDIuMDkxIDIyMi4wOTEgMjYwIDIwMCAyNjBaIiBmaWxsPSIjOUNBMEE2Ii8+Cjx0ZXh0IHg9IjIwMCIgeT0iMzIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUNBMEE2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiPkltYWdlPC90ZXh0Pgo8L3N2Zz4K',
-                alt: 'Product Image',
-                isPrimary: true
-            }],
+            // If no images provided, don't send a placeholder; server will keep existing images
+            images: images.length > 0 ? images : undefined,
             colorVariants: colorVariants,
             colors: colorVariants.map(c => c.name), // Legacy support
             stock: colorVariants.reduce((total, variant) => total + variant.stock, 0),
