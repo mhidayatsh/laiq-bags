@@ -11,6 +11,7 @@ const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const jwt = require('jsonwebtoken');
 const zlib = require('zlib');
 const { normalizeImageUrlForProduct } = require('../utils/imageOptimizer');
+const { uploadImage, configureCloudinary } = require('../utils/cloudinary');
 
 // Verify Cart model is properly loaded
 console.log('🔍 Cart model loaded:', typeof Cart);
@@ -331,15 +332,37 @@ router.post('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async 
         };
         
         console.log('📦 Final product data:', productData);
-        // Normalize images for create (convert data/compressed URLs to files)
+        // Normalize images for create: prefer persistent Cloudinary; fallback to local optimization
         if (Array.isArray(productData.images)) {
+            const useCloudinary = configureCloudinary();
             const normalized = [];
             for (let i = 0; i < productData.images.length; i++) {
                 const img = productData.images[i] || {};
-                const normalizedUrl = await normalizeImageUrlForProduct(img.url, (req.user && req.user._id ? req.user._id.toString() : 'temp'), i);
+                const source = img.url || img; // supports {url,...} or raw string
+
+                let finalUrl = null;
+                let publicId = img.public_id || '';
+
+                if (useCloudinary && source) {
+                    try {
+                        const uploaded = await uploadImage(source, { folder: 'laiq-bags/products' });
+                        if (uploaded && uploaded.url) {
+                            finalUrl = uploaded.url;
+                            publicId = uploaded.public_id || publicId || `admin-upload-${Date.now()}-${i}`;
+                        }
+                    } catch (e) {
+                        // fall through to local normalization
+                    }
+                }
+
+                if (!finalUrl) {
+                    const normalizedUrl = await normalizeImageUrlForProduct(source, (req.user && req.user._id ? req.user._id.toString() : 'temp'), i);
+                    finalUrl = normalizedUrl || source;
+                }
+
                 normalized.push({
-                    public_id: img.public_id || `admin-upload-${Date.now()}-${i}`,
-                    url: normalizedUrl || img.url,
+                    public_id: publicId || `admin-upload-${Date.now()}-${i}`,
+                    url: finalUrl,
                     alt: img.alt || 'Product Image',
                     isPrimary: Boolean(img.isPrimary)
                 });
@@ -469,16 +492,49 @@ router.put('/products/:id', adminAuth, catchAsyncErrors(async (req, res) => {
         // Calculate total stock from color variants
         const totalStock = colorVariants.reduce((sum, variant) => sum + variant.stock, 0);
         
-        // Normalize images for update
+        // Normalize images for update: prefer Cloudinary; fallback to local optimization
         let normalizedImages = product.images;
         if (req.body.images && Array.isArray(req.body.images)) {
+            const useCloudinary = configureCloudinary();
             normalizedImages = [];
             for (let i = 0; i < req.body.images.length; i++) {
                 const img = req.body.images[i] || {};
-                const normalizedUrl = await normalizeImageUrlForProduct(img.url, product._id.toString(), i);
+                const source = img.url || img; // supports {url,...} or raw string
+
+                // If already a Cloudinary object with public_id and https URL, keep as-is
+                if (img && img.public_id && typeof img.url === 'string' && img.url.startsWith('http')) {
+                    normalizedImages.push({
+                        public_id: img.public_id,
+                        url: img.url,
+                        alt: img.alt || 'Product Image',
+                        isPrimary: Boolean(img.isPrimary)
+                    });
+                    continue;
+                }
+
+                let finalUrl = null;
+                let publicId = img.public_id || '';
+
+                if (useCloudinary && source) {
+                    try {
+                        const uploaded = await uploadImage(source, { folder: 'laiq-bags/products' });
+                        if (uploaded && uploaded.url) {
+                            finalUrl = uploaded.url;
+                            publicId = uploaded.public_id || publicId || `admin-upload-${Date.now()}-${i}`;
+                        }
+                    } catch (e) {
+                        // fall through to local normalization
+                    }
+                }
+
+                if (!finalUrl) {
+                    const normalizedUrl = await normalizeImageUrlForProduct(source, product._id.toString(), i);
+                    finalUrl = normalizedUrl || source;
+                }
+
                 normalizedImages.push({
-                    public_id: img.public_id || `admin-upload-${Date.now()}-${i}`,
-                    url: normalizedUrl || img.url,
+                    public_id: publicId || `admin-upload-${Date.now()}-${i}`,
+                    url: finalUrl,
                     alt: img.alt || 'Product Image',
                     isPrimary: Boolean(img.isPrimary)
                 });

@@ -4,17 +4,38 @@ const cloudinary = require('cloudinary').v2;
 
 // Configure Cloudinary from environment
 function configureCloudinary() {
-  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    console.warn('⚠️ Cloudinary environment variables are not fully set. Image uploads will be skipped.');
+  try {
+    let { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_URL } = process.env;
+
+    // If single URL is provided (cloudinary://<key>:<secret>@<cloud_name>), parse it
+    if ((!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) && CLOUDINARY_URL) {
+      try {
+        const parsed = new URL(CLOUDINARY_URL);
+        // Example: protocol cloudinary:, username api_key, password api_secret, host cloud_name
+        CLOUDINARY_API_KEY = CLOUDINARY_API_KEY || parsed.username || '';
+        CLOUDINARY_API_SECRET = CLOUDINARY_API_SECRET || parsed.password || '';
+        CLOUDINARY_CLOUD_NAME = CLOUDINARY_CLOUD_NAME || parsed.hostname || '';
+      } catch (e) {
+        console.warn('⚠️ Could not parse CLOUDINARY_URL. Falling back to separate vars.');
+      }
+    }
+
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+      console.warn('⚠️ Cloudinary environment variables are not fully set. Image uploads will be skipped.');
+      return false;
+    }
+
+    cloudinary.config({
+      cloud_name: CLOUDINARY_CLOUD_NAME,
+      api_key: CLOUDINARY_API_KEY,
+      api_secret: CLOUDINARY_API_SECRET,
+      secure: true
+    });
+    return true;
+  } catch (e) {
+    console.warn('⚠️ Cloudinary configuration failed:', e?.message || e);
     return false;
   }
-  cloudinary.config({
-    cloud_name: CLOUDINARY_CLOUD_NAME,
-    api_key: CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET
-  });
-  return true;
 }
 
 // Upload a single image (data URL or remote URL) to Cloudinary
