@@ -1,0 +1,15 @@
+{
+  "css.validate": true,
+  "css.lint.vendorPrefix": "ignore",
+  "css.lint.compatibleVendorPrefixes": "ignore",
+  "css.lint.unknownVendorSpecificProperties": "ignore",
+  "css.lint.propertyIgnoredDueToDisplay": "ignore",
+  "css.lint.validProperties": [
+    "-webkit-line-clamp",
+    "-webkit-appearance"
+  ]
+}
+
+{
+    "liveServer.settings.port": 5501
+}
