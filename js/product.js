@@ -1787,18 +1787,37 @@ document.head.appendChild(confettiStyle);
 function updateProductSEO(product) {
     console.log('🔍 Updating SEO for product:', product.name);
     
-    // Update page title
+    // Update page title with better SEO structure
     const seoTitle = product.seoTitle || product.name;
-    document.title = `${seoTitle} - Laiq Bags`;
+    const priceText = product.price ? ` - ₹${product.price}` : '';
+    const categoryText = product.category ? ` | ${product.category}` : '';
+    document.title = `${seoTitle}${priceText}${categoryText} - Laiq Bags`;
     
-    // Update meta description
+    // Update meta description with product-specific content
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
         metaDescription = document.createElement('meta');
         metaDescription.name = 'description';
         document.head.appendChild(metaDescription);
     }
-    metaDescription.content = product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality bags and accessories.`;
+    
+    const productDesc = product.metaDescription || product.description?.substring(0, 120) || `Buy ${product.name}`;
+    const priceInfo = product.price ? ` at ₹${product.price}` : '';
+    const stockInfo = product.stock > 0 ? '. Free shipping available.' : '. Check availability.';
+    metaDescription.content = `${productDesc}${priceInfo} from Laiq Bags${stockInfo}`;
+    
+    // Update keywords with product-specific terms
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+        metaKeywords = document.createElement('meta');
+        metaKeywords.name = 'keywords';
+        document.head.appendChild(metaKeywords);
+    }
+    
+    const baseKeywords = 'bags, backpacks, handbags, premium bags, Laiq Bags';
+    const productKeywords = product.category ? `, ${product.category}` : '';
+    const brandKeywords = ', LAIQ brand, fashion accessories';
+    metaKeywords.content = `${baseKeywords}${productKeywords}${brandKeywords}`;
     
     // Update Open Graph tags
     updateOpenGraphTags(product);
@@ -1818,14 +1837,22 @@ function updateProductSEO(product) {
 // Update Open Graph tags
 function updateOpenGraphTags(product) {
     const ogTags = {
-        'og:title': product.seoTitle || product.name,
-        'og:description': product.metaDescription || product.description?.substring(0, 160),
+        'og:title': `${product.seoTitle || product.name} - Laiq Bags`,
+        'og:description': product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality bags and accessories.`,
         'og:type': 'product',
         'og:url': `${window.location.origin}/product.html?id=${product._id}`,
-        'og:image': product.images?.[0]?.url || '/assets/laiq-logo.png',
+        'og:image': product.images?.[0]?.url || 'https://laiq.shop/assets/laiq-logo.png',
+        'og:image:width': '1200',
+        'og:image:height': '630',
+        'og:image:alt': `${product.name} - Laiq Bags`,
         'og:site_name': 'Laiq Bags',
+        'og:locale': 'en_US',
         'product:price:amount': product.price,
-        'product:price:currency': 'INR'
+        'product:price:currency': 'INR',
+        'product:availability': product.stock > 0 ? 'in stock' : 'out of stock',
+        'product:condition': 'new',
+        'product:retailer_item_id': product._id,
+        'product:brand': 'LAIQ'
     };
     
     Object.entries(ogTags).forEach(([property, content]) => {
@@ -1844,11 +1871,17 @@ function updateOpenGraphTags(product) {
 // Update Twitter Card tags
 function updateTwitterCardTags(product) {
     const twitterTags = {
-        'twitter:card': 'product',
-        'twitter:title': product.seoTitle || product.name,
-        'twitter:description': product.metaDescription || product.description?.substring(0, 160),
-        'twitter:image': product.images?.[0]?.url || '/assets/laiq-logo.png',
-        'twitter:site': '@laiq_bags_'
+        'twitter:card': 'summary_large_image',
+        'twitter:title': `${product.seoTitle || product.name} - Laiq Bags`,
+        'twitter:description': product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality bags and accessories.`,
+        'twitter:image': product.images?.[0]?.url || 'https://laiq.shop/assets/laiq-logo.png',
+        'twitter:image:alt': `${product.name} - Laiq Bags`,
+        'twitter:site': '@laiq_bags_',
+        'twitter:creator': '@laiq_bags_',
+        'twitter:label1': 'Price',
+        'twitter:data1': `₹${product.price}`,
+        'twitter:label2': 'Availability',
+        'twitter:data2': product.stock > 0 ? 'In Stock' : 'Out of Stock'
     };
     
     Object.entries(twitterTags).forEach(([name, content]) => {
@@ -1894,24 +1927,95 @@ function addProductStructuredData(product) {
         },
         "category": product.category,
         "image": product.images?.map(img => img.url) || [],
+        "url": `${window.location.origin}/product.html?id=${product._id}`,
+        "sku": product._id,
+        "mpn": product._id,
+        "gtin": product._id,
         "offers": {
             "@type": "Offer",
             "price": product.price,
             "priceCurrency": "INR",
             "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             "seller": {
                 "@type": "Organization",
-                "name": "Laiq Bags"
+                "name": "Laiq Bags",
+                "url": "https://laiq.shop"
+            },
+            "deliveryLeadTime": {
+                "@type": "QuantitativeValue",
+                "value": "3",
+                "unitCode": "DAY"
+            },
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": "0",
+                    "currency": "INR"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "value": "1",
+                        "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "value": "2",
+                        "unitCode": "DAY"
+                    }
+                }
             }
         }
     };
+    
+    // Add product specifications
+    if (product.specifications) {
+        structuredData.additionalProperty = [];
+        
+        if (product.specifications.dimensions) {
+            structuredData.additionalProperty.push({
+                "@type": "PropertyValue",
+                "name": "Dimensions",
+                "value": product.specifications.dimensions
+            });
+        }
+        
+        if (product.specifications.weight) {
+            structuredData.additionalProperty.push({
+                "@type": "PropertyValue",
+                "name": "Weight",
+                "value": product.specifications.weight
+            });
+        }
+        
+        if (product.specifications.material) {
+            structuredData.additionalProperty.push({
+                "@type": "PropertyValue",
+                "name": "Material",
+                "value": product.specifications.material
+            });
+        }
+        
+        if (product.specifications.capacity) {
+            structuredData.additionalProperty.push({
+                "@type": "PropertyValue",
+                "name": "Capacity",
+                "value": product.specifications.capacity
+            });
+        }
+    }
     
     // Add reviews if available
     if (product.reviews && product.reviews.length > 0) {
         structuredData.aggregateRating = {
             "@type": "AggregateRating",
             "ratingValue": product.ratings || 0,
-            "reviewCount": product.numOfReviews || 0
+            "reviewCount": product.numOfReviews || 0,
+            "bestRating": "5",
+            "worstRating": "1"
         };
         
         structuredData.review = product.reviews.slice(0, 5).map(review => ({
@@ -1922,17 +2026,46 @@ function addProductStructuredData(product) {
             },
             "reviewRating": {
                 "@type": "Rating",
-                "ratingValue": review.rating
+                "ratingValue": review.rating,
+                "bestRating": "5",
+                "worstRating": "1"
             },
-            "reviewBody": review.comment
+            "reviewBody": review.comment,
+            "datePublished": review.createdAt || new Date().toISOString().split('T')[0]
         }));
     }
+    
+    // Add organization data
+    const organizationData = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Laiq Bags",
+        "url": "https://laiq.shop",
+        "logo": "https://laiq.shop/assets/laiq-logo.png",
+        "description": "Premium bags and accessories - Carry Style with Confidence",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "IN"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": "English"
+        }
+    };
     
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.setAttribute('data-product-schema', 'true');
     script.textContent = JSON.stringify(structuredData);
     document.head.appendChild(script);
+    
+    // Add organization schema separately
+    const orgScript = document.createElement('script');
+    orgScript.type = 'application/ld+json';
+    orgScript.setAttribute('data-organization-schema', 'true');
+    orgScript.textContent = JSON.stringify(organizationData);
+    document.head.appendChild(orgScript);
 } 
 
 // Show product not found error

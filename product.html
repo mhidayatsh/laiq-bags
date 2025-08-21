@@ -3,31 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Product | Laiq Bags</title>
+    <title>Premium Bags & Accessories | Laiq Bags</title>
     
     <!-- SEO Meta Tags (will be dynamically updated) -->
-    <meta name="description" content="Discover premium bags and accessories from Laiq Bags. Carry style with confidence.">
-    <meta name="keywords" content="bags, backpacks, handbags, sling bags, laptop bags, travel bags, Laiq Bags">
+    <meta name="description" content="Discover premium bags and accessories from Laiq Bags. Shop stylish backpacks, handbags, laptop bags, and travel accessories. Carry style with confidence.">
+    <meta name="keywords" content="bags, backpacks, handbags, sling bags, laptop bags, travel bags, premium bags, stylish bags, Laiq Bags, fashion accessories">
     <meta name="robots" content="index, follow">
     <meta name="author" content="Laiq Bags">
     
     <!-- Open Graph Meta Tags (will be dynamically updated) -->
-    <meta property="og:title" content="Product | Laiq Bags">
-    <meta property="og:description" content="Discover premium bags and accessories from Laiq Bags. Carry style with confidence.">
+    <meta property="og:title" content="Premium Bags & Accessories | Laiq Bags">
+    <meta property="og:description" content="Discover premium bags and accessories from Laiq Bags. Shop stylish backpacks, handbags, laptop bags, and travel accessories. Carry style with confidence.">
     <meta property="og:type" content="product">
     <meta property="og:url" content="">
-    <meta property="og:image" content="/assets/laiq-logo.png">
+    <meta property="og:image" content="https://laiq.shop/assets/laiq-logo.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Laiq Bags - Premium Bags & Accessories">
     <meta property="og:site_name" content="Laiq Bags">
+    <meta property="og:locale" content="en_US">
+    <meta property="product:price:amount" content="">
+    <meta property="product:price:currency" content="INR">
+    <meta property="product:availability" content="in stock">
+    <meta property="product:condition" content="new">
     
     <!-- Twitter Card Meta Tags (will be dynamically updated) -->
-    <meta name="twitter:card" content="product">
-    <meta name="twitter:title" content="Product | Laiq Bags">
-    <meta name="twitter:description" content="Discover premium bags and accessories from Laiq Bags. Carry style with confidence.">
-    <meta name="twitter:image" content="/assets/laiq-logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Premium Bags & Accessories | Laiq Bags">
+    <meta name="twitter:description" content="Discover premium bags and accessories from Laiq Bags. Shop stylish backpacks, handbags, laptop bags, and travel accessories. Carry style with confidence.">
+    <meta name="twitter:image" content="https://laiq.shop/assets/laiq-logo.png">
+    <meta name="twitter:image:alt" content="Laiq Bags - Premium Bags & Accessories">
     <meta name="twitter:site" content="@laiq_bags_">
+    <meta name="twitter:creator" content="@laiq_bags_">
+    <meta name="twitter:label1" content="Price">
+    <meta name="twitter:data1" content="">
+    <meta name="twitter:label2" content="Availability">
+    <meta name="twitter:data2" content="In Stock">
     
     <!-- Canonical URL (will be dynamically updated) -->
     <link rel="canonical" href="">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     
     <!-- Enhanced SEO Meta Tags -->
     <meta name="application-name" content="Laiq Bags">
@@ -50,6 +72,56 @@
       },
       "sameAs": [
         "https://www.laiq.shop"
+      ]
+    }
+    </script>
+    
+    <!-- FAQ Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the return policy for Laiq Bags products?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We offer a 30-day return policy for all our products. If you're not satisfied with your purchase, you can return it within 30 days for a full refund or exchange."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you offer free shipping?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we offer free shipping on all orders across India. Delivery typically takes 2-3 business days."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are Laiq Bags products waterproof?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Many of our bags feature water-resistant materials. Check individual product specifications for detailed water resistance information."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I care for my Laiq bag?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Clean with a soft cloth and mild soap. Avoid harsh chemicals. Store in a cool, dry place when not in use."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do your bags have laptop compartments?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, many of our backpacks and laptop bags feature dedicated laptop compartments. Check product specifications for laptop size compatibility."
+          }
+        }
       ]
     }
     </script>
@@ -196,14 +268,27 @@
     <!-- Product Content -->
     <main class="flex-1">
       <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Breadcrumb -->
-        <nav class="mb-6">
-          <ol class="flex items-center space-x-2 text-sm text-charcoal/60">
-            <li><a href="index.html" class="hover:text-gold transition-colors">Home</a></li>
+        <!-- Breadcrumb Navigation with Structured Data -->
+        <nav class="mb-6" aria-label="Breadcrumb">
+          <ol class="flex items-center space-x-2 text-sm text-charcoal/60" itemscope itemtype="https://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+              <a href="index.html" class="hover:text-gold transition-colors" itemprop="item">
+                <span itemprop="name">Home</span>
+              </a>
+              <meta itemprop="position" content="1" />
+            </li>
             <li><span class="mx-2">/</span></li>
-            <li><a href="shop.html" class="hover:text-gold transition-colors">Shop</a></li>
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+              <a href="shop.html" class="hover:text-gold transition-colors" itemprop="item">
+                <span itemprop="name">Shop</span>
+              </a>
+              <meta itemprop="position" content="2" />
+            </li>
             <li><span class="mx-2">/</span></li>
-            <li class="text-charcoal" id="product-name-breadcrumb">Product</li>
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+              <span class="text-charcoal" id="product-name-breadcrumb" itemprop="name">Product</span>
+              <meta itemprop="position" content="3" />
+            </li>
           </ol>
         </nav>
         
@@ -439,7 +524,7 @@
               </a>
               <a href="https://www.facebook.com/laiqbags" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-gold transition-colors">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001 12.017.001z"/>
+                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.335 11.99-11.988C24.007 5.367 18.641.001 12.017.001z"/>
                 </svg>
               </a>
               <a href="https://www.instagram.com/laiq_bags_?igsh=M25mYmNld3dqM3J1" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-gold transition-colors instagram-handle">

@@ -36,10 +36,110 @@
     }
     </script>
     
+    <!-- Local Business Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Laiq Bags",
+      "description": "Premium bags and accessories retailer - Carry Style with Confidence",
+      "url": "https://laiq.shop",
+      "logo": "https://laiq.shop/assets/laiq-logo.png",
+      "image": "https://laiq.shop/assets/laiq-logo.png",
+      "telephone": "+91-XXXXXXXXXX",
+      "email": "info@laiq.shop",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IN",
+        "addressRegion": "India"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "20.5937",
+        "longitude": "78.9629"
+      },
+      "openingHours": "Mo-Su 09:00-18:00",
+      "priceRange": "₹₹",
+      "currenciesAccepted": "INR",
+      "paymentAccepted": "Cash, Credit Card, Debit Card, UPI, Net Banking",
+      "areaServed": "IN",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Bags and Accessories",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Backpacks",
+              "description": "Premium backpacks for daily use and travel"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Sling Bags",
+              "description": "Stylish sling bags for casual and formal occasions"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Handbags",
+              "description": "Elegant handbags for women"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Laptop Bags",
+              "description": "Professional laptop bags with protection"
+            }
+          }
+        ]
+      }
+    }
+    </script>
+    
+    <!-- WebSite Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Laiq Bags",
+      "url": "https://laiq.shop",
+      "description": "Premium bags and accessories - Carry Style with Confidence",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Laiq Bags",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://laiq.shop/assets/laiq-logo.png"
+        }
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://laiq.shop/shop.html?keyword={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "sameAs": [
+        "https://www.laiq.shop"
+      ]
+    }
+    </script>
+    
     <!-- Favicon and App Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/laiq-logo.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/laiq-logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/laiq-logo.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
     
     <!-- Social Media Meta Tags -->

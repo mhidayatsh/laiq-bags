@@ -27,9 +27,11 @@
     </script>
     
     <!-- Favicon and App Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/laiq-logo.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/laiq-logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/laiq-logo.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
     
     <!-- Social Media Meta Tags -->
@@ -41,6 +43,37 @@
     <meta name="twitter:title" content="Contact Us | Laiq Bags">
     <meta name="twitter:description" content="Get in touch with Laiq Bags. We'd love to hear from you!">
     <meta name="twitter:image" content="/assets/laiq-logo.png">
+    
+    <!-- Contact Page Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "name": "Contact Laiq Bags",
+      "description": "Get in touch with Laiq Bags for customer support, inquiries, and feedback",
+      "url": "https://laiq.shop/contact.html",
+      "mainEntity": {
+        "@type": "Organization",
+        "name": "Laiq Bags",
+        "url": "https://laiq.shop",
+        "logo": "https://laiq.shop/assets/laiq-logo.png",
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "availableLanguage": "English",
+            "areaServed": "IN"
+          },
+          {
+            "@type": "ContactPoint",
+            "contactType": "sales",
+            "availableLanguage": "English",
+            "areaServed": "IN"
+          }
+        ]
+      }
+    }
+    </script>
     
     <!-- Tailwind CSS CDN -->
     <link href="/css/styles.css" rel="stylesheet">
