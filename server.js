@@ -361,20 +361,65 @@ app.get('/', (req, res) => {
   }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'Laiq Bags API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    security: {
-      rateLimiting: 'enabled',
-      cors: 'enabled',
-      helmet: 'enabled',
-      inputValidation: 'enabled'
-    }
-  });
+// Enhanced health check endpoint
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check MongoDB connection
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    // Check memory usage
+    const memUsage = process.memoryUsage();
+    const memUsageMB = {
+      rss: Math.round(memUsage.rss / 1024 / 1024),
+      heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+      external: Math.round(memUsage.external / 1024 / 1024)
+    };
+    
+    // Check uptime
+    const uptime = process.uptime();
+    const uptimeFormatted = {
+      seconds: Math.floor(uptime),
+      minutes: Math.floor(uptime / 60),
+      hours: Math.floor(uptime / 3600),
+      days: Math.floor(uptime / 86400)
+    };
+    
+    res.json({
+      status: 'OK',
+      message: 'Laiq Bags API is running',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: {
+        status: dbStatus,
+        connection: mongoose.connection.readyState
+      },
+      system: {
+        uptime: uptimeFormatted,
+        memory: memUsageMB,
+        platform: process.platform,
+        nodeVersion: process.version
+      },
+      security: {
+        rateLimiting: 'enabled',
+        cors: 'enabled',
+        helmet: 'enabled',
+        inputValidation: 'enabled'
+      },
+      render: {
+        environment: process.env.RENDER ? 'detected' : 'not detected',
+        keepAlive: process.env.RENDER ? 'enabled' : 'not needed'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Health check error:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Health check failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API routes with security middleware
@@ -680,6 +725,65 @@ function startServers() {
   if (process.env.NODE_ENV === 'production') {
     startServer(PORT);
     console.log(`🚀 Production server running on port ${PORT}`);
+    
+    // Keep-alive mechanism for Render free tier
+    if (process.env.RENDER) {
+      console.log('🔧 Render environment detected - enabling keep-alive mechanism');
+      
+      // Ping the server every 14 minutes to keep it alive
+      setInterval(() => {
+        const http = require('http');
+        const options = {
+          hostname: 'localhost',
+          port: PORT,
+          path: '/api/health',
+          method: 'GET',
+          timeout: 5000
+        };
+        
+        const req = http.request(options, (res) => {
+          console.log(`💓 Keep-alive ping successful: ${res.statusCode}`);
+        });
+        
+        req.on('error', (err) => {
+          console.log(`⚠️ Keep-alive ping failed: ${err.message}`);
+        });
+        
+        req.on('timeout', () => {
+          console.log('⚠️ Keep-alive ping timeout');
+          req.destroy();
+        });
+        
+        req.end();
+      }, 14 * 60 * 1000); // 14 minutes
+      
+      // Also ping external service to prevent sleep
+      setInterval(() => {
+        const https = require('https');
+        const options = {
+          hostname: 'laiq.shop',
+          port: 443,
+          path: '/api/health',
+          method: 'GET',
+          timeout: 10000
+        };
+        
+        const req = https.request(options, (res) => {
+          console.log(`🌐 External keep-alive ping successful: ${res.statusCode}`);
+        });
+        
+        req.on('error', (err) => {
+          console.log(`⚠️ External keep-alive ping failed: ${err.message}`);
+        });
+        
+        req.on('timeout', () => {
+          console.log('⚠️ External keep-alive ping timeout');
+          req.destroy();
+        });
+        
+        req.end();
+      }, 10 * 60 * 1000); // 10 minutes
+    }
   } else {
     startServer(PORT);
     const sslCertPath = path.join(__dirname, 'ssl', 'cert.pem');
