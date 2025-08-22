@@ -33,13 +33,13 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/assets/laiq-logo.png",
+      "src": "/assets/laiq-logo-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/assets/laiq-logo.png",
+      "src": "/assets/laiq-logo-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
