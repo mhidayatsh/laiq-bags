@@ -599,13 +599,41 @@
     <!-- Footer End -->
 
     <!-- Scripts -->
-    <script src="js/clear-cache.js?v=1.2"></script>
-    <script src="js/image-url-fixer.js?v=1.2"></script>
-    <script src="js/api.js?v=1.2"></script>
-    <script src="js/data.js?v=1.2"></script>
-    <script src="js/main.js?v=1.2"></script>
-    <script src="js/home.js?v=1.2"></script>
-    <script src="js/analytics-tracker.js?v=1.2"></script>
+    <script src="js/clear-cache.js?v=1.3"></script>
+    <script src="js/image-url-fixer.js?v=1.3"></script>
+    <script src="js/api.js?v=1.3"></script>
+    <script src="js/data.js?v=1.3"></script>
+    <script src="js/main.js?v=1.3"></script>
+    <script src="js/home.js?v=1.3"></script>
+    <script src="js/analytics-tracker.js?v=1.3"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      // Register Service Worker for PWA updates
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('✅ Service Worker registered:', registration.scope);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', function() {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', function() {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New version available - force update
+                    newWorker.postMessage({type: 'SKIP_WAITING'});
+                    window.location.reload();
+                  }
+                });
+              });
+            })
+            .catch(function(error) {
+              console.log('❌ Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
     
     <!-- PWA Animation Enhancement -->
     <script>
