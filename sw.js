@@ -1,5 +1,5 @@
 // Service Worker for PWA Updates
-const CACHE_NAME = 'laiq-bags-v1.3';
+const CACHE_NAME = 'laiq-bags-v1.4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -49,11 +49,45 @@ self.addEventListener('activate', event => {
 
 // Fetch event - serve from cache or network
 self.addEventListener('fetch', event => {
+  const request = event.request;
+  
+  // Don't cache images, API calls, or external resources
+  if (request.destination === 'image' || 
+      request.url.includes('/api/') ||
+      request.url.includes('cloudinary.com') ||
+      request.url.includes('res.cloudinary.com') ||
+      request.url.includes('placeholder') ||
+      request.url.includes('.jpg') ||
+      request.url.includes('.jpeg') ||
+      request.url.includes('.png') ||
+      request.url.includes('.webp')) {
+    
+    // For images, always fetch from network first, fallback to cache
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // Cache successful image responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+  
+  // For other resources, use cache-first strategy
   event.respondWith(
-    caches.match(event.request)
+    caches.match(request)
       .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+        return response || fetch(request);
       })
   );
 });

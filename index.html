@@ -599,13 +599,13 @@
     <!-- Footer End -->
 
     <!-- Scripts -->
-    <script src="js/clear-cache.js?v=1.3"></script>
-    <script src="js/image-url-fixer.js?v=1.3"></script>
-    <script src="js/api.js?v=1.3"></script>
-    <script src="js/data.js?v=1.3"></script>
-    <script src="js/main.js?v=1.3"></script>
-    <script src="js/home.js?v=1.3"></script>
-    <script src="js/analytics-tracker.js?v=1.3"></script>
+    <script src="js/clear-cache.js?v=1.4"></script>
+    <script src="js/image-url-fixer.js?v=1.4"></script>
+    <script src="js/api.js?v=1.4"></script>
+    <script src="js/data.js?v=1.4"></script>
+    <script src="js/main.js?v=1.4"></script>
+    <script src="js/home.js?v=1.4"></script>
+    <script src="js/analytics-tracker.js?v=1.4"></script>
     
     <!-- Service Worker Registration -->
     <script>
@@ -615,6 +615,19 @@
           navigator.serviceWorker.register('/sw.js')
             .then(function(registration) {
               console.log('✅ Service Worker registered:', registration.scope);
+              
+              // Clear image cache to fix image loading issues
+              if ('caches' in window) {
+                caches.keys().then(cacheNames => {
+                  cacheNames.forEach(cacheName => {
+                    if (cacheName.includes('laiq-bags')) {
+                      caches.delete(cacheName).then(() => {
+                        console.log('🗑️ Cleared cache:', cacheName);
+                      });
+                    }
+                  });
+                });
+              }
               
               // Check for updates
               registration.addEventListener('updatefound', function() {
