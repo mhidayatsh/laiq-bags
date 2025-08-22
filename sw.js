@@ -1,5 +1,5 @@
 // Service Worker for PWA Updates
-const CACHE_NAME = 'laiq-bags-v1.5';
+const CACHE_NAME = 'laiq-bags-v1.6';
 const urlsToCache = [
   '/site.webmanifest',
   '/css/styles.css',
@@ -45,68 +45,26 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - serve from cache or network
+// Fetch event - simple network-first for everything except static assets
 self.addEventListener('fetch', event => {
   const request = event.request;
   
-  // Network-first for HTML pages and navigation requests
+  // Skip caching for HTML pages, API calls, and images
   if (request.mode === 'navigate' || 
       request.destination === 'document' ||
       request.url.includes('.html') ||
       request.url.endsWith('/') ||
-      request.url.includes('/api/')) {
-    
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          // Cache successful responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(request);
-        })
-    );
-    return;
-  }
-  
-  // Network-first for images and external resources
-  if (request.destination === 'image' || 
+      request.url.includes('/api/') ||
+      request.destination === 'image' ||
       request.url.includes('cloudinary.com') ||
-      request.url.includes('res.cloudinary.com') ||
-      request.url.includes('placeholder') ||
-      request.url.includes('.jpg') ||
-      request.url.includes('.jpeg') ||
-      request.url.includes('.png') ||
-      request.url.includes('.webp')) {
+      request.url.includes('res.cloudinary.com')) {
     
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          // Cache successful image responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(request);
-        })
-    );
+    // Always fetch from network, no caching
+    event.respondWith(fetch(request));
     return;
   }
   
-  // Cache-first for static assets (CSS, JS, etc.)
+  // Cache-first only for static assets (CSS, JS, manifest)
   event.respondWith(
     caches.match(request)
       .then(response => {
