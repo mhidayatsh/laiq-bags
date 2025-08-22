@@ -6,7 +6,7 @@
     <!-- Performance Optimizations -->
     <meta http-equiv="Cache-Control" content="public, max-age=31536000">
     <link rel="preload" href="/css/styles.css" as="style">
-    <link rel="preload" href="/js/api.js" as="script">
+    <link rel="preload" href="/js/main.js" as="script">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -604,11 +604,11 @@
     <!-- Footer End -->
 
     <!-- Critical Scripts (Load Immediately) -->
-    <script src="js/clear-cache.js?v=1.7"></script>
-    <script src="js/image-url-fixer.js?v=1.7"></script>
-    <script src="js/api.js?v=1.7"></script>
-    <script src="js/data.js?v=1.7"></script>
-    <script src="js/main.js?v=1.7"></script>
+    <script src="js/clear-cache.js?v=1.8"></script>
+    <script src="js/image-url-fixer.js?v=1.8"></script>
+    <script src="js/main.js?v=1.8"></script>
+    <script src="js/api.js?v=1.8"></script>
+    <script src="js/data.js?v=1.8"></script>
     
     <!-- Non-Critical Scripts (Load After Page Load) -->
     <script>
@@ -616,13 +616,13 @@
       window.addEventListener('load', function() {
         // Load home.js after page is loaded
         const homeScript = document.createElement('script');
-        homeScript.src = 'js/home.js?v=1.7';
+        homeScript.src = 'js/home.js?v=1.8';
         document.head.appendChild(homeScript);
         
         // Load analytics after a short delay
         setTimeout(function() {
           const analyticsScript = document.createElement('script');
-          analyticsScript.src = 'js/analytics-tracker.js?v=1.7';
+          analyticsScript.src = 'js/analytics-tracker.js?v=1.8';
           document.head.appendChild(analyticsScript);
         }, 1000);
       });
