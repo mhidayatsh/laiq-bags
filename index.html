@@ -206,19 +206,124 @@
       .laiq-logo-text {
         transition: none;
       }
+      .pwa-launch-animation {
+        animation: none !important;
+      }
+    }
+
+    /* PWA Launch Animations */
+    .pwa-launch-animation {
+      animation: pwaLaunch 1.2s ease-out forwards;
+    }
+
+    .pwa-logo-animation {
+      animation: logoReveal 1.5s ease-out forwards;
+    }
+
+    .pwa-content-animation {
+      animation: contentSlideIn 1s ease-out 0.3s both;
+    }
+
+    .pwa-header-animation {
+      animation: headerSlideDown 0.8s ease-out 0.2s both;
+    }
+
+    .pwa-hero-animation {
+      animation: heroFadeIn 1.2s ease-out 0.5s both;
+    }
+
+    /* Keyframe Animations */
+    @keyframes pwaLaunch {
+      0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+      }
+      50% {
+        opacity: 0.8;
+        transform: scale(1.02) translateY(-5px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes logoReveal {
+      0% {
+        opacity: 0;
+        transform: scale(0.8) rotate(-5deg);
+        filter: blur(2px);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1) rotate(2deg);
+        filter: blur(1px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes contentSlideIn {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes headerSlideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes heroFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* PWA-specific styles */
+    .pwa-mode .laiq-logo-text {
+      animation: logoGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoGlow {
+      0% {
+        filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.3));
+      }
+      100% {
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.6));
+      }
     }
     </style>
   </head>
-  <body class="bg-white text-charcoal min-h-screen flex flex-col overflow-x-hidden">
+  <body class="bg-white text-charcoal min-h-screen flex flex-col overflow-x-hidden pwa-launch-animation">
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <header class="bg-white shadow-sm sticky top-0 z-50 pwa-header-animation">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo -->
           
     <div class="flex items-center">
       <a href="index.html" class="flex items-center" aria-label="Laiq Bags - Home">
-        <h1 class="text-2xl font-bold laiq-logo text-charcoal">
+        <h1 class="text-2xl font-bold laiq-logo text-charcoal pwa-logo-animation">
           <span class="laiq-logo-text" aria-label="LAIQ">LAIQ</span> 
           <span class="text-charcoal" aria-label="Bags">Bags</span>
         </h1>
@@ -314,7 +419,7 @@
     <!-- Navbar End -->
 
     <!-- Hero Section Start -->
-    <section class="relative flex flex-col-reverse md:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 gap-8 overflow-hidden">
+    <section class="relative flex flex-col-reverse md:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20 gap-8 overflow-hidden pwa-hero-animation">
       <!-- Text Content -->
       <div class="w-full md:w-1/2 flex flex-col items-start justify-center text-left gap-6">
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold font-montserrat leading-tight">
@@ -342,7 +447,7 @@
     <!-- Hero Section End -->
 
     <!-- Intro Section Start -->
-    <section class="max-w-2xl mx-auto px-4 py-6 md:py-10 text-center">
+    <section class="max-w-2xl mx-auto px-4 py-6 md:py-10 text-center pwa-content-animation">
       <p class="text-lg md:text-xl text-charcoal/80 font-poppins">
         Laiq Bags is a modern bag brand focused on <span class="text-gold font-semibold">quality</span>, <span class="text-gold font-semibold">comfort</span>, and <span class="text-gold font-semibold">design</span>. From stylish backpacks to elegant sling bags, our collection is made for the modern you.
       </p>
@@ -501,5 +606,108 @@
     <script src="js/main.js?v=1.2"></script>
     <script src="js/home.js?v=1.2"></script>
     <script src="js/analytics-tracker.js?v=1.2"></script>
+    
+    <!-- PWA Animation Enhancement -->
+    <script>
+      // PWA Detection and Animation Enhancement
+      (function() {
+        'use strict';
+        
+        // Check if running as PWA
+        function isPWA() {
+          return window.matchMedia('(display-mode: standalone)').matches ||
+                 window.navigator.standalone === true ||
+                 document.referrer.includes('android-app://');
+        }
+        
+        // Check if launched from app drawer
+        function isLaunchedFromDrawer() {
+          return isPWA() && (performance.navigation.type === 0 || 
+                 document.referrer === '' || 
+                 !document.referrer.includes(window.location.origin));
+        }
+        
+        // Enhanced animations for PWA launch
+        function enhancePWAAnimations() {
+          if (isLaunchedFromDrawer()) {
+            console.log('🚀 PWA launched from app drawer - enhancing animations');
+            
+            // Add PWA mode class
+            document.body.classList.add('pwa-mode');
+            
+            // Enhanced logo animation
+            const logo = document.querySelector('.laiq-logo-text');
+            if (logo) {
+              logo.style.animation = 'logoReveal 2s ease-out forwards, logoGlow 3s ease-in-out 2s infinite alternate';
+            }
+            
+            // Add entrance sound effect (optional)
+            if ('AudioContext' in window || 'webkitAudioContext' in window) {
+              // Create a subtle entrance sound
+              const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+              const oscillator = audioContext.createOscillator();
+              const gainNode = audioContext.createGain();
+              
+              oscillator.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+              
+              oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+              
+              gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+              
+              oscillator.start(audioContext.currentTime);
+              oscillator.stop(audioContext.currentTime + 0.1);
+            }
+            
+            // Add haptic feedback (if supported)
+            if ('vibrate' in navigator) {
+              navigator.vibrate([50, 50, 50]);
+            }
+            
+            // Enhanced content animations
+            const animatedElements = document.querySelectorAll('.pwa-content-animation, .pwa-hero-animation');
+            animatedElements.forEach((el, index) => {
+              el.style.animationDelay = `${0.5 + (index * 0.2)}s`;
+              el.style.animationDuration = '1.5s';
+            });
+          }
+        }
+        
+        // Initialize PWA animations
+        document.addEventListener('DOMContentLoaded', function() {
+          enhancePWAAnimations();
+          
+          // Add smooth transitions for PWA mode
+          if (isPWA()) {
+            document.body.style.transition = 'all 0.3s ease-out';
+            
+            // Add PWA-specific interactions
+            const logo = document.querySelector('.laiq-logo-text');
+            if (logo) {
+              logo.addEventListener('click', function() {
+                this.style.transform = 'scale(1.1) rotate(5deg)';
+                setTimeout(() => {
+                  this.style.transform = 'scale(1) rotate(0deg)';
+                }, 200);
+              });
+            }
+          }
+        });
+        
+        // Handle PWA visibility changes
+        document.addEventListener('visibilitychange', function() {
+          if (!document.hidden && isPWA()) {
+            // App became visible again
+            const logo = document.querySelector('.laiq-logo-text');
+            if (logo) {
+              logo.style.animation = 'logoGlow 1s ease-in-out';
+            }
+          }
+        });
+        
+      })();
+    </script>
   </body>
 </html>

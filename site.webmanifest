@@ -7,6 +7,10 @@
   "background_color": "#ffffff",
   "theme_color": "#d4af37",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/assets/favicon-16x16.png",
