@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Performance Optimizations -->
+    <meta http-equiv="Cache-Control" content="public, max-age=31536000">
+    <link rel="preload" href="/css/styles.css" as="style">
+    <link rel="preload" href="/js/api.js" as="script">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -158,7 +162,7 @@
     <meta name="twitter:image" content="https://laiq.shop/assets/laiq-logo.png">
     
     <!-- Tailwind CSS -->
-    <link href="/css/styles.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet" media="all">
     <!-- Google Fonts: Poppins & Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Google Fonts: Orbitron (similar to Lucidity Expand) -->
@@ -436,6 +440,7 @@
             muted
             loop
             playsinline
+            loading="lazy"
             poster="https://res.cloudinary.com/dmfw0s5ht/image/upload/v1755868918/laiq_home_bviegi.png"
         >
             <source src="assets/bag-video.mp4" type="video/mp4">
@@ -598,14 +603,30 @@
     </footer>
     <!-- Footer End -->
 
-    <!-- Scripts -->
-    <script src="js/clear-cache.js?v=1.6"></script>
-    <script src="js/image-url-fixer.js?v=1.6"></script>
-    <script src="js/api.js?v=1.6"></script>
-    <script src="js/data.js?v=1.6"></script>
-    <script src="js/main.js?v=1.6"></script>
-    <script src="js/home.js?v=1.6"></script>
-    <script src="js/analytics-tracker.js?v=1.6"></script>
+    <!-- Critical Scripts (Load Immediately) -->
+    <script src="js/clear-cache.js?v=1.7"></script>
+    <script src="js/image-url-fixer.js?v=1.7"></script>
+    <script src="js/api.js?v=1.7"></script>
+    <script src="js/data.js?v=1.7"></script>
+    <script src="js/main.js?v=1.7"></script>
+    
+    <!-- Non-Critical Scripts (Load After Page Load) -->
+    <script>
+      // Lazy load non-critical scripts for better performance
+      window.addEventListener('load', function() {
+        // Load home.js after page is loaded
+        const homeScript = document.createElement('script');
+        homeScript.src = 'js/home.js?v=1.7';
+        document.head.appendChild(homeScript);
+        
+        // Load analytics after a short delay
+        setTimeout(function() {
+          const analyticsScript = document.createElement('script');
+          analyticsScript.src = 'js/analytics-tracker.js?v=1.7';
+          document.head.appendChild(analyticsScript);
+        }, 1000);
+      });
+    </script>
     
     <!-- PWA Support (No Service Worker) -->
     <script>
