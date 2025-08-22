@@ -599,13 +599,13 @@
     <!-- Footer End -->
 
     <!-- Scripts -->
-    <script src="js/clear-cache.js?v=1.4"></script>
-    <script src="js/image-url-fixer.js?v=1.4"></script>
-    <script src="js/api.js?v=1.4"></script>
-    <script src="js/data.js?v=1.4"></script>
-    <script src="js/main.js?v=1.4"></script>
-    <script src="js/home.js?v=1.4"></script>
-    <script src="js/analytics-tracker.js?v=1.4"></script>
+    <script src="js/clear-cache.js?v=1.5"></script>
+    <script src="js/image-url-fixer.js?v=1.5"></script>
+    <script src="js/api.js?v=1.5"></script>
+    <script src="js/data.js?v=1.5"></script>
+    <script src="js/main.js?v=1.5"></script>
+    <script src="js/home.js?v=1.5"></script>
+    <script src="js/analytics-tracker.js?v=1.5"></script>
     
     <!-- Service Worker Registration -->
     <script>
@@ -616,17 +616,21 @@
             .then(function(registration) {
               console.log('✅ Service Worker registered:', registration.scope);
               
-              // Clear image cache to fix image loading issues
+              // Clear all caches to fix navigation and loading issues
               if ('caches' in window) {
                 caches.keys().then(cacheNames => {
                   cacheNames.forEach(cacheName => {
-                    if (cacheName.includes('laiq-bags')) {
-                      caches.delete(cacheName).then(() => {
-                        console.log('🗑️ Cleared cache:', cacheName);
-                      });
-                    }
+                    caches.delete(cacheName).then(() => {
+                      console.log('🗑️ Cleared cache:', cacheName);
+                    });
                   });
                 });
+              }
+              
+              // Force reload if service worker is controlling the page
+              if (navigator.serviceWorker.controller) {
+                console.log('🔄 Service worker is controlling page - forcing reload');
+                window.location.reload();
               }
               
               // Check for updates

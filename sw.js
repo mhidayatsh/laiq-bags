@@ -1,8 +1,6 @@
 // Service Worker for PWA Updates
-const CACHE_NAME = 'laiq-bags-v1.4';
+const CACHE_NAME = 'laiq-bags-v1.5';
 const urlsToCache = [
-  '/',
-  '/index.html',
   '/site.webmanifest',
   '/css/styles.css',
   '/js/main.js',
@@ -51,9 +49,35 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   
-  // Don't cache images, API calls, or external resources
+  // Network-first for HTML pages and navigation requests
+  if (request.mode === 'navigate' || 
+      request.destination === 'document' ||
+      request.url.includes('.html') ||
+      request.url.endsWith('/') ||
+      request.url.includes('/api/')) {
+    
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // Cache successful responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+  
+  // Network-first for images and external resources
   if (request.destination === 'image' || 
-      request.url.includes('/api/') ||
       request.url.includes('cloudinary.com') ||
       request.url.includes('res.cloudinary.com') ||
       request.url.includes('placeholder') ||
@@ -62,7 +86,6 @@ self.addEventListener('fetch', event => {
       request.url.includes('.png') ||
       request.url.includes('.webp')) {
     
-    // For images, always fetch from network first, fallback to cache
     event.respondWith(
       fetch(request)
         .then(response => {
@@ -83,7 +106,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // For other resources, use cache-first strategy
+  // Cache-first for static assets (CSS, JS, etc.)
   event.respondWith(
     caches.match(request)
       .then(response => {
