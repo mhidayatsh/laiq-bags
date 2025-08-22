@@ -49,7 +49,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["shopping", "fashion", "lifestyle"],
-  "lang": "en",
-  "dir": "ltr"
+  "categories": ["shopping", "fashion", "lifestyle"]
 }
