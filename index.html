@@ -607,45 +607,16 @@
     <script src="js/home.js?v=1.6"></script>
     <script src="js/analytics-tracker.js?v=1.6"></script>
     
-    <!-- Service Worker Registration -->
+    <!-- PWA Support (No Service Worker) -->
     <script>
-      // Register Service Worker for PWA updates
+      // Simple PWA support without service worker complications
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('✅ Service Worker registered:', registration.scope);
-              
-              // Only clear old service worker caches
-              if ('caches' in window) {
-                caches.keys().then(cacheNames => {
-                  cacheNames.forEach(cacheName => {
-                    if (cacheName.includes('laiq-bags') && cacheName !== 'laiq-bags-v1.6') {
-                      caches.delete(cacheName).then(() => {
-                        console.log('🗑️ Cleared old cache:', cacheName);
-                      });
-                    }
-                  });
-                });
-              }
-              
-              // Don't force reload - let the service worker handle updates naturally
-              
-              // Check for updates
-              registration.addEventListener('updatefound', function() {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', function() {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // New version available - force update
-                    newWorker.postMessage({type: 'SKIP_WAITING'});
-                    window.location.reload();
-                  }
-                });
-              });
-            })
-            .catch(function(error) {
-              console.log('❌ Service Worker registration failed:', error);
-            });
+        // Unregister any existing service workers to prevent issues
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('🗑️ Unregistered old service worker');
+          }
         });
       }
     </script>
