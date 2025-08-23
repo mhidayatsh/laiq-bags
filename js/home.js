@@ -3,50 +3,48 @@ let featuredProducts = [];
 let countdownTimers = {};
 
 // Initialize home page
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('🏠 Home page initialized');
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🏠 Home page initializing...');
     
-    try {
-        // Check if API is available
-        if (typeof api === 'undefined') {
-            console.warn('⚠️ API not available, using local data');
-            loadLocalFeaturedProducts();
-            return;
-        }
-        
-        // Load featured products from API
-        await loadFeaturedProducts();
-        
-        // Initialize newsletter
-        initializeNewsletter();
-        
-        // Start countdown timers
-        startCountdownTimers();
-
-        // Init testimonials carousel
-        initializeTestimonialCarousel();
-        
-        console.log('✅ Home page ready');
-    } catch (error) {
-        console.error('❌ Error initializing home:', error);
-        
-        // Show user-friendly error message
-        if (typeof showToast === 'function') {
-            showToast('Unable to load products. Please refresh the page.', 'error');
-        }
-        
-        // Fallback to local data
-        loadLocalFeaturedProducts();
-        
-        // Initialize other components even if API fails
-        try {
-            initializeNewsletter();
-            startCountdownTimers();
-        } catch (fallbackError) {
-            console.error('❌ Error in fallback initialization:', fallbackError);
-        }
-    }
+    // Initialize video error handling
+    initializeVideoErrorHandling();
+    
+    // Load featured products
+    loadFeaturedProducts();
+    
+    // Initialize testimonials carousel
+    initializeTestimonialsCarousel();
+    
+    // Initialize newsletter form
+    initializeNewsletterForm();
+    
+    console.log('✅ Home page ready');
 });
+
+// Video error handling
+function initializeVideoErrorHandling() {
+    const video = document.querySelector('video');
+    if (video) {
+        video.addEventListener('error', function(e) {
+            console.log('❌ Video failed to load:', e);
+            // Hide video and show fallback image
+            this.style.display = 'none';
+            const fallbackImage = this.nextElementSibling;
+            if (fallbackImage && fallbackImage.tagName === 'IMG') {
+                fallbackImage.style.display = 'block';
+                console.log('🖼️ Showing fallback image');
+            }
+        });
+        
+        video.addEventListener('loadstart', function() {
+            console.log('🎥 Video loading started');
+        });
+        
+        video.addEventListener('canplay', function() {
+            console.log('✅ Video ready to play');
+        });
+    }
+}
 
 // Load featured products from API
 async function loadFeaturedProducts() {

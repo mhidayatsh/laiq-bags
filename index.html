@@ -539,10 +539,21 @@
             playsinline
             loading="lazy"
             poster="https://res.cloudinary.com/dmfw0s5ht/image/upload/v1755868918/laiq_home_bviegi.png"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
         >
             <source src="assets/bag-video.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
+        
+        <!-- Fallback image if video fails to load -->
+        <img 
+            src="https://res.cloudinary.com/dmfw0s5ht/image/upload/v1755868918/laiq_home_bviegi.png" 
+            alt="Laiq Bags - Premium Bags & Accessories"
+            class="w-full max-w-md rounded-2xl shadow-lg object-cover aspect-[4/5] hover:scale-105 transition-transform duration-300"
+            style="display: none;"
+            onload="console.log('✅ Fallback image loaded successfully');"
+            onerror="console.log('❌ Fallback image failed to load');"
+        >
 
       </div>
     </section>
