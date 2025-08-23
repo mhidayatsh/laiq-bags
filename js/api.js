@@ -511,6 +511,10 @@ class ApiService {
         return await this.request(`/admin/orders${queryParams}`, { timeoutMs: parseInt(timeoutMs) });
     }
 
+    async getAdminDashboard() {
+        return await this.request('/admin/dashboard');
+    }
+
     async updateOrderStatus(orderId, status) {
         return await this.request(`/orders/admin/${orderId}/status`, {
             method: 'PUT',

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Modules Test | Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        .test-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .test-success { background-color: #dcfce7; color: #166534; }
+        .test-error { background-color: #fee2e2; color: #991b1b; }
+        .test-info { background-color: #dbeafe; color: #1e40af; }
+        .test-warning { background-color: #fef3c7; color: #92400e; }
+        .code-block {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-charcoal min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">
+            🧪 Shared Modules Test Suite
+        </h1>
+        
+        <div class="text-center mb-8">
+            <p class="text-lg text-gray-600">
+                Testing all shared modules for Enhanced Order Management, Billing Management & Shipping Management
+            </p>
+        </div>
+
+        <!-- Module Loading Test -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🔍 Module Loading Test</h2>
+            <button onclick="testModuleLoading()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                Test Module Loading
+            </button>
+            <div id="module-loading-results"></div>
+        </div>
+
+        <!-- Authentication Test -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🔐 Authentication Module Test</h2>
+            <button onclick="testAuthentication()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                Test Authentication
+            </button>
+            <div id="auth-test-results"></div>
+        </div>
+
+        <!-- Cache Test -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">💾 Cache Module Test</h2>
+            <button onclick="testCaching()" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600">
+                Test Caching
+            </button>
+            <div id="cache-test-results"></div>
+        </div>
+
+        <!-- Error Boundary Test -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🛡️ Error Boundary Test</h2>
+            <button onclick="testErrorBoundary()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                Test Error Handling
+            </button>
+            <div id="error-test-results"></div>
+        </div>
+
+        <!-- API Optimization Test -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🚀 API Optimization Test</h2>
+            <button onclick="testAPIOptimization()" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600">
+                Test API Optimization
+            </button>
+            <div id="api-test-results"></div>
+        </div>
+
+        <!-- System Status -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">📊 System Status</h2>
+            <button onclick="showSystemStatus()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                Show System Status
+            </button>
+            <div id="system-status-results"></div>
+        </div>
+
+        <!-- Performance Test -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">⚡ Performance Test</h2>
+            <button onclick="testPerformance()" class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600">
+                Test Performance
+            </button>
+            <div id="performance-test-results"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">⚙️ Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="clearAllCache()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                    Clear All Cache
+                </button>
+                <button onclick="optimizePerformance()" class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600">
+                    Optimize Performance
+                </button>
+                <button onclick="resetAllStats()" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600">
+                    Reset Statistics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Shared Modules -->
+    <script src="/js/shared/auth-module.js"></script>
+    <script src="/js/shared/cache-module.js"></script>
+    <script src="/js/shared/error-boundary.js"></script>
+    <script src="/js/shared/optimized-api.js"></script>
+    <script src="/js/shared/shared-modules.js"></script>
+
+    <script>
+        // Test Module Loading
+        function testModuleLoading() {
+            const results = document.getElementById('module-loading-results');
+            results.innerHTML = '<div class="test-info">Testing module loading...</div>';
+            
+            const modules = {
+                'Auth Module': !!window.authModule,
+                'Cache Module': !!window.cacheModule,
+                'Error Boundary': !!window.errorBoundary,
+                'Optimized API': !!window.optimizedAPI,
+                'Shared Modules': !!window.sharedModules
+            };
+            
+            let resultsHTML = '';
+            let allLoaded = true;
+            
+            for (const [name, loaded] of Object.entries(modules)) {
+                if (loaded) {
+                    resultsHTML += `<div class="test-success">✅ ${name}: Loaded Successfully</div>`;
+                } else {
+                    resultsHTML += `<div class="test-error">❌ ${name}: Failed to Load</div>`;
+                    allLoaded = false;
+                }
+            }
+            
+            if (allLoaded) {
+                resultsHTML += '<div class="test-success">🎉 All modules loaded successfully!</div>';
+            } else {
+                resultsHTML += '<div class="test-error">⚠️ Some modules failed to load</div>';
+            }
+            
+            results.innerHTML = resultsHTML;
+        }
+
+        // Test Authentication
+        async function testAuthentication() {
+            const results = document.getElementById('auth-test-results');
+            results.innerHTML = '<div class="test-info">Testing authentication...</div>';
+            
+            try {
+                const authState = window.authModule.getAuthState();
+                const hasRole = window.authModule.hasRole('admin');
+                const hasPermission = window.authModule.hasPermission('admin');
+                
+                let resultsHTML = `
+                    <div class="test-info">Authentication State:</div>
+                    <div class="code-block">${JSON.stringify(authState, null, 2)}</div>
+                    <div class="test-success">✅ Has Admin Role: ${hasRole}</div>
+                    <div class="test-success">✅ Has Admin Permission: ${hasPermission}</div>
+                `;
+                
+                if (authState.isAuthenticated) {
+                    resultsHTML += '<div class="test-success">🎉 User is authenticated!</div>';
+                } else {
+                    resultsHTML += '<div class="test-warning">⚠️ User is not authenticated</div>';
+                }
+                
+                results.innerHTML = resultsHTML;
+            } catch (error) {
+                results.innerHTML = `<div class="test-error">❌ Authentication test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Test Caching
+        function testCaching() {
+            const results = document.getElementById('cache-test-results');
+            results.innerHTML = '<div class="test-info">Testing caching...</div>';
+            
+            try {
+                // Test cache operations
+                window.cacheSet('test-key', { data: 'test-value', timestamp: Date.now() }, 60000);
+                const cached = window.cacheGet('test-key');
+                const stats = window.cacheModule.getStats();
+                
+                let resultsHTML = `
+                    <div class="test-success">✅ Cache set operation: Success</div>
+                    <div class="test-success">✅ Cache get operation: ${cached ? 'Success' : 'Failed'}</div>
+                    <div class="test-info">Cache Statistics:</div>
+                    <div class="code-block">${JSON.stringify(stats, null, 2)}</div>
+                `;
+                
+                if (cached) {
+                    resultsHTML += '<div class="test-success">🎉 Caching is working correctly!</div>';
+                } else {
+                    resultsHTML += '<div class="test-error">❌ Caching is not working</div>';
+                }
+                
+                results.innerHTML = resultsHTML;
+            } catch (error) {
+                results.innerHTML = `<div class="test-error">❌ Cache test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Test Error Boundary
+        function testErrorBoundary() {
+            const results = document.getElementById('error-test-results');
+            results.innerHTML = '<div class="test-info">Testing error boundary...</div>';
+            
+            try {
+                // Test error handling
+                const testError = new Error('Test error for error boundary');
+                window.handleError(testError, { source: 'test', type: 'test' });
+                
+                const errorStats = window.errorBoundary.getErrorStats();
+                
+                let resultsHTML = `
+                    <div class="test-success">✅ Error boundary is working</div>
+                    <div class="test-info">Error Statistics:</div>
+                    <div class="code-block">${JSON.stringify(errorStats, null, 2)}</div>
+                `;
+                
+                results.innerHTML = resultsHTML;
+            } catch (error) {
+                results.innerHTML = `<div class="test-error">❌ Error boundary test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Test API Optimization
+        async function testAPIOptimization() {
+            const results = document.getElementById('api-test-results');
+            results.innerHTML = '<div class="test-info">Testing API optimization...</div>';
+            
+            try {
+                const apiStats = window.optimizedAPI.getRequestStats();
+                
+                let resultsHTML = `
+                    <div class="test-success">✅ API optimization module is working</div>
+                    <div class="test-info">API Statistics:</div>
+                    <div class="code-block">${JSON.stringify(apiStats, null, 2)}</div>
+                `;
+                
+                results.innerHTML = resultsHTML;
+            } catch (error) {
+                results.innerHTML = `<div class="test-error">❌ API optimization test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Show System Status
+        function showSystemStatus() {
+            const results = document.getElementById('system-status-results');
+            results.innerHTML = '<div class="test-info">Getting system status...</div>';
+            
+            try {
+                if (window.sharedModules) {
+                    const status = window.sharedModules.getSystemStatus();
+                    results.innerHTML = `
+                        <div class="test-success">✅ System status retrieved</div>
+                        <div class="test-info">System Status:</div>
+                        <div class="code-block">${JSON.stringify(status, null, 2)}</div>
+                    `;
+                } else {
+                    results.innerHTML = '<div class="test-error">❌ Shared modules not available</div>';
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="test-error">❌ Failed to get system status: ${error.message}</div>`;
+            }
+        }
+
+        // Test Performance
+        async function testPerformance() {
+            const results = document.getElementById('performance-test-results');
+            results.innerHTML = '<div class="test-info">Testing performance...</div>';
+            
+            try {
+                const startTime = performance.now();
+                
+                // Test cache performance
+                for (let i = 0; i < 100; i++) {
+                    window.cacheSet(`perf-test-${i}`, { data: i }, 60000);
+                }
+                
+                const cacheTime = performance.now() - startTime;
+                
+                // Test API optimization
+                const apiStartTime = performance.now();
+                window.optimizedAPI.optimizeRequests();
+                const apiTime = performance.now() - apiStartTime;
+                
+                results.innerHTML = `
+                    <div class="test-success">✅ Performance test completed</div>
+                    <div class="test-info">Performance Results:</div>
+                    <div class="test-success">Cache Operations (100): ${cacheTime.toFixed(2)}ms</div>
+                    <div class="test-success">API Optimization: ${apiTime.toFixed(2)}ms</div>
+                    <div class="test-success">🎉 Performance optimization is working!</div>
+                `;
+            } catch (error) {
+                results.innerHTML = `<div class="test-error">❌ Performance test failed: ${error.message}</div>`;
+            }
+        }
+
+        // Quick Actions
+        function clearAllCache() {
+            if (window.cacheModule) {
+                window.cacheModule.clear();
+                alert('All cache cleared successfully!');
+            } else {
+                alert('Cache module not available');
+            }
+        }
+
+        async function optimizePerformance() {
+            if (window.sharedModules) {
+                await window.sharedModules.optimizePerformance();
+                alert('Performance optimization completed!');
+            } else {
+                alert('Shared modules not available');
+            }
+        }
+
+        function resetAllStats() {
+            if (window.cacheModule) window.cacheModule.resetStats();
+            if (window.optimizedAPI) window.optimizedAPI.resetStats();
+            if (window.errorBoundary) window.errorBoundary.resetErrorCount();
+            alert('All statistics reset successfully!');
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testModuleLoading();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

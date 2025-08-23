@@ -10,9 +10,106 @@ let filters = {
     search: ''
 };
 
+// Check if user is logged in as admin
+async function checkAdminAuth() {
+    let token = localStorage.getItem('token'); // Admin token
+    let user = localStorage.getItem('user'); // Admin user
+    
+    console.log('🔍 Checking admin authentication for enhanced order management...');
+    console.log('🔑 Admin token exists:', !!token);
+    console.log('👤 Admin user data exists:', !!user);
+    
+    // Check if customer is also logged in
+    const customerToken = localStorage.getItem('customerToken');
+    const customerUser = localStorage.getItem('customerUser');
+    
+    if (customerToken && customerUser) {
+        console.log('⚠️ Customer session detected alongside admin session');
+    }
+    
+    // If no admin token, check for customer token (might be logged in as customer)
+    if (!token) {
+        console.log('🔑 Customer token exists:', !!customerToken);
+        console.log('👤 Customer user data exists:', !!customerUser);
+        
+        if (customerToken && customerUser) {
+            try {
+                const customerData = JSON.parse(customerUser);
+                console.log('👤 Customer data:', customerData);
+                
+                // Check if customer is actually an admin
+                if (customerData.role === 'admin') {
+                    console.log('✅ Customer is actually admin, using customer token');
+                    token = customerToken;
+                    user = customerUser;
+                } else {
+                    console.log('❌ Customer is not admin, redirecting to login');
+                    showToast('Please login as admin to access enhanced order management', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/admin-login.html';
+                    }, 2000);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error parsing customer data:', error);
+                showToast('Authentication error. Please login again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/admin-login.html';
+                }, 2000);
+                return false;
+            }
+        } else {
+            console.log('❌ No authentication found, redirecting to login');
+            showToast('Please login as admin to access enhanced order management', 'error');
+            setTimeout(() => {
+                window.location.href = '/admin-login.html';
+            }, 2000);
+            return false;
+        }
+    }
+    
+    // Verify the user data we have is actually an admin
+    if (token && user) {
+        try {
+            const userData = JSON.parse(user);
+            if (userData.role !== 'admin') {
+                console.log('❌ User is not admin, redirecting to login');
+                showToast('Please login as admin to access enhanced order management', 'error');
+                setTimeout(() => {
+                    window.location.href = '/admin-login.html';
+                }, 2000);
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Error parsing user data:', error);
+            showToast('Authentication error. Please login again.', 'error');
+            setTimeout(() => {
+                window.location.href = '/admin-login.html';
+            }, 2000);
+            return false;
+        }
+    }
+    
+    if (!token || !user) {
+        console.log('❌ Invalid authentication, redirecting to login');
+        showToast('Please login as admin to access enhanced order management', 'error');
+        return false;
+    }
+    
+    console.log('✅ Admin authentication verified');
+    return true;
+}
+
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Enhanced Order Management initialized');
+    
+    // Check authentication first
+    const isAuthenticated = await checkAdminAuth();
+    if (!isAuthenticated) {
+        return;
+    }
+    
     loadOrders();
     loadStatistics();
     initializeEventListeners();
@@ -104,10 +201,33 @@ async function loadStatistics() {
         const response = await api.getAdminDashboard();
         if (response.success) {
             const data = response.data;
-            document.getElementById('total-orders').textContent = data.totalOrders || 0;
-            document.getElementById('pending-orders').textContent = data.pendingOrders || 0;
-            document.getElementById('total-revenue').textContent = `₹${(data.totalRevenue || 0).toLocaleString()}`;
-            document.getElementById('delivered-today').textContent = data.deliveredToday || 0;
+            
+            // Update statistics based on available data
+            if (document.getElementById('total-orders')) {
+                document.getElementById('total-orders').textContent = data.totalOrders || 0;
+            }
+            
+            if (document.getElementById('pending-orders')) {
+                // Calculate pending orders from recent orders
+                const pendingOrders = data.recentOrders?.filter(order => 
+                    ['pending', 'processing', 'confirmed'].includes(order.status)
+                ).length || 0;
+                document.getElementById('pending-orders').textContent = pendingOrders;
+            }
+            
+            if (document.getElementById('total-revenue')) {
+                document.getElementById('total-revenue').textContent = `₹${(data.totalRevenue || 0).toLocaleString()}`;
+            }
+            
+            if (document.getElementById('delivered-today')) {
+                // Calculate delivered today from recent orders
+                const today = new Date().toDateString();
+                const deliveredToday = data.recentOrders?.filter(order => 
+                    order.status === 'delivered' && 
+                    new Date(order.createdAt).toDateString() === today
+                ).length || 0;
+                document.getElementById('delivered-today').textContent = deliveredToday;
+            }
         }
     } catch (error) {
         console.error('❌ Error loading statistics:', error);

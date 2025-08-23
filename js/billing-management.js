@@ -10,9 +10,87 @@ let filters = {
     search: ''
 };
 
+// Check if user is logged in as admin
+async function checkAdminAuth() {
+    let token = localStorage.getItem('token'); // Admin token
+    let user = localStorage.getItem('user'); // Admin user
+    
+    console.log('🔍 Checking admin authentication for billing management...');
+    console.log('🔑 Admin token exists:', !!token);
+    console.log('👤 Admin user data exists:', !!user);
+    
+    // Check if customer is also logged in
+    const customerToken = localStorage.getItem('customerToken');
+    const customerUser = localStorage.getItem('customerUser');
+    
+    if (customerToken && customerUser) {
+        console.log('⚠️ Customer session detected alongside admin session');
+    }
+    
+    // If no admin token, check for customer token (might be logged in as customer)
+    if (!token) {
+        console.log('🔑 Customer token exists:', !!customerToken);
+        console.log('👤 Customer user data exists:', !!customerUser);
+        
+        if (customerToken && customerUser) {
+            try {
+                const customerData = JSON.parse(customerUser);
+                console.log('👤 Customer data:', customerData);
+                
+                // Check if customer is actually an admin
+                if (customerData.role === 'admin') {
+                    console.log('✅ Customer is actually admin, using customer token');
+                    token = customerToken;
+                    user = customerUser;
+                } else {
+                    console.log('❌ Customer is not admin, redirecting to login');
+                    showToast('Please login as admin to access billing management', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/admin-login.html';
+                    }, 2000);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error parsing customer data:', error);
+                showToast('Authentication error. Please login again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/admin-login.html';
+                }, 2000);
+                return false;
+            }
+        } else {
+            console.log('❌ No authentication found, redirecting to login');
+            showToast('Please login as admin to access billing management', 'error');
+            setTimeout(() => {
+                window.location.href = '/admin-login.html';
+            }, 2000);
+            return false;
+        }
+    }
+    
+    if (!token || !user) {
+        console.log('❌ Invalid authentication, redirecting to login');
+        showToast('Please login as admin to access billing management', 'error');
+        setTimeout(() => {
+            window.location.href = '/admin-login.html';
+        }, 2000);
+        return false;
+    }
+    
+    console.log('✅ Admin authentication verified');
+    return true;
+}
+
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('💰 Billing Management initialized');
+    
+    // Check authentication first
+    const isAuthenticated = await checkAdminAuth();
+    if (!isAuthenticated) {
+        return;
+    }
+    
     loadTransactions();
     loadStatistics();
     initializeEventListeners();
@@ -89,7 +167,7 @@ async function loadTransactions() {
 // Load statistics
 async function loadStatistics() {
     try {
-        const response = await api.getAdminDashboard();
+        const response = await api.getDashboardStats();
         if (response.success) {
             const data = response.data;
             
