@@ -536,6 +536,11 @@ function initializeTestimonialCarousel() {
                 slide.style.flex = `0 0 ${slideWidth}px`;
                 slide.style.minWidth = slideWidth + 'px';
                 slide.style.maxWidth = slideWidth + 'px';
+                slide.style.display = 'flex';
+                slide.style.flexDirection = 'column';
+                slide.style.alignItems = 'center';
+                slide.style.justifyContent = 'center';
+                slide.style.textAlign = 'center';
             });
             // Track width adjusts naturally from children; keep transform in sync
             // Keep current slide in view after resize
