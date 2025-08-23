@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     loadFeaturedProducts();
     
     // Initialize testimonials carousel
-    initializeTestimonialsCarousel();
+    initializeTestimonialCarousel();
     
     // Initialize newsletter form
-    initializeNewsletterForm();
+    initializeNewsletter();
     
     console.log('✅ Home page ready');
 });
