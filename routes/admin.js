@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
@@ -719,29 +720,110 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
 // Update order status (admin)
 router.put('/orders/:id/status', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (req, res) => {
     try {
-        const { status } = req.body;
+        console.log('🔄 Admin updating order status:', req.params.id, 'to', req.body.status);
+        console.log('📋 Request body:', req.body);
+        
+        const { status, notes } = req.body;
+        
+        // Validate order ID
+        if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+            console.error('❌ Invalid order ID:', req.params.id);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid order ID'
+            });
+        }
         
         const order = await Order.findById(req.params.id);
         
         if (!order) {
+            console.error('❌ Order not found:', req.params.id);
             return res.status(404).json({
                 success: false,
                 message: 'Order not found'
             });
         }
         
+        // Validate status
+        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        if (!status || !validStatuses.includes(status)) {
+            console.error('❌ Invalid status:', status);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid order status. Valid statuses are: ' + validStatuses.join(', ')
+            });
+        }
+        
+        // Update order status
+        const previousStatus = order.status;
         order.status = status;
+        
+        // Add status change notes if provided
+        if (notes && notes.trim()) {
+            if (!order.statusNotes) {
+                order.statusNotes = [];
+            }
+            order.statusNotes.push({
+                status: status,
+                notes: notes.trim(),
+                changedBy: 'admin',
+                changedAt: Date.now()
+            });
+            console.log('📝 Added status notes:', notes);
+        }
+        
+        // Initialize trackingInfo if it doesn't exist
+        if (!order.trackingInfo) {
+            order.trackingInfo = {};
+        }
+        
+        // Update timestamps based on status
+        if (status === 'shipped' && !order.trackingInfo.shippedAt) {
+            order.trackingInfo.shippedAt = Date.now();
+            console.log('📦 Order shipped at:', new Date(order.trackingInfo.shippedAt));
+        }
+        
+        if (status === 'delivered') {
+            order.deliveredAt = Date.now();
+            order.trackingInfo.deliveredAt = Date.now();
+            console.log('✅ Order delivered at:', new Date(order.deliveredAt));
+        }
+        
+        console.log('💾 Saving order with new status:', status);
         await order.save();
+        
+        console.log('✅ Order status updated successfully:', req.params.id, `${previousStatus} → ${status}`);
         
         res.status(200).json({
             success: true,
-            order
+            message: `Order status updated from ${previousStatus} to ${status}`,
+            order: {
+                id: order._id,
+                status: order.status,
+                previousStatus: previousStatus
+            }
         });
     } catch (error) {
-        console.error('Update order status error:', error);
+        console.error('❌ Error updating order status:', error);
+        console.error('❌ Error stack:', error.stack);
+        
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation error: ' + error.message
+            });
+        }
+        
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid order ID format'
+            });
+        }
+        
         res.status(500).json({
             success: false,
-            message: 'Error updating order status'
+            message: 'Internal server error while updating order status'
         });
     }
 }));
