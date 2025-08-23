@@ -1103,12 +1103,16 @@ function toggleCartDrawer() {
     if (isOpen) {
         // Close drawer
         drawer.classList.add('translate-x-full')
-        document.body.style.overflow = 'auto';
+        // Restore original body overflow and remove any horizontal scroll issues
+        document.body.style.overflow = '';
+        document.body.style.overflowX = 'hidden';
         console.log('🛒 Cart drawer closed')
     } else {
         // Open drawer
         drawer.classList.remove('translate-x-full')
+        // Prevent body scroll but maintain horizontal overflow hidden
         document.body.style.overflow = 'hidden';
+        document.body.style.overflowX = 'hidden';
         
         // Load and render cart data
         const isGuest = !isCustomerLoggedIn();
