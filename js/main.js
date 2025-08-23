@@ -1025,7 +1025,7 @@ function createCartDrawer() {
     
     const drawer = document.createElement('div')
     drawer.id = 'cart-drawer';
-    drawer.className = 'fixed top-0 right-0 h-full w-80 md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
+    drawer.className = 'fixed top-0 right-0 h-screen w-80 md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
     drawer.innerHTML = `
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-4 border-b border-beige">
@@ -1536,7 +1536,7 @@ function createWishlistDrawer() {
     
     const drawer = document.createElement('div')
     drawer.id = 'wishlist-drawer';
-    drawer.className = 'fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
+    drawer.className = 'fixed top-0 right-0 h-screen w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
     drawer.innerHTML = `
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-4 border-b border-beige">
@@ -1581,11 +1581,17 @@ function toggleWishlistDrawer() {
         renderWishlistDrawer()
         const isClosed = drawer.classList.contains('translate-x-full')
         if (isClosed) {
+            // Open drawer
             drawer.classList.remove('translate-x-full')
             drawer.classList.add('translate-x-0')
+            document.body.style.overflow = 'hidden';
+            console.log('❤️ Wishlist drawer opened')
         } else {
+            // Close drawer
             drawer.classList.add('translate-x-full')
             drawer.classList.remove('translate-x-0')
+            document.body.style.overflow = 'auto';
+            console.log('❤️ Wishlist drawer closed')
         }
     }
 }
