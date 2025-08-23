@@ -1438,7 +1438,8 @@ async function removeItemFromCart(uniqueId) {
         }
         
         // Send color information to backend
-        const color = cartItem.color ? cartItem.color.name : colorName
+        const color = cartItem.color ? cartItem.color.name : (colorName || 'Default')
+        console.log('🎨 Sending color to backend:', color)
         const response = await api.removeFromCart(productId, color)
         
         if (response.success) {
@@ -1455,8 +1456,32 @@ async function removeItemFromCart(uniqueId) {
             showToast('Item removed from cart', 'info')
         } else {
             console.error('❌ Failed to remove item from cart:', response.message)
-            // Reload cart from backend to sync
-            loadCartFromBackend()
+            // Try to remove by product ID only (without color) as fallback
+            try {
+                console.log('🔄 Trying fallback removal by product ID only...')
+                const fallbackResponse = await api.removeFromCart(productId)
+                if (fallbackResponse.success) {
+                    console.log('✅ Item removed using fallback method')
+                    // Update local cart
+                    cart = cart.filter(item => {
+                        const itemColorName = item.color ? (item.color.name || item.color) : 'default';
+                        const itemUniqueId = `${item.id || item.productId}_${itemColorName}`;
+                        return itemUniqueId !== uniqueId;
+                    });
+                    saveUserCart();
+                    renderCartDrawer();
+                    updateCartCount();
+                    showToast('Item removed from cart', 'info')
+                } else {
+                    console.error('❌ Fallback removal also failed:', fallbackResponse.message)
+                    // Reload cart from backend to sync
+                    loadCartFromBackend()
+                }
+            } catch (fallbackError) {
+                console.error('❌ Fallback removal error:', fallbackError)
+                // Reload cart from backend to sync
+                loadCartFromBackend()
+            }
         }
     } catch (error) {
         console.error('❌ Error removing item from cart:', error)

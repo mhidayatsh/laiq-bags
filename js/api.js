@@ -715,9 +715,10 @@ class ApiService {
 
     async removeFromCart(productId, color = null) {
         let endpoint = `/cart/remove/${productId}`;
-        if (color) {
+        if (color && color !== 'Default' && color !== 'default') {
             endpoint += `?color=${encodeURIComponent(color)}`;
         }
+        console.log('🗑️ API removeFromCart called with:', { productId, color, endpoint });
         return this.request(endpoint, {
             method: 'DELETE'
         });
