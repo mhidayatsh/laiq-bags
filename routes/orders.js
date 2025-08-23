@@ -360,9 +360,10 @@ router.put('/admin/:id/status', isAuthenticatedUser, authorizeRoles('admin'), as
       user: order.user
     });
 
-    const { status } = req.body;
+    const { status, notes } = req.body;
     console.log('🎯 Requested status:', status);
     console.log('🎯 Status type:', typeof status);
+    console.log('📝 Notes:', notes);
     
     // Validate status
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -397,6 +398,20 @@ router.put('/admin/:id/status', isAuthenticatedUser, authorizeRoles('admin'), as
     // Update order status
     const previousStatus = order.status;
     order.status = status;
+    
+    // Add status change notes if provided
+    if (notes && notes.trim()) {
+      if (!order.statusNotes) {
+        order.statusNotes = [];
+      }
+      order.statusNotes.push({
+        status: status,
+        notes: notes.trim(),
+        changedBy: 'admin',
+        changedAt: Date.now()
+      });
+      console.log('📝 Added status notes:', notes);
+    }
     
     // Initialize trackingInfo if it doesn't exist
     if (!order.trackingInfo) {

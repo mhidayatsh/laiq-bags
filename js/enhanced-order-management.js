@@ -758,10 +758,8 @@ async function cancelOrder(orderId) {
     try {
         const reason = prompt('Please provide a reason for cancellation:') || 'Cancelled by admin';
         
-        const response = await api.cancelOrder(orderId, {
-            reason: reason,
-            refundAmount: 0
-        });
+        // Use admin-specific cancellation endpoint
+        const response = await api.cancelOrderByAdmin(orderId, reason, 0, false);
         
         if (response.success) {
             showToast('Order cancelled successfully', 'success');

@@ -551,10 +551,10 @@ class ApiService {
         return await this.request('/admin/dashboard');
     }
 
-    async updateOrderStatus(orderId, status) {
+    async updateOrderStatus(orderId, statusData) {
         return await this.request(`/orders/admin/${orderId}/status`, {
             method: 'PUT',
-            body: JSON.stringify({ status })
+            body: JSON.stringify(statusData)
         });
     }
 

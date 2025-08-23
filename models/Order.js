@@ -202,6 +202,26 @@ const orderSchema = new mongoose.Schema({
       default: null
     }
   },
+  // Status change history
+  statusNotes: [{
+    status: {
+      type: String,
+      required: true
+    },
+    notes: {
+      type: String,
+      required: true
+    },
+    changedBy: {
+      type: String,
+      enum: ['customer', 'admin'],
+      required: true
+    },
+    changedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   deliveredAt: Date,
   createdAt: {
     type: Date,
