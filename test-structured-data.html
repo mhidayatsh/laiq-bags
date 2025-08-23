@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structured Data Test - Laiq Bags</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .error { color: #dc3545; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Structured Data Test Page</h1>
+    <p>This page tests the structured data fixes applied to resolve Google Search Console validation errors.</p>
+
+    <div class="test-section">
+        <h2>✅ Issues Fixed</h2>
+        <ul>
+            <li class="success"><strong>Critical Issue Fixed:</strong> Added missing 'image' fields for all products</li>
+            <li class="success"><strong>Non-Critical Issue Fixed:</strong> Added 'shippingDetails' fields</li>
+            <li class="success"><strong>Non-Critical Issue Fixed:</strong> Added 'hasMerchantReturnPolicy' fields</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test Your Structured Data</h2>
+        <p>Use these tools to validate your structured data:</p>
+        
+        <button class="test-button" onclick="window.open('https://search.google.com/test/rich-results?url=https://laiq.shop', '_blank')">
+            Google Rich Results Test
+        </button>
+        
+        <button class="test-button" onclick="window.open('https://validator.schema.org/?url=https://laiq.shop', '_blank')">
+            Schema.org Validator
+        </button>
+        
+        <button class="test-button" onclick="window.open('https://search.google.com/search-console', '_blank')">
+            Google Search Console
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Sample Structured Data</h2>
+        <p>Here's what the fixed structured data looks like:</p>
+        <pre><code>{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Backpacks",
+  "description": "Premium backpacks for daily use and travel",
+  "image": "https://laiq.shop/assets/placeholder-bag-1.jpg",
+  "offers": {
+    "@type": "Offer",
+    "price": "1499",
+    "priceCurrency": "INR",
+    "availability": "https://schema.org/InStock",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0",
+        "currency": "INR"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 1,
+          "maxValue": 2,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 3,
+          "maxValue": 7,
+          "unitCode": "DAY"
+        }
+      }
+    },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "IN",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 30,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+    }
+  }
+}</code></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Validation Checklist</h2>
+        <p>After testing, you should see:</p>
+        <ul>
+            <li class="success">✅ No critical issues</li>
+            <li class="success">✅ No non-critical issues</li>
+            <li class="success">✅ All required fields present</li>
+            <li class="success">✅ All optional fields included</li>
+            <li class="success">✅ Rich results eligible</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Next Steps</h2>
+        <ol>
+            <li>Test your website with Google Rich Results Test</li>
+            <li>Check Google Search Console for validation results</li>
+            <li>Wait 24-48 hours for Google to re-crawl your site</li>
+            <li>Monitor for any new structured data errors</li>
+            <li>Replace placeholder images with actual product photos</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>📞 Need Help?</h2>
+        <p>If you're still seeing validation errors:</p>
+        <ul>
+            <li>Clear your browser cache and test again</li>
+            <li>Check for JavaScript errors in browser console</li>
+            <li>Verify all image URLs are accessible</li>
+            <li>Ensure your website is accessible to Google's crawlers</li>
+        </ul>
+    </div>
+
+    <script>
+        // Add structured data to this test page
+        const testStructuredData = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": "Structured Data Test - Laiq Bags",
+            "description": "Test page for validating structured data fixes",
+            "url": "https://laiq.shop/test-structured-data.html",
+            "publisher": {
+                "@type": "Organization",
+                "name": "Laiq Bags",
+                "url": "https://laiq.shop"
+            }
+        };
+
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(testStructuredData);
+        document.head.appendChild(script);
+
+        console.log('🧪 Structured data test page loaded');
+        console.log('📊 Test data:', testStructuredData);
+    </script>
+</body>
+</html>
