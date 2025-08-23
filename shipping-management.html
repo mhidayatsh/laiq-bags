@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping Management | Laiq Bags</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .laiq-logo-text {
+            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+        }
+        
+        .shipping-status {
+            @apply px-3 py-1 rounded-full text-xs font-medium;
+        }
+        
+        .status-pending { @apply bg-yellow-100 text-yellow-800; }
+        .status-processing { @apply bg-blue-100 text-blue-800; }
+        .status-shipped { @apply bg-purple-100 text-purple-800; }
+        .status-delivered { @apply bg-green-100 text-green-800; }
+        .status-delayed { @apply bg-red-100 text-red-800; }
+        
+        .shipping-card {
+            transition: all 0.3s ease;
+        }
+        
+        .shipping-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .tracking-timeline {
+            position: relative;
+        }
+        
+        .tracking-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #d4af37;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #d4af37;
+        }
+        
+        .timeline-item.completed::before {
+            background: #10b981;
+            box-shadow: 0 0 0 2px #10b981;
+        }
+        
+        .timeline-item.pending::before {
+            background: #f59e0b;
+            box-shadow: 0 0 0 2px #f59e0b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-charcoal min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-xl font-bold">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span> - Shipping Management
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="refresh-btn" class="bg-gold text-white px-4 py-2 rounded-lg text-sm hover:bg-charcoal transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                    <a href="admin.html" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Shipping Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Orders to Ship</p>
+                        <p class="text-2xl font-bold text-blue-600" id="orders-to-ship">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-shipping-fast text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">In Transit</p>
+                        <p class="text-2xl font-bold text-purple-600" id="in-transit">0</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <i class="fas fa-truck text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Delivered Today</p>
+                        <p class="text-2xl font-bold text-green-600" id="delivered-today">0</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Delayed Shipments</p>
+                        <p class="text-2xl font-bold text-red-600" id="delayed-shipments">0</p>
+                    </div>
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courier Performance -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-lg font-semibold text-charcoal mb-4">Courier Performance</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                            <span class="text-sm">Delhivery</span>
+                        </div>
+                        <span class="font-semibold" id="delhivery-count">0 orders</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                            <span class="text-sm">DTDC</span>
+                        </div>
+                        <span class="font-semibold" id="dtdc-count">0 orders</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-purple-500 rounded-full"></div>
+                            <span class="text-sm">BlueDart</span>
+                        </div>
+                        <span class="font-semibold" id="bluedart-count">0 orders</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                            <span class="text-sm">Other</span>
+                        </div>
+                        <span class="font-semibold" id="other-count">0 orders</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-lg font-semibold text-charcoal mb-4">Delivery Timeline</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                            <span class="text-sm">On Time</span>
+                        </div>
+                        <span class="font-semibold" id="on-time-deliveries">0</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                            <span class="text-sm">Delayed</span>
+                        </div>
+                        <span class="font-semibold" id="delayed-deliveries">0</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                            <span class="text-sm">Early</span>
+                        </div>
+                        <span class="font-semibold" id="early-deliveries">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Shipping Status</label>
+                    <select id="shipping-status-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="delayed">Delayed</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Courier</label>
+                    <select id="courier-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold">
+                        <option value="">All Couriers</option>
+                        <option value="Delhivery">Delhivery</option>
+                        <option value="DTDC">DTDC</option>
+                        <option value="BlueDart">BlueDart</option>
+                        <option value="FedEx">FedEx</option>
+                        <option value="DHL">DHL</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                    <input type="date" id="date-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" id="search-input" placeholder="Order ID, Tracking Number..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold">
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipments List -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-semibold text-charcoal">Shipment Management</h2>
+                        <p class="text-gray-600 mt-1">Track and manage all shipments and deliveries</p>
+                    </div>
+                    <button onclick="exportShipments()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+            
+            <div id="shipments-container" class="p-6">
+                <!-- Shipments will be loaded here -->
+                <div class="flex items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+                    <span class="ml-3 text-lg text-gray-600">Loading shipments...</span>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div id="pagination" class="border-t border-gray-200 p-6">
+                <!-- Pagination will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Shipment Details Modal -->
+    <div id="shipment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-semibold text-charcoal">Shipment Details</h3>
+                        <button onclick="closeShipmentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="shipment-modal-content" class="p-6">
+                    <!-- Shipment details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Update Modal -->
+    <div id="tracking-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-charcoal">Update Tracking Information</h3>
+                </div>
+                
+                <div class="p-6">
+                    <form id="tracking-form">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tracking Number</label>
+                                <input type="text" id="tracking-number" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Courier Name</label>
+                                <select id="courier-name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" required>
+                                    <option value="">Select Courier</option>
+                                    <option value="Delhivery">Delhivery</option>
+                                    <option value="DTDC">DTDC</option>
+                                    <option value="BlueDart">BlueDart</option>
+                                    <option value="FedEx">FedEx</option>
+                                    <option value="DHL">DHL</option>
+                                    <option value="Amazon">Amazon</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Delivery</label>
+                                <input type="date" id="estimated-delivery" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                                <textarea id="tracking-notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" placeholder="Add any notes about the shipment..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3 mt-6">
+                            <button type="submit" class="flex-1 bg-gold text-white px-4 py-2 rounded-lg hover:bg-charcoal transition-colors">
+                                Update Tracking
+                            </button>
+                            <button type="button" onclick="closeTrackingModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Confirmation Modal -->
+    <div id="delivery-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-md w-full">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-charcoal">Confirm Delivery</h3>
+                </div>
+                
+                <div class="p-6">
+                    <form id="delivery-form">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Date</label>
+                                <input type="date" id="delivery-date" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Time</label>
+                                <input type="time" id="delivery-time" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Notes</label>
+                                <textarea id="delivery-notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" placeholder="Any notes about the delivery..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3 mt-6">
+                            <button type="submit" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                                Confirm Delivery
+                            </button>
+                            <button type="button" onclick="closeDeliveryModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/shipping-management.js"></script>
+</body>
+</html>
