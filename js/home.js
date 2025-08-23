@@ -530,6 +530,8 @@ function initializeTestimonialCarousel() {
         // Enforce one-slide-per-view sizing
         const applySizes = () => {
             const slideWidth = wrapper.clientWidth;
+            const isMobile = window.innerWidth <= 640;
+            
             // Set each slide to exactly the wrapper width
             slides.forEach(slide => {
                 slide.style.boxSizing = 'border-box';
@@ -541,10 +543,27 @@ function initializeTestimonialCarousel() {
                 slide.style.alignItems = 'center';
                 slide.style.justifyContent = 'center';
                 slide.style.textAlign = 'center';
+                
+                // Mobile-specific adjustments
+                if (isMobile) {
+                    slide.style.width = '100%';
+                    slide.style.maxWidth = '100%';
+                    slide.style.padding = '0 1rem';
+                }
             });
+            
             // Track width adjusts naturally from children; keep transform in sync
             // Keep current slide in view after resize
             track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            
+            // Ensure track is properly centered on mobile
+            if (isMobile) {
+                track.style.width = '100%';
+                track.style.maxWidth = '100%';
+                track.style.display = 'flex';
+                track.style.justifyContent = 'center';
+                track.style.alignItems = 'center';
+            }
         };
 
         const goTo = (index) => {
