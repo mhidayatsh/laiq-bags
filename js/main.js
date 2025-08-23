@@ -1025,14 +1025,14 @@ function createCartDrawer() {
     
     const drawer = document.createElement('div')
     drawer.id = 'cart-drawer';
-    drawer.className = 'fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
+    drawer.className = 'fixed top-0 right-0 h-full w-80 md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
     drawer.innerHTML = `
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-4 border-b border-beige">
                 <h3 class="text-lg font-semibold">Shopping Cart (<span id="cart-item-count">0</span>)</h3>
                 <button class="close-cart text-2xl hover:text-gold transition-colors" type="button">&times;</button>
             </div>
-            <div class = "flex-1 overflow-y-auto p-4" id="cart-items">
+            <div class="flex-1 overflow-y-auto p-4" id="cart-items">
                 <!-- Cart items will be rendered here -->
             </div>
             <div class="border-t border-beige p-4">
@@ -1214,7 +1214,7 @@ async function renderCartDrawer(items = null) {
         const uniqueId = `${productId}_${colorName}`;
         
         return `
-            <div class = "flex items-center space-x-4 py-4 border-b border-gray-200" data-product-id="${productId}" data-unique-id="${uniqueId}" data-color="${colorName}">
+            <div class="cart-item flex items-center space-x-4 py-4 border-b border-gray-200" data-product-id="${productId}" data-unique-id="${uniqueId}" data-color="${colorName}">
                 <img src="${image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
                 <div class="flex-1">
                     <h4 class="text-sm font-medium text-gray-900">${item.name}${color}</h4>
