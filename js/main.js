@@ -2828,6 +2828,7 @@ async function showCustomerMenu(customer) {
     if (customerMenu && guestMenu) {
         guestMenu.classList.add('hidden');
         customerMenu.classList.remove('hidden');
+        customerMenu.classList.add('flex');
         if (customerNameElement) {
             customerNameElement.textContent = customer.name || customer.email || 'Account';
             console.log('✅ Customer name set in desktop UI:', customerNameElement.textContent);
@@ -2864,6 +2865,7 @@ function showGuestMenu() {
 
     if (customerMenu && guestMenu) {
         customerMenu.classList.add('hidden');
+        customerMenu.classList.remove('flex');
         guestMenu.classList.remove('hidden');
     }
 
@@ -2888,6 +2890,7 @@ function hideCustomerMenu() {
 
     if (customerMenu && guestMenu) {
         customerMenu.classList.add('hidden');
+        customerMenu.classList.remove('flex');
         guestMenu.classList.remove('hidden');
     }
 
