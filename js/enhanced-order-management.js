@@ -492,6 +492,13 @@ function changePage(page) {
 
 // View order details
 async function viewOrderDetails(orderId) {
+    // Safety check for null/undefined order ID
+    if (!orderId) {
+        console.error('❌ Cannot view order details: order ID is null or undefined');
+        showToast('Invalid order ID', 'error');
+        return;
+    }
+    
     try {
         const response = await api.getOrder(orderId);
         if (response.success) {
@@ -683,12 +690,19 @@ async function handleTrackingUpdate(e) {
         
         if (response.success) {
             showToast('Tracking information updated successfully!', 'success');
-            closeTrackingModal();
-            loadOrders();
             
-            const order = orders.find(o => o._id === currentOrderId);
-            if (order && order.status === 'processing') {
-                await updateOrderStatus(currentOrderId, 'shipped');
+            // Store the order ID before closing modal
+            const orderIdToRefresh = currentOrderId;
+            
+            closeTrackingModal();
+            await loadOrders();
+            
+            // Check if we need to update status
+            if (orderIdToRefresh) {
+                const order = orders.find(o => o._id === orderIdToRefresh);
+                if (order && order.status === 'processing') {
+                    await updateOrderStatus(orderIdToRefresh, 'shipped');
+                }
             }
         } else {
             throw new Error('Failed to update tracking');
@@ -718,11 +732,16 @@ async function handleStatusUpdate(e) {
         
         if (response.success) {
             showToast('Order status updated successfully!', 'success');
-            closeStatusModal();
-            loadOrders();
             
-            if (!document.getElementById('order-modal').classList.contains('hidden')) {
-                viewOrderDetails(currentOrderId);
+            // Store the order ID before closing modal
+            const orderIdToRefresh = currentOrderId;
+            
+            closeStatusModal();
+            await loadOrders();
+            
+            // Refresh order details if modal is open
+            if (!document.getElementById('order-modal').classList.contains('hidden') && orderIdToRefresh) {
+                viewOrderDetails(orderIdToRefresh);
             }
         } else {
             throw new Error('Failed to update status');
