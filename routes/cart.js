@@ -394,11 +394,25 @@ router.delete('/remove/:productId', isAuthenticatedUser, catchAsyncErrors(async 
         const { color } = req.query; // optional color name
 
         const normalizedColor = typeof color === 'string' ? color.trim() : '';
-        console.log('🗑️ Removing item from cart:', { productId, color: normalizedColor });
+        console.log('🗑️ Removing item from cart:', { productId, color: normalizedColor, userId: req.user.id });
+
+        // First, check if cart exists and log current items for debugging
+        const existingCart = await Cart.findOne({ user: req.user.id }).lean();
+        if (!existingCart) {
+            console.log('❌ No cart found for user:', req.user.id);
+            return res.status(404).json({ success: false, message: 'Cart not found' });
+        }
+
+        console.log('🔍 Current cart items:', existingCart.items?.map(item => ({
+            product: item.product,
+            color: item.color?.name,
+            name: item.name
+        })));
 
         // First attempt: remove by product + color (case-insensitive)
         let updatedCart = null;
         if (normalizedColor) {
+            console.log('🎯 Attempting color-specific removal for:', { productId, color: normalizedColor });
             updatedCart = await Cart.findOneAndUpdate(
                 {
                     user: req.user.id,
@@ -415,18 +429,32 @@ router.delete('/remove/:productId', isAuthenticatedUser, catchAsyncErrors(async 
                 },
                 { new: true }
             );
+            
+            if (updatedCart) {
+                console.log('✅ Color-specific removal successful');
+            } else {
+                console.log('❌ Color-specific removal failed, trying fallback');
+            }
         }
 
         // Fallback: remove by product only if color-specific removal didn't match
         if (!updatedCart) {
+            console.log('🔄 Attempting fallback removal by product ID only');
             updatedCart = await Cart.findOneAndUpdate(
                 { user: req.user.id, 'items.product': productId },
                 { $pull: { items: { product: productId } }, $set: { updatedAt: Date.now() } },
                 { new: true }
             );
+            
+            if (updatedCart) {
+                console.log('✅ Fallback removal successful');
+            } else {
+                console.log('❌ Fallback removal also failed');
+            }
         }
 
         if (!updatedCart) {
+            console.log('❌ No items found to remove');
             return res.status(404).json({ success: false, message: 'Cart or item not found' });
         }
 
@@ -444,6 +472,7 @@ router.delete('/remove/:productId', isAuthenticatedUser, catchAsyncErrors(async 
         const totalAmount = items.reduce((sum, it) => sum + (it.price * it.quantity), 0);
         const itemCount = items.reduce((sum, it) => sum + it.quantity, 0);
 
+        console.log('✅ Item removed successfully, remaining items:', items.length);
         return res.status(200).json({ success: true, message: 'Item removed from cart', cart: { items, totalAmount, itemCount } });
     } catch (error) {
         console.error('Remove from cart error:', error);

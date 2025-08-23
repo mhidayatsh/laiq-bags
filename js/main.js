@@ -1429,29 +1429,39 @@ async function removeItemFromCart(uniqueId) {
         // Parse uniqueId to get productId and color
         const [productId, colorName] = uniqueId.split('_')
         
-        // Find the item in cart to get color information
+        // Find the item in cart to get color information - handle both frontend and backend structures
         const cartItem = cart.find(item => {
             const itemColorName = item.color ? (item.color.name || item.color) : 'default';
-            const itemUniqueId = `${item.id || item.productId}_${itemColorName}`;
+            // Handle both frontend (id/productId) and backend (product) structures
+            const itemId = item.id || item.productId || item.product;
+            const itemUniqueId = `${itemId}_${itemColorName}`;
             return itemUniqueId === uniqueId;
         });
         
         if (!cartItem) {
             console.error('❌ Cart item not found for uniqueId:', uniqueId)
+            console.log('🔍 Available cart items:', cart.map(item => ({
+                id: item.id || item.productId || item.product,
+                color: item.color ? (item.color.name || item.color) : 'default'
+            })))
             return
         }
         
+        // Get the correct product ID for API call
+        const actualProductId = cartItem.id || cartItem.productId || cartItem.product;
+        
         // Send color information to backend
         const color = cartItem.color ? cartItem.color.name : (colorName || 'Default')
-        console.log('🎨 Sending color to backend:', color)
-        const response = await api.removeFromCart(productId, color)
+        console.log('🎨 Sending color to backend:', color, 'for product:', actualProductId)
+        const response = await api.removeFromCart(actualProductId, color)
         
         if (response.success) {
             console.log('✅ Item removed from cart successfully')
-            // Update local cart using unique identifier
+            // Update local cart using unique identifier - handle both structures
             cart = cart.filter(item => {
                 const itemColorName = item.color ? (item.color.name || item.color) : 'default';
-                const itemUniqueId = `${item.id || item.productId}_${itemColorName}`;
+                const itemId = item.id || item.productId || item.product;
+                const itemUniqueId = `${itemId}_${itemColorName}`;
                 return itemUniqueId !== uniqueId;
             });
             saveUserCart();
@@ -1463,13 +1473,14 @@ async function removeItemFromCart(uniqueId) {
             // Try to remove by product ID only (without color) as fallback
             try {
                 console.log('🔄 Trying fallback removal by product ID only...')
-                const fallbackResponse = await api.removeFromCart(productId)
+                const fallbackResponse = await api.removeFromCart(actualProductId)
                 if (fallbackResponse.success) {
                     console.log('✅ Item removed using fallback method')
-                    // Update local cart
+                    // Update local cart - handle both structures
                     cart = cart.filter(item => {
                         const itemColorName = item.color ? (item.color.name || item.color) : 'default';
-                        const itemUniqueId = `${item.id || item.productId}_${itemColorName}`;
+                        const itemId = item.id || item.productId || item.product;
+                        const itemUniqueId = `${itemId}_${itemColorName}`;
                         return itemUniqueId !== uniqueId;
                     });
                     saveUserCart();
@@ -3150,8 +3161,8 @@ async function loadCartFromBackend() {
             
             // Optimized mapping with reduced logging
             cart = backendCart.map(item => ({
-                id: item._id || item.id || item.productId || 'unknown',
-                productId: item._id || item.id || item.productId || 'unknown',
+                id: item.product || item._id || item.id || item.productId || 'unknown',
+                productId: item.product || item._id || item.id || item.productId || 'unknown',
                 name: item.name || item.product?.name || 'Unknown Product',
                 price: parseFloat(item.price || item.product?.price) || 0,
                 image: item.image || item.product?.images?.[0]?.url || item.images?.[0]?.url || 'assets/thumbnail.jpg',
