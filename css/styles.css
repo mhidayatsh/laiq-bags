@@ -9,6 +9,13 @@
   box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
   max-height: 100vh;
   overflow: hidden;
+  /* Ensure drawers are not affected by page animations */
+  animation: none !important;
+  /* Ensure consistent positioning */
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
 }
 
 #cart-drawer .flex-1, #wishlist-drawer .flex-1 {
@@ -24,7 +31,7 @@
   background-color: #f9fafb;
 }
 
-#cart-drawer .quantity-btn {
+#cart-drawer .quantity-btn, #wishlist-drawer .quantity-btn {
   width: 24px;
   height: 24px;
   display: flex;
@@ -33,18 +40,50 @@
   border-radius: 4px;
   font-weight: bold;
   transition: all 0.2s ease;
-}
-
-#cart-drawer .quantity-btn:hover {
   background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
 }
 
-#cart-drawer .remove-item {
+#cart-drawer .quantity-btn:hover, #wishlist-drawer .quantity-btn:hover {
+  background-color: #e5e7eb;
+  border-color: #d4af37;
+}
+
+#cart-drawer .remove-item, #wishlist-drawer .remove-item {
   transition: all 0.2s ease;
 }
 
-#cart-drawer .remove-item:hover {
+#cart-drawer .remove-item:hover, #wishlist-drawer .remove-item:hover {
   text-decoration: underline;
+}
+
+/* Add consistent styling for both drawers */
+#cart-drawer .cart-item, #wishlist-drawer .wishlist-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 4px 0;
+  padding: 12px;
+}
+
+#cart-drawer .cart-item:hover, #wishlist-drawer .wishlist-item:hover {
+  background-color: #f9fafb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Improve button styling */
+#cart-drawer button, #wishlist-drawer button {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+#cart-drawer .checkout-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+  box-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
+}
+
+#cart-drawer .checkout-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(212, 175, 55, 0.4);
 }
 
 /* Ensure cart drawer doesn't overlap too much on mobile */

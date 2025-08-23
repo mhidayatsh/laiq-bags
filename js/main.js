@@ -1739,7 +1739,7 @@ async function renderWishlistDrawer(items = null) {
         const discountPercentage = hasDiscount ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0
 
         return `
-            <div class = "flex items-center justify-between py-4 border-b border-gray-200">
+            <div class="wishlist-item flex items-center justify-between py-4 border-b border-gray-200">
                 <div class="flex items-center">
                     <img src="${image}" alt="${name}" class="w-16 h-16 object-cover rounded-lg mr-4">
                     <div>
