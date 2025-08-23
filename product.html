@@ -43,6 +43,25 @@
     <!-- Canonical URL (will be dynamically updated) -->
     <link rel="canonical" href="">
     
+    <!-- Language Alternates -->
+    <link rel="alternate" hreflang="en" href="">
+    <link rel="alternate" hreflang="en-IN" href="">
+    <link rel="alternate" hreflang="x-default" href="">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="geo.region" content="IN">
+    <meta name="geo.placename" content="India">
+    <meta name="geo.position" content="20.5937;78.9629">
+    <meta name="ICBM" content="20.5937, 78.9629">
+    <meta name="distribution" content="global">
+    <meta name="rating" content="general">
+    <meta name="revisit-after" content="7 days">
+    <meta name="language" content="English">
+    <meta name="coverage" content="Worldwide">
+    <meta name="target" content="all">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="format-detection" content="telephone=no">
+    
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
@@ -125,6 +144,35 @@
       ]
     }
     </script>
+    
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://laiq.shop/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Shop",
+          "item": "https://laiq.shop/shop.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Product",
+          "item": ""
+        }
+      ]
+    }
+    </script>
+    
     <!-- Tailwind CSS -->
     <link href="/css/styles.css" rel="stylesheet">
     <!-- <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script> -->

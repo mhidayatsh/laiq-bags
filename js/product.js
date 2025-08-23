@@ -1906,6 +1906,61 @@ function updateCanonicalURL(product) {
         document.head.appendChild(canonical);
     }
     canonical.href = `${window.location.origin}/product.html?id=${product._id}`;
+    
+    // Update hreflang URLs
+    updateHreflangURLs(product);
+    
+    // Update breadcrumb URLs
+    updateBreadcrumbURLs(product);
+}
+
+// Update hreflang URLs
+function updateHreflangURLs(product) {
+    const productURL = `${window.location.origin}/product.html?id=${product._id}`;
+    
+    // Update en hreflang
+    let enHreflang = document.querySelector('link[hreflang="en"]');
+    if (enHreflang) {
+        enHreflang.href = productURL;
+    }
+    
+    // Update en-IN hreflang
+    let enINHreflang = document.querySelector('link[hreflang="en-IN"]');
+    if (enINHreflang) {
+        enINHreflang.href = productURL;
+    }
+    
+    // Update x-default hreflang
+    let xDefaultHreflang = document.querySelector('link[hreflang="x-default"]');
+    if (xDefaultHreflang) {
+        xDefaultHreflang.href = productURL;
+    }
+}
+
+// Update breadcrumb URLs
+function updateBreadcrumbURLs(product) {
+    const productURL = `${window.location.origin}/product.html?id=${product._id}`;
+    
+    // Find and update breadcrumb structured data
+    const breadcrumbScript = document.querySelector('script[type="application/ld+json"]');
+    if (breadcrumbScript) {
+        try {
+            const breadcrumbData = JSON.parse(breadcrumbScript.textContent);
+            if (breadcrumbData["@type"] === "BreadcrumbList" && breadcrumbData.itemListElement) {
+                // Update the product breadcrumb item
+                const productBreadcrumb = breadcrumbData.itemListElement.find(item => item.position === 3);
+                if (productBreadcrumb) {
+                    productBreadcrumb.name = product.name;
+                    productBreadcrumb.item = productURL;
+                }
+                
+                // Update the script content
+                breadcrumbScript.textContent = JSON.stringify(breadcrumbData, null, 2);
+            }
+        } catch (e) {
+            console.warn('Could not update breadcrumb structured data:', e);
+        }
+    }
 }
 
 // Add product structured data

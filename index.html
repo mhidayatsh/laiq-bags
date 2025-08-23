@@ -15,6 +15,15 @@
     <meta name="keywords" content="bags, backpacks, handbags, travel accessories, premium bags, stylish bags, laiq bags, fashion accessories">
     <meta name="author" content="Laiq Bags">
     <title>Laiq Bags - Premium Bags & Accessories | Carry Style with Confidence</title>
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://laiq.shop/">
+    
+    <!-- Language Alternates -->
+    <link rel="alternate" hreflang="en" href="https://laiq.shop/">
+    <link rel="alternate" hreflang="en-IN" href="https://laiq.shop/">
+    <link rel="alternate" hreflang="x-default" href="https://laiq.shop/">
+    
     <!-- Enhanced SEO Meta Tags -->
     <meta name="application-name" content="Laiq Bags">
     <meta name="apple-mobile-web-app-title" content="Laiq Bags">
@@ -67,44 +76,68 @@
       "currenciesAccepted": "INR",
       "paymentAccepted": "Cash, Credit Card, Debit Card, UPI, Net Banking",
       "areaServed": "IN",
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Bags and Accessories",
-        "itemListElement": [
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Product",
-              "name": "Backpacks",
-              "description": "Premium backpacks for daily use and travel"
+              "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Bags and Accessories",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Product",
+                "name": "Backpacks",
+                "description": "Premium backpacks for daily use and travel",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "1499",
+                  "priceCurrency": "INR",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Product",
+                "name": "Sling Bags",
+                "description": "Stylish sling bags for casual and formal occasions",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "1799",
+                  "priceCurrency": "INR",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Product",
+                "name": "Handbags",
+                "description": "Elegant handbags for women",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "2199",
+                  "priceCurrency": "INR",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Product",
+                "name": "Laptop Bags",
+                "description": "Professional laptop bags with protection",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "2499",
+                  "priceCurrency": "INR",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
             }
-          },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Product",
-              "name": "Sling Bags",
-              "description": "Stylish sling bags for casual and formal occasions"
-            }
-          },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Product",
-              "name": "Handbags",
-              "description": "Elegant handbags for women"
-            }
-          },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Product",
-              "name": "Laptop Bags",
-              "description": "Professional laptop bags with protection"
-            }
-          }
-        ]
-      }
+          ]
+        }
     }
     </script>
     
@@ -138,6 +171,56 @@
     }
     </script>
     
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://laiq.shop/"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- FAQ Schema for Common Questions -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What types of bags does Laiq Bags offer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Laiq Bags offers a premium collection including backpacks, handbags, sling bags, laptop bags, and travel accessories. All designed for style and functionality."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you offer free shipping?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we offer free shipping across India on all orders. Fast and secure delivery to your doorstep."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is your return policy?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We offer easy returns within 7 days of delivery. Contact our customer support for hassle-free returns and exchanges."
+          }
+        }
+      ]
+    }
+    </script>
+    
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=12">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=12">
@@ -160,6 +243,20 @@
     <meta name="twitter:title" content="Laiq Bags - Premium Bags & Accessories">
     <meta name="twitter:description" content="Discover our collection of stylish backpacks, handbags, and travel accessories. Carry style with confidence at Laiq Bags.">
     <meta name="twitter:image" content="https://laiq.shop/assets/laiq-logo.png">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="geo.region" content="IN">
+    <meta name="geo.placename" content="India">
+    <meta name="geo.position" content="20.5937;78.9629">
+    <meta name="ICBM" content="20.5937, 78.9629">
+    <meta name="distribution" content="global">
+    <meta name="rating" content="general">
+    <meta name="revisit-after" content="7 days">
+    <meta name="language" content="English">
+    <meta name="coverage" content="Worldwide">
+    <meta name="target" content="all">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="format-detection" content="telephone=no">
     
     <!-- Tailwind CSS -->
     <link href="/css/styles.css" rel="stylesheet" media="all">
