@@ -12,10 +12,12 @@ let filters = {
 
 // Check if user is logged in as admin
 async function checkAdminAuth() {
+    console.log('🔍 Checking admin authentication for enhanced order management...');
+    
+    // Check for admin authentication first
     let token = localStorage.getItem('token'); // Admin token
     let user = localStorage.getItem('user'); // Admin user
     
-    console.log('🔍 Checking admin authentication for enhanced order management...');
     console.log('🔑 Admin token exists:', !!token);
     console.log('👤 Admin user data exists:', !!user);
     
@@ -25,6 +27,32 @@ async function checkAdminAuth() {
     
     if (customerToken && customerUser) {
         console.log('⚠️ Customer session detected alongside admin session');
+        
+        // If we have both sessions, we need to determine which one to use
+        // For admin pages, prioritize admin session
+        if (token && user) {
+            try {
+                const adminData = JSON.parse(user);
+                if (adminData.role === 'admin') {
+                    console.log('✅ Using admin session for admin page');
+                    // Clear customer session to avoid conflicts
+                    localStorage.removeItem('customerToken');
+                    localStorage.removeItem('customerUser');
+                } else {
+                    console.log('❌ Admin session has invalid role, clearing it');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    token = null;
+                    user = null;
+                }
+            } catch (error) {
+                console.error('❌ Error parsing admin data:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                token = null;
+                user = null;
+            }
+        }
     }
     
     // If no admin token, check for customer token (might be logged in as customer)
@@ -42,6 +70,12 @@ async function checkAdminAuth() {
                     console.log('✅ Customer is actually admin, using customer token');
                     token = customerToken;
                     user = customerUser;
+                    
+                    // Move customer session to admin session to avoid conflicts
+                    localStorage.setItem('token', customerToken);
+                    localStorage.setItem('user', customerUser);
+                    localStorage.removeItem('customerToken');
+                    localStorage.removeItem('customerUser');
                 } else {
                     console.log('❌ Customer is not admin, redirecting to login');
                     showToast('Please login as admin to access enhanced order management', 'error');
@@ -104,6 +138,9 @@ async function checkAdminAuth() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Enhanced Order Management initialized');
     
+    // Clear any conflicting sessions first
+    clearConflictingSessions();
+    
     // Check authentication first
     const isAuthenticated = await checkAdminAuth();
     if (!isAuthenticated) {
@@ -115,6 +152,55 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeEventListeners();
     setInterval(loadStatistics, 30000);
 });
+
+// Clear conflicting sessions to prevent role conflicts
+function clearConflictingSessions() {
+    console.log('🧹 Clearing conflicting sessions...');
+    
+    const adminToken = localStorage.getItem('token');
+    const adminUser = localStorage.getItem('user');
+    const customerToken = localStorage.getItem('customerToken');
+    const customerUser = localStorage.getItem('customerUser');
+    
+    // If we have both sessions, we need to determine which one is valid
+    if (adminToken && adminUser && customerToken && customerUser) {
+        try {
+            const adminData = JSON.parse(adminUser);
+            const customerData = JSON.parse(customerUser);
+            
+            // If admin session has admin role, use it and clear customer session
+            if (adminData.role === 'admin') {
+                console.log('✅ Admin session is valid, clearing customer session');
+                localStorage.removeItem('customerToken');
+                localStorage.removeItem('customerUser');
+            }
+            // If customer session has admin role, move it to admin session
+            else if (customerData.role === 'admin') {
+                console.log('✅ Customer session has admin role, moving to admin session');
+                localStorage.setItem('token', customerToken);
+                localStorage.setItem('user', customerUser);
+                localStorage.removeItem('customerToken');
+                localStorage.removeItem('customerUser');
+            }
+            // If neither has admin role, clear both
+            else {
+                console.log('❌ Neither session has admin role, clearing both');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('customerToken');
+                localStorage.removeItem('customerUser');
+            }
+        } catch (error) {
+            console.error('❌ Error parsing session data, clearing all sessions:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('customerToken');
+            localStorage.removeItem('customerUser');
+        }
+    }
+    
+    console.log('🧹 Session cleanup completed');
+}
 
 // Initialize event listeners
 function initializeEventListeners() {

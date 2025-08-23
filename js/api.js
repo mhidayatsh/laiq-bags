@@ -51,14 +51,50 @@ class ApiService {
         try {
             const hasWindow = typeof window !== 'undefined' && typeof window.location !== 'undefined';
             const path = hasWindow ? window.location.pathname : '';
-            const isAdminContext = /admin/i.test(path);
+            const isAdminContext = /admin/i.test(path) || /enhanced-order-management/i.test(path) || /billing-management/i.test(path) || /shipping-management/i.test(path);
             const adminToken = localStorage.getItem('token');
             const customerToken = localStorage.getItem('customerToken');
-            // Prefer admin token only on admin pages; otherwise prefer customer token
-            if (isAdminContext) {
-                token = adminToken || customerToken || null;
+            
+            // For admin endpoints, we need to ensure we're using the correct token
+            if (endpoint.startsWith('/admin/')) {
+                // For admin endpoints, prioritize admin token
+                if (adminToken) {
+                    const adminUser = localStorage.getItem('user');
+                    if (adminUser) {
+                        try {
+                            const userData = JSON.parse(adminUser);
+                            if (userData.role === 'admin') {
+                                token = adminToken;
+                            }
+                        } catch (error) {
+                            console.warn('Error parsing admin user data:', error);
+                        }
+                    }
+                }
+                
+                // If no valid admin token, check if customer token has admin role
+                if (!token && customerToken) {
+                    const customerUser = localStorage.getItem('customerUser');
+                    if (customerUser) {
+                        try {
+                            const userData = JSON.parse(customerUser);
+                            if (userData.role === 'admin') {
+                                token = customerToken;
+                            }
+                        } catch (error) {
+                            console.warn('Error parsing customer user data:', error);
+                        }
+                    }
+                }
+                
+                // If still no token, this will cause a 401/403 error as expected
             } else {
-                token = customerToken || adminToken || null;
+                // For non-admin endpoints, use context-aware token selection
+                if (isAdminContext) {
+                    token = adminToken || customerToken || null;
+                } else {
+                    token = customerToken || adminToken || null;
+                }
             }
         } catch (_) {
             // Fallback to previous behavior

@@ -85,6 +85,9 @@ async function checkAdminAuth() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('📦 Shipping Management initialized');
     
+    // Clear any conflicting sessions first
+    clearConflictingSessions();
+    
     // Check authentication first
     const isAuthenticated = await checkAdminAuth();
     if (!isAuthenticated) {
@@ -96,6 +99,55 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeEventListeners();
     setInterval(loadStatistics, 30000);
 });
+
+// Clear conflicting sessions to prevent role conflicts
+function clearConflictingSessions() {
+    console.log('🧹 Clearing conflicting sessions...');
+    
+    const adminToken = localStorage.getItem('token');
+    const adminUser = localStorage.getItem('user');
+    const customerToken = localStorage.getItem('customerToken');
+    const customerUser = localStorage.getItem('customerUser');
+    
+    // If we have both sessions, we need to determine which one is valid
+    if (adminToken && adminUser && customerToken && customerUser) {
+        try {
+            const adminData = JSON.parse(adminUser);
+            const customerData = JSON.parse(customerUser);
+            
+            // If admin session has admin role, use it and clear customer session
+            if (adminData.role === 'admin') {
+                console.log('✅ Admin session is valid, clearing customer session');
+                localStorage.removeItem('customerToken');
+                localStorage.removeItem('customerUser');
+            }
+            // If customer session has admin role, move it to admin session
+            else if (customerData.role === 'admin') {
+                console.log('✅ Customer session has admin role, moving to admin session');
+                localStorage.setItem('token', customerToken);
+                localStorage.setItem('user', customerUser);
+                localStorage.removeItem('customerToken');
+                localStorage.removeItem('customerUser');
+            }
+            // If neither has admin role, clear both
+            else {
+                console.log('❌ Neither session has admin role, clearing both');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('customerToken');
+                localStorage.removeItem('customerUser');
+            }
+        } catch (error) {
+            console.error('❌ Error parsing session data, clearing all sessions:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('customerToken');
+            localStorage.removeItem('customerUser');
+        }
+    }
+    
+    console.log('🧹 Session cleanup completed');
+}
 
 // Initialize event listeners
 function initializeEventListeners() {
