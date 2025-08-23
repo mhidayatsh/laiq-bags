@@ -2041,7 +2041,7 @@ function addOrderStatusListeners() {
             if (newStatus === currentStatus) return;
             
             try {
-                await api.updateOrderStatus(orderId, newStatus);
+                await api.updateOrderStatus(orderId, { status: newStatus });
                 this.dataset.currentStatus = newStatus;
                 showToast(`Order status updated to ${newStatus}`, 'success');
             } catch (error) {
@@ -3616,7 +3616,7 @@ async function updateOrderStatusFromModal(orderId) {
         updateBtn.textContent = 'Updating...';
         updateBtn.disabled = true;
         
-        const response = await api.updateOrderStatus(orderId, newStatus);
+        const response = await api.updateOrderStatus(orderId, { status: newStatus });
         if (response.success) {
             showToast(`Order status updated to ${newStatus.toUpperCase()} successfully!`, 'success');
             
@@ -3661,7 +3661,7 @@ async function updateOrderStatus(orderId, newStatus) {
             selectElement.style.opacity = '0.5';
         }
         
-        const response = await api.updateOrderStatus(orderId, newStatus);
+        const response = await api.updateOrderStatus(orderId, { status: newStatus });
         if (response.success) {
             showToast(`Order #${orderId.slice(-8)} status updated to ${newStatus.toUpperCase()}!`, 'success');
             
