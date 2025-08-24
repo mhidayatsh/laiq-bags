@@ -236,38 +236,28 @@ async function generateOptimizedSitemap(products) {
 }
 
 function generateRobotsTxt() {
-    const robotsContent = `User-agent: *
+    const robotsContent = `# CRITICAL UPDATE - Force Google to re-crawl this file
+# Last updated: 2025-08-24 23:45:00 UTC
+# This file explicitly allows ALL crawling
+
+User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://www.laiq.shop/sitemap.xml
-
-# Disallow admin pages
-Disallow: /admin*
-Disallow: /admin-*
-Disallow: /test-*
-
-# Allow important pages
+# Explicitly allow all important pages
+Allow: /index.html
 Allow: /shop.html
-Allow: /product.html
 Allow: /about.html
 Allow: /contact.html
+Allow: /product.html
+Allow: /customer-login.html
+Allow: /customer-register.html
+Allow: /size-guide.html
 
-# Crawl delay for better server performance
-Crawl-delay: 1
+# Sitemap location
+Sitemap: https://www.laiq.shop/sitemap.xml
 
-# Allow all product pages
-Allow: /product.html?slug=*
-
-# Block API endpoints from crawling
-Disallow: /api/
-Disallow: /uploads/
-Disallow: /middleware/
-Disallow: /models/
-Disallow: /routes/
-Disallow: /utils/
-Disallow: /scripts/
-Disallow: /config/`;
+# Force cache refresh - DO NOT CACHE THIS FILE
+# Google must re-crawl this file immediately`;
 
     const robotsPath = path.join(__dirname, '..', 'robots.txt');
     fs.writeFileSync(robotsPath, robotsContent);
