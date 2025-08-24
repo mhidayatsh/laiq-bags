@@ -30,4 +30,4 @@ Disallow: /scripts/
 Disallow: /config/
 
 # Crawl delay for better server performance
-Crawl-delay: 1
+Crawl-delay: 1# Updated Sun Aug 24 23:19:53 IST 2025
