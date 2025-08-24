@@ -55,6 +55,26 @@ const sitemapRoutes = require('./routes/sitemap');
 
 const app = express();
 
+// Trust proxy headers (important for Render HTTPS)
+app.set('trust proxy', 1);
+
+// HTTPS redirect middleware (for production)
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production') {
+    // Check if the request is coming through a proxy (like Render)
+    const forwardedProto = req.get('X-Forwarded-Proto');
+    const host = req.get('X-Forwarded-Host') || req.get('host');
+    
+    // If the request is HTTP but we're behind a proxy that supports HTTPS
+    if (forwardedProto === 'http' && host) {
+      const httpsUrl = `https://${host}${req.url}`;
+      console.log(`🔄 Redirecting HTTP to HTTPS: ${httpsUrl}`);
+      return res.redirect(301, httpsUrl);
+    }
+  }
+  next();
+});
+
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -156,8 +176,8 @@ app.use((req, res, next) => {
       host === 'laiq.shop' && 
       !host.startsWith('www.')) {
     
-    // Redirect to www version
-    const redirectUrl = `${protocol}://www.${host}${req.url}`;
+    // Redirect to www version with HTTPS
+    const redirectUrl = `https://www.${host}${req.url}`;
     console.log(`🔄 Redirecting ${host} to www.${host}`);
     return res.redirect(301, redirectUrl);
   }
