@@ -4,7 +4,7 @@
   "description": "Backend API for Laiq Bags e-commerce website",
   "main": "server.js",
   "scripts": {
-    "render-build": "npm install",
+    "render-build": "npm install && node scripts/generate-sitemap.js",
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js",
     "seed": "node scripts/seedData.js",
@@ -17,7 +17,8 @@
     "test-order": "node scripts/test-order-display.js",
     "test-color": "node scripts/test-color-display.js",
     "test-auth": "node scripts/test-auth-switching.js",
-    "prod": "NODE_ENV=production node server.js"
+    "prod": "NODE_ENV=production node server.js",
+    "postinstall": "node scripts/generate-sitemap.js"
   },
   "keywords": [
     "e-commerce",
