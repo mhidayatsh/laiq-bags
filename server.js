@@ -158,7 +158,17 @@ app.use((req, res, next) => {
     
     // Redirect to www version
     const redirectUrl = `${protocol}://www.${host}${req.url}`;
+    console.log(`🔄 Redirecting ${host} to www.${host}`);
     return res.redirect(301, redirectUrl);
+  }
+  
+  // Prevent reverse redirect (www to non-www)
+  if (process.env.NODE_ENV === 'production' && 
+      host.startsWith('www.') && 
+      host === 'www.laiq.shop') {
+    
+    // This is the correct domain, don't redirect
+    console.log(`✅ Correct domain: ${host}`);
   }
   
   next();
