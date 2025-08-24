@@ -14,3 +14,19 @@ Allow: /shop.html
 Allow: /product.html
 Allow: /about.html
 Allow: /contact.html
+
+# Crawl delay for better server performance
+Crawl-delay: 1
+
+# Allow all product pages
+Allow: /product.html?slug=*
+
+# Block API endpoints from crawling
+Disallow: /api/
+Disallow: /uploads/
+Disallow: /middleware/
+Disallow: /models/
+Disallow: /routes/
+Disallow: /utils/
+Disallow: /scripts/
+Disallow: /config/

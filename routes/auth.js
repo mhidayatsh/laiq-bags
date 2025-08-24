@@ -328,7 +328,7 @@ router.post('/password/forgot', catchAsyncErrors(async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // Create reset password url
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'https://www.laiq.shop'}/reset-password.html?token=${resetToken}`;
     console.log('🔗 Reset URL created:', resetUrl);
 
     // Send email using new email service
@@ -796,7 +796,7 @@ router.post('/customer/forgot-password', async (req, res) => {
         
         // Create reset URL
         const resetUrl = process.env.NODE_ENV === 'development' 
-            ? `http://localhost:3001/reset-password.html?token=${resetToken}`
+            ? `https://www.laiq.shop/reset-password.html?token=${resetToken}`
             : `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
         
         console.log('🔗 Reset URL created:', resetUrl);

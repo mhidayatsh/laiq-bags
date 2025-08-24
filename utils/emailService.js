@@ -144,7 +144,7 @@ const sendNewsletterEmail = async (email, newsletterData) => {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:3001'}" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: 600; box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);">Shop Now</a>
+          <a href="${process.env.FRONTEND_URL || 'https://www.laiq.shop'}" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: 600; box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);">Shop Now</a>
         </div>
       </div>
       
@@ -153,7 +153,7 @@ const sendNewsletterEmail = async (email, newsletterData) => {
         <p style="color: #666; margin: 0; font-size: 14px;">© 2024 <strong style="color: #d4af37;">Laiq Bags</strong>. All rights reserved.</p>
         <p style="color: #999; margin: 10px 0 0 0; font-size: 12px;">Carry Style with Confidence</p>
         <p style="color: #999; margin: 10px 0 0 0; font-size: 12px;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:3001'}/unsubscribe?email=${email}" style="color: #d4af37; text-decoration: none;">Unsubscribe</a>
+          <a href="${process.env.FRONTEND_URL || 'https://www.laiq.shop'}/unsubscribe?email=${email}" style="color: #d4af37; text-decoration: none;">Unsubscribe</a>
         </p>
       </div>
     </div>
@@ -206,7 +206,7 @@ const sendOrderConfirmationEmail = async (email, orderDetails) => {
         <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">We'll send you updates about your order status. You can also track your order through your account dashboard.</p>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:3001'}/order-management.html" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: 600; box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);">Track Order</a>
+          <a href="${process.env.FRONTEND_URL || 'https://www.laiq.shop'}/order-management.html" style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: 600; box-shadow: 0 4px 6px rgba(212, 175, 55, 0.3);">Track Order</a>
         </div>
       </div>
       

@@ -18,9 +18,9 @@ async function generateSitemap() {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('✅ Connected to database');
         
-        // Get all active products
-        const products = await Product.find({ isActive: true }).select('slug updatedAt');
-        console.log(`✅ Found ${products.length} active products`);
+        // Get all products (no isActive field in schema)
+        const products = await Product.find({}).select('slug updatedAt name');
+        console.log(`✅ Found ${products.length} products`);
         
         // Get current date
         const currentDate = new Date().toISOString().split('T')[0];
