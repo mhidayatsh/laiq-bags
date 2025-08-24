@@ -1,9 +1,22 @@
-# Updated robots.txt - Allow all crawling
+# CRITICAL UPDATE - Force Google to re-crawl this file
+# Last updated: 2025-08-24 23:45:00 UTC
+# This file explicitly allows ALL crawling
+
 User-agent: *
 Allow: /
+
+# Explicitly allow all important pages
+Allow: /index.html
+Allow: /shop.html
+Allow: /about.html
+Allow: /contact.html
+Allow: /product.html
+Allow: /customer-login.html
+Allow: /customer-register.html
+Allow: /size-guide.html
 
 # Sitemap location
 Sitemap: https://www.laiq.shop/sitemap.xml
 
-# Force Google to re-crawl this file
-# Last updated: 2025-08-24 23:30:00 UTC
+# Force cache refresh - DO NOT CACHE THIS FILE
+# Google must re-crawl this file immediately

@@ -294,6 +294,20 @@ if (process.env.NODE_ENV === 'development') {
     }
   }));
 
+  // Serve robots.txt explicitly
+  app.get('/robots.txt', (req, res) => {
+    const robotsPath = path.join(__dirname, 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      res.set('Content-Type', 'text/plain');
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      res.sendFile(robotsPath);
+    } else {
+      res.status(404).send('robots.txt not found');
+    }
+  });
+
   // Serve favicon to avoid 404s
 app.get('/favicon.ico', (req, res) => {
   const iconPath = path.join(__dirname, 'favicon.ico');
@@ -686,6 +700,20 @@ if (process.env.NODE_ENV === 'production') {
     }
   });
   
+  // Serve robots.txt explicitly
+  app.get('/robots.txt', (req, res) => {
+    const robotsPath = path.join(__dirname, 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      res.set('Content-Type', 'text/plain');
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      res.sendFile(robotsPath);
+    } else {
+      res.status(404).send('robots.txt not found');
+    }
+  });
+
   app.use(express.static(path.join(__dirname)));
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
