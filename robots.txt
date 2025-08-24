@@ -4,24 +4,12 @@ Allow: /
 # Sitemap
 Sitemap: https://www.laiq.shop/sitemap.xml
 
-# Disallow admin pages
-Disallow: /admin*
-Disallow: /admin-*
-Disallow: /test-*
+# Block admin and test pages
+Disallow: /admin
+Disallow: /admin-
+Disallow: /test-
 
-# Allow important pages
-Allow: /shop.html
-Allow: /product.html
-Allow: /about.html
-Allow: /contact.html
-
-# Crawl delay for better server performance
-Crawl-delay: 1
-
-# Allow all product pages
-Allow: /product.html?slug=*
-
-# Block API endpoints from crawling
+# Block sensitive directories
 Disallow: /api/
 Disallow: /uploads/
 Disallow: /middleware/
