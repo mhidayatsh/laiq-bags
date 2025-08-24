@@ -1,26 +1,15 @@
-const mongoose = require('mongoose');
-const fs = require('fs');
-const path = require('path');
-
-// Load environment variables
-require('dotenv').config({ 
-    path: process.env.NODE_ENV === 'production' ? './config.env.production' : './config.env' 
-});
-
-// Import Product model
+const express = require('express');
+const router = express.Router();
 const Product = require('../models/Product');
 
-async function generateSitemap() {
+// Dynamic sitemap generation
+router.get('/sitemap.xml', async (req, res) => {
     try {
-        console.log('🔗 Generating dynamic sitemap...');
+        // Set XML content type
+        res.set('Content-Type', 'text/xml');
         
-        // Connect to database
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('✅ Connected to database');
-        
-        // Get all active products
+        // Get all products from database
         const products = await Product.find({ isActive: true }).select('slug updatedAt');
-        console.log(`✅ Found ${products.length} active products`);
         
         // Get current date
         const currentDate = new Date().toISOString().split('T')[0];
@@ -70,39 +59,35 @@ async function generateSitemap() {
         sitemap += `
 </urlset>`;
 
-        // Write to file
-        const sitemapPath = path.join(__dirname, '..', 'sitemap.xml');
-        fs.writeFileSync(sitemapPath, sitemap);
-        
-        console.log(`✅ Sitemap generated successfully!`);
-        console.log(`📁 Location: ${sitemapPath}`);
-        console.log(`📊 Total URLs: ${staticPages.length + products.length}`);
-        console.log(`🛍️ Product URLs: ${products.length}`);
-        
-        // Show product slugs
-        if (products.length > 0) {
-            console.log('\n📦 Products included:');
-            products.forEach(product => {
-                console.log(`   - ${product.slug}`);
-            });
-        }
-        
-        console.log('\n🎯 Next steps:');
-        console.log('1. Upload the new sitemap.xml to your server');
-        console.log('2. Test the dynamic sitemap at: https://www.laiq.shop/sitemap.xml');
-        console.log('3. Submit to Google Search Console');
-        
+        res.send(sitemap);
+
     } catch (error) {
-        console.error('❌ Error generating sitemap:', error);
-    } finally {
-        await mongoose.disconnect();
-        console.log('🔌 Disconnected from database');
+        console.error('Error generating sitemap:', error);
+        res.status(500).send('Error generating sitemap');
     }
-}
+});
 
-// Run if called directly
-if (require.main === module) {
-    generateSitemap();
-}
+// Sitemap index for large sites (if needed in future)
+router.get('/sitemap-index.xml', async (req, res) => {
+    try {
+        res.set('Content-Type', 'text/xml');
+        
+        const currentDate = new Date().toISOString().split('T')[0];
+        
+        const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://www.laiq.shop/sitemap.xml</loc>
+    <lastmod>${currentDate}</lastmod>
+  </sitemap>
+</sitemapindex>`;
 
-module.exports = generateSitemap;
+        res.send(sitemapIndex);
+
+    } catch (error) {
+        console.error('Error generating sitemap index:', error);
+        res.status(500).send('Error generating sitemap index');
+    }
+});
+
+module.exports = router;

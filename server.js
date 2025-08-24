@@ -51,6 +51,7 @@ const cartRoutes = require('./routes/cart');
 const newsletterRoutes = require('./routes/newsletter');
 const analyticsRoutes = require('./routes/analytics');
 const contactRoutes = require('./routes/contact');
+const sitemapRoutes = require('./routes/sitemap');
 
 const app = express();
 
@@ -492,6 +493,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/cart', validateObjectId, cartRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/', sitemapRoutes);
 // Analytics routes are handled separately above
 
 // Newsletter subscription endpoint (placeholder)
