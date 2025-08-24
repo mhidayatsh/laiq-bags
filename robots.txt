@@ -1,33 +1,4 @@
 User-agent: *
 Allow: /
 
-# Sitemap
 Sitemap: https://www.laiq.shop/sitemap.xml
-
-# Block admin and test pages
-Disallow: /admin
-Disallow: /admin-
-Disallow: /test-
-
-# Allow important pages (explicitly)
-Allow: /shop.html
-Allow: /product.html
-Allow: /about.html
-Allow: /contact.html
-Allow: /index.html
-
-# Allow all product pages
-Allow: /product.html?*
-
-# Block sensitive directories
-Disallow: /api/
-Disallow: /uploads/
-Disallow: /middleware/
-Disallow: /models/
-Disallow: /routes/
-Disallow: /utils/
-Disallow: /scripts/
-Disallow: /config/
-
-# Crawl delay for better server performance
-Crawl-delay: 1# Updated Sun Aug 24 23:19:53 IST 2025
