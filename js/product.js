@@ -1222,7 +1222,7 @@ async function loadSuggestedProducts() {
         const response = await api.getProducts({ 
             limit: 3,
             category: currentProduct.category 
-        });
+        } + (query.includes('?') ? '&' : '?') + '_t=' + Date.now());
         
         const suggestedProducts = response.products
             .filter(p => (p._id || p.id) !== (currentProduct._id || currentProduct.id))

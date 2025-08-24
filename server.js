@@ -294,14 +294,12 @@ if (process.env.NODE_ENV === 'development') {
     }
   }));
 
-  // Serve robots.txt explicitly
+  // Serve robots.txt explicitly with proper headers
   app.get('/robots.txt', (req, res) => {
     const robotsPath = path.join(__dirname, 'robots.txt');
     if (fs.existsSync(robotsPath)) {
       res.set('Content-Type', 'text/plain');
-      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.set('Pragma', 'no-cache');
-      res.set('Expires', '0');
+      res.set('Cache-Control', 'public, max-age=3600'); // Allow caching for 1 hour
       res.sendFile(robotsPath);
     } else {
       res.status(404).send('robots.txt not found');
@@ -697,20 +695,6 @@ if (process.env.NODE_ENV === 'production') {
         res.type('image/png');
         res.send(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
       }
-    }
-  });
-  
-  // Serve robots.txt explicitly
-  app.get('/robots.txt', (req, res) => {
-    const robotsPath = path.join(__dirname, 'robots.txt');
-    if (fs.existsSync(robotsPath)) {
-      res.set('Content-Type', 'text/plain');
-      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.set('Pragma', 'no-cache');
-      res.set('Expires', '0');
-      res.sendFile(robotsPath);
-    } else {
-      res.status(404).send('robots.txt not found');
     }
   });
 
