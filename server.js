@@ -145,6 +145,24 @@ app.use((req, res, next) => {
   }
 });
 
+// Domain redirect logic - Redirect non-www to www for SEO
+app.use((req, res, next) => {
+  const host = req.get('host');
+  const protocol = req.protocol;
+  
+  // Check if it's a production environment and the request is for the non-www domain
+  if (process.env.NODE_ENV === 'production' && 
+      host === 'laiq.shop' && 
+      !host.startsWith('www.')) {
+    
+    // Redirect to www version
+    const redirectUrl = `${protocol}://www.${host}${req.url}`;
+    return res.redirect(301, redirectUrl);
+  }
+  
+  next();
+});
+
 // Performance optimizations
 app.use(compression()); // Enable gzip compression
 app.use(express.static('public', {
