@@ -3,9 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 // Load environment variables
-require('dotenv').config({ 
-    path: process.env.NODE_ENV === 'production' ? './config.env.production' : './config.env' 
-});
+try {
+    require('dotenv').config({ 
+        path: process.env.NODE_ENV === 'production' ? './config.env.production' : './config.env' 
+    });
+} catch (error) {
+    console.log('⚠️ Could not load .env file, using environment variables');
+}
 
 // Import Product model
 const Product = require('../models/Product');
@@ -15,12 +19,17 @@ async function generateSitemap() {
         console.log('🔗 Generating dynamic sitemap...');
         
         // Connect to database
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('✅ Connected to database');
-        
-        // Get all products (no isActive field in schema)
-        const products = await Product.find({}).select('slug updatedAt name');
-        console.log(`✅ Found ${products.length} products`);
+        let products = [];
+        if (!process.env.MONGODB_URI) {
+            console.log('⚠️ MONGODB_URI not found, generating sitemap with static pages only');
+        } else {
+            await mongoose.connect(process.env.MONGODB_URI);
+            console.log('✅ Connected to database');
+            
+            // Get all products (no isActive field in schema)
+            products = await Product.find({}).select('slug updatedAt name');
+            console.log(`✅ Found ${products.length} products`);
+        }
         
         // Get current date
         const currentDate = new Date().toISOString().split('T')[0];
@@ -95,8 +104,10 @@ async function generateSitemap() {
     } catch (error) {
         console.error('❌ Error generating sitemap:', error);
     } finally {
-        await mongoose.disconnect();
-        console.log('🔌 Disconnected from database');
+        if (process.env.MONGODB_URI) {
+            await mongoose.disconnect();
+            console.log('🔌 Disconnected from database');
+        }
     }
 }
 
