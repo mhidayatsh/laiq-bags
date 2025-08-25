@@ -800,7 +800,7 @@ if (process.env.NODE_ENV === 'production') {
       
       // Get all products from database
       const Product = require('./models/Product');
-      const products = await Product.find({ isActive: true }).select('slug updatedAt');
+      const products = await Product.find({}).select('slug updatedAt _id name');
       
       // Get current date
       const currentDate = new Date().toISOString().split('T')[0];
@@ -837,9 +837,12 @@ if (process.env.NODE_ENV === 'production') {
           new Date(product.updatedAt).toISOString().split('T')[0] : 
           currentDate;
         
+        // Use slug if available, otherwise use ID
+        const productIdentifier = product.slug || product._id;
+        
         sitemap += `
   <url>
-    <loc>https://www.laiq.shop/product.html?slug=${product.slug}</loc>
+    <loc>https://www.laiq.shop/product.html?slug=${productIdentifier}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
