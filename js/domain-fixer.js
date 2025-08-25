@@ -22,13 +22,24 @@
         if (currentHost === 'www.laiq.shop') {
             console.log('✅ Correct domain detected: www.laiq.shop');
             
-            // Override window.location.origin to always return www version
-            Object.defineProperty(window.location, 'origin', {
-                get: function() {
-                    return 'https://www.laiq.shop';
-                },
-                configurable: true
-            });
+            // Create a custom origin getter that always returns www version
+            if (!window._originalOrigin) {
+                window._originalOrigin = window.location.origin;
+            }
+            
+            // Override window.location.origin getter
+            try {
+                Object.defineProperty(window.location, 'origin', {
+                    get: function() {
+                        return 'https://www.laiq.shop';
+                    },
+                    configurable: true
+                });
+            } catch (e) {
+                console.log('⚠️ Could not override window.location.origin, using fallback method');
+                // Fallback: create a custom origin property
+                window.location._customOrigin = 'https://www.laiq.shop';
+            }
             
             // Fix any existing meta tags that might have wrong URLs
             fixMetaTags();
@@ -47,6 +58,14 @@
                 tag.href = tag.href.replace('https://laiq.shop', 'https://www.laiq.shop');
             }
         });
+    }
+    
+    // Get the correct origin (with fallback)
+    function getCorrectOrigin() {
+        if (window.location._customOrigin) {
+            return window.location._customOrigin;
+        }
+        return 'https://www.laiq.shop';
     }
     
     // Run the check

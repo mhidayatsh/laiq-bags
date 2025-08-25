@@ -917,9 +917,13 @@
               oscillator.stop(audioContext.currentTime + 0.1);
             }
             
-            // Add haptic feedback (if supported)
-            if ('vibrate' in navigator) {
-              navigator.vibrate([50, 50, 50]);
+            // Add haptic feedback (if supported and user has interacted)
+            if ('vibrate' in navigator && document.hasFocus()) {
+              try {
+                navigator.vibrate([50, 50, 50]);
+              } catch (e) {
+                console.log('⚠️ Vibration blocked by browser security policy');
+              }
             }
             
             // Enhanced content animations
