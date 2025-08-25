@@ -1841,7 +1841,7 @@ function updateOpenGraphTags(product) {
         'og:description': product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality bags and accessories.`,
         'og:type': 'product',
         'og:url': `${window.location.origin}/product.html?id=${product._id}`,
-        'og:image': product.images?.[0]?.url || 'https://laiq.shop/assets/laiq-logo.png',
+        'og:image': product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
         'og:image:width': '1200',
         'og:image:height': '630',
         'og:image:alt': `${product.name} - Laiq Bags`,
@@ -1874,7 +1874,7 @@ function updateTwitterCardTags(product) {
         'twitter:card': 'summary_large_image',
         'twitter:title': `${product.seoTitle || product.name} - Laiq Bags`,
         'twitter:description': product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality bags and accessories.`,
-        'twitter:image': product.images?.[0]?.url || 'https://laiq.shop/assets/laiq-logo.png',
+        'twitter:image': product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
         'twitter:image:alt': `${product.name} - Laiq Bags`,
         'twitter:site': '@laiq_bags_',
         'twitter:creator': '@laiq_bags_',
@@ -1995,7 +1995,7 @@ function addProductStructuredData(product) {
             "seller": {
                 "@type": "Organization",
                 "name": "Laiq Bags",
-                "url": "https://laiq.shop"
+                "url": "https://www.laiq.shop"
             },
             "deliveryLeadTime": {
                 "@type": "QuantitativeValue",
@@ -2103,8 +2103,8 @@ function addProductStructuredData(product) {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Laiq Bags",
-        "url": "https://laiq.shop",
-        "logo": "https://laiq.shop/assets/laiq-logo.png",
+        "url": "https://www.laiq.shop",
+        "logo": "https://www.laiq.shop/assets/laiq-logo.png",
         "description": "Premium bags and accessories - Carry Style with Confidence",
         "address": {
             "@type": "PostalAddress",

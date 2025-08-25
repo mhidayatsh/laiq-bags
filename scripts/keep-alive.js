@@ -2,8 +2,8 @@ const https = require('https');
 const http = require('http');
 
 // Configuration
-const SITE_URL = 'https://laiq.shop';
-const API_URL = 'https://laiq.shop/api/health';
+const SITE_URL = 'https://www.laiq.shop';
+const API_URL = 'https://www.laiq.shop/api/health';
 const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
 const TIMEOUT = 10000; // 10 seconds
 

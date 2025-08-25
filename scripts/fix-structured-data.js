@@ -16,12 +16,12 @@ console.log('🔧 Fixing Structured Data Issues...\n');
 
 // Product images mapping
 const productImages = {
-  'Backpacks': 'https://laiq.shop/assets/placeholder-bag-1.jpg',
-  'Sling Bags': 'https://laiq.shop/assets/placeholder-bag-2.jpg',
-  'Handbags': 'https://laiq.shop/assets/placeholder-bag-3.jpg',
-  'Laptop Bags': 'https://laiq.shop/assets/placeholder-bag-4.jpg',
-  'Tote Bags': 'https://laiq.shop/assets/placeholder-bag-5.jpg',
-  'Travel Bags': 'https://laiq.shop/assets/placeholder-bag-6.jpg'
+      'Backpacks': 'https://www.laiq.shop/assets/placeholder-bag-1.jpg',
+    'Sling Bags': 'https://www.laiq.shop/assets/placeholder-bag-2.jpg',
+    'Handbags': 'https://www.laiq.shop/assets/placeholder-bag-3.jpg',
+    'Laptop Bags': 'https://www.laiq.shop/assets/placeholder-bag-4.jpg',
+    'Tote Bags': 'https://www.laiq.shop/assets/placeholder-bag-5.jpg',
+    'Travel Bags': 'https://www.laiq.shop/assets/placeholder-bag-6.jpg'
 };
 
 // Shipping and return policy template
@@ -135,7 +135,7 @@ function createStructuredDataTest() {
     "@type": "Product",
     "name": "Test Product",
     "description": "Test product description",
-    "image": "https://laiq.shop/assets/placeholder-bag-1.jpg",
+            "image": "https://www.laiq.shop/assets/placeholder-bag-1.jpg",
     "offers": {
       "@type": "Offer",
       "price": "1499",
