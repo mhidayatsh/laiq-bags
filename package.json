@@ -4,7 +4,7 @@
   "description": "Backend API for Laiq Bags e-commerce website",
   "main": "server.js",
   "scripts": {
-    "render-build": "npm install && node scripts/generate-sitemap.js || node scripts/create-fallback-sitemap.js",
+    "render-build": "npm install",
     "start": "node server.js",
     "dev": "NODE_ENV=development node server.js",
     "seed": "node scripts/seedData.js",
@@ -18,7 +18,7 @@
     "test-color": "node scripts/test-color-display.js",
     "test-auth": "node scripts/test-auth-switching.js",
     "prod": "NODE_ENV=production node server.js",
-    "postinstall": "node scripts/generate-sitemap.js || node scripts/create-fallback-sitemap.js"
+    "postinstall": "echo 'Sitemap will be generated dynamically'"
   },
   "keywords": [
     "e-commerce",
