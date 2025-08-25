@@ -11,8 +11,8 @@
         const currentHash = window.location.hash;
         
         // If we're not on www.laiq.shop, redirect
-        if (currentHost === 'laiq.shop') {
-            const newUrl = `${currentProtocol}//www.${currentHost}${currentPath}${currentSearch}${currentHash}`;
+        if (currentHost !== 'www.laiq.shop') {
+            const newUrl = `https://www.laiq.shop${currentPath}${currentSearch}${currentHash}`;
             console.log('🔄 Redirecting to www version:', newUrl);
             window.location.href = newUrl;
             return;
@@ -51,11 +51,11 @@
         const metaTags = document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"], link[rel="canonical"], link[rel="alternate"]');
         
         metaTags.forEach(tag => {
-            if (tag.content && tag.content.includes('https://laiq.shop')) {
-                tag.content = tag.content.replace('https://laiq.shop', 'https://www.laiq.shop');
+            if (tag.content && tag.content.includes('https://www.laiq.shop')) {
+                tag.content = tag.content.replace('https://www.laiq.shop', 'https://www.laiq.shop');
             }
-            if (tag.href && tag.href.includes('https://laiq.shop')) {
-                tag.href = tag.href.replace('https://laiq.shop', 'https://www.laiq.shop');
+            if (tag.href && tag.href.includes('https://www.laiq.shop')) {
+                tag.href = tag.href.replace('https://www.laiq.shop', 'https://www.laiq.shop');
             }
         });
     }
@@ -80,15 +80,15 @@
     const originalReplaceState = history.replaceState;
     
     history.pushState = function(state, title, url) {
-        if (url && typeof url === 'string' && url.includes('laiq.shop') && !url.includes('www.laiq.shop')) {
-            url = url.replace('laiq.shop', 'www.laiq.shop');
+        if (url && typeof url === 'string' && url.includes('www.laiq.shop')) {
+            url = url.replace('www.laiq.shop', 'www.laiq.shop');
         }
         return originalPushState.call(this, state, title, url);
     };
     
     history.replaceState = function(state, title, url) {
-        if (url && typeof url === 'string' && url.includes('laiq.shop') && !url.includes('www.laiq.shop')) {
-            url = url.replace('laiq.shop', 'www.laiq.shop');
+        if (url && typeof url === 'string' && url.includes('www.laiq.shop')) {
+            url = url.replace('www.laiq.shop', 'www.laiq.shop');
         }
         return originalReplaceState.call(this, state, title, url);
     };

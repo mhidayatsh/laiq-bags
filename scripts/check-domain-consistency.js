@@ -26,7 +26,7 @@ const patterns = {
     'http://localhost:8000': /http:\/\/localhost:8000/g,
     'non-www laiq.shop': /https:\/\/laiq\.shop/g,
     'www.laiq.shop': /https:\/\/www\.laiq\.shop/g,
-    'info@www.laiq.shop': /info@www\.laiq\.shop/g
+    'info@laiq.shop': /info@www\.laiq\.shop/g
 };
 
 function checkFile(filePath) {
@@ -96,9 +96,9 @@ function generateReport() {
             fileIssues += result.results['non-www laiq.shop'];
         }
         
-        if (result.results['info@www.laiq.shop'] > 0) {
-            issues.push(`❌ ${result.results['info@www.laiq.shop']} info@www.laiq.shop references`);
-            fileIssues += result.results['info@www.laiq.shop'];
+        if (result.results['info@laiq.shop'] > 0) {
+            issues.push(`❌ ${result.results['info@laiq.shop']} info@laiq.shop references`);
+            fileIssues += result.results['info@laiq.shop'];
         }
         
         // Check for correct patterns

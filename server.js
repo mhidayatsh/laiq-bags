@@ -166,10 +166,14 @@ app.use((req, res, next) => {
   }
 });
 
-// Domain redirect logic - Redirect non-www to www for SEO
+// Domain canonicalization middleware (enhanced)
 app.use((req, res, next) => {
   const host = req.get('host');
   const protocol = req.protocol;
+  const userAgent = req.get('User-Agent');
+  
+  // Log the incoming request for debugging
+  console.log(`🌐 Incoming request: ${protocol}://${host}${req.url} (User-Agent: ${userAgent?.substring(0, 50)}...)`);
   
   // Check if it's a production environment and the request is for the non-www domain
   if (process.env.NODE_ENV === 'production' && 
@@ -177,18 +181,27 @@ app.use((req, res, next) => {
       !host.startsWith('www.')) {
     
     // Redirect to www version with HTTPS
-    const redirectUrl = `https://www.${host}${req.url}`;
-    console.log(`🔄 Redirecting ${host} to www.${host}`);
+    const redirectUrl = `https://www.laiq.shop${req.url}`;
+    console.log(`🔄 Redirecting ${protocol}://${host}${req.url} to ${redirectUrl}`);
     return res.redirect(301, redirectUrl);
   }
   
-  // Prevent reverse redirect (www to non-www)
+  // Also handle HTTP to HTTPS redirect for www domain
   if (process.env.NODE_ENV === 'production' && 
-      host.startsWith('www.') && 
+      host === 'www.laiq.shop' && 
+      protocol === 'http') {
+    
+    const redirectUrl = `https://www.laiq.shop${req.url}`;
+    console.log(`🔒 Redirecting HTTP to HTTPS: ${redirectUrl}`);
+    return res.redirect(301, redirectUrl);
+  }
+  
+  // Log correct domain detection
+  if (process.env.NODE_ENV === 'production' && 
       host === 'www.laiq.shop') {
     
-    // This is the correct domain, don't redirect
-    console.log(`✅ Correct domain: ${host}`);
+    // This is the correct domain, log for verification
+    console.log(`✅ Correct domain detected: ${host}`);
   }
   
   next();
@@ -1116,7 +1129,7 @@ function startServers() {
       setInterval(() => {
         const https = require('https');
         const options = {
-          hostname: 'laiq.shop',
+          hostname: 'www.laiq.shop',
           port: 443,
           path: '/api/health',
           method: 'GET',
