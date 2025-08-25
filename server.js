@@ -250,6 +250,99 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 
 // Serve static files in development
 if (process.env.NODE_ENV === 'development') {
+  
+  // Server-side product SEO route
+  app.get('/product.html', async (req, res) => {
+    try {
+      const { slug, id } = req.query;
+      
+      if (!slug && !id) {
+        // No product specified, serve generic product page
+        return res.sendFile(path.join(__dirname, 'product.html'));
+      }
+      
+      // Find product by slug or id
+      let product;
+      if (slug) {
+        product = await Product.findOne({ slug: slug });
+      } else if (id) {
+        product = await Product.findById(id);
+      }
+      
+      if (!product) {
+        return res.status(404).sendFile(path.join(__dirname, '404.html'));
+      }
+      
+      // Read the product.html template
+      let html = fs.readFileSync(path.join(__dirname, 'product.html'), 'utf8');
+      
+      // Replace meta tags with product-specific content
+      const productTitle = `${product.name} - ₹${product.price} | ${product.category} - Laiq Bags`;
+      const productDescription = product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality ${product.category}.`;
+      const productUrl = `https://www.laiq.shop/product.html?slug=${product.slug || product._id}`;
+      const productImage = product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png';
+      
+      // Update title
+      html = html.replace(/<title>.*?</title>/, `<title>${productTitle}</title>`);
+      
+      // Update meta description
+      html = html.replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${productDescription}">`);
+      
+      // Update canonical URL
+      html = html.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${productUrl}">`);
+      
+      // Update Open Graph tags
+      html = html.replace(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${productTitle}">`);
+      html = html.replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="${productDescription}">`);
+      html = html.replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${productUrl}">`);
+      html = html.replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${productImage}">`);
+      
+      // Update Twitter Card tags
+      html = html.replace(/<meta name="twitter:title" content="[^"]*">/, `<meta name="twitter:title" content="${productTitle}">`);
+      html = html.replace(/<meta name="twitter:description" content="[^"]*">/, `<meta name="twitter:description" content="${productDescription}">`);
+      html = html.replace(/<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${productImage}">`);
+      
+      // Add product structured data
+      const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": product.name,
+        "description": product.description,
+        "brand": {
+          "@type": "Brand",
+          "name": "LAIQ"
+        },
+        "category": product.category,
+        "image": product.images?.map(img => img.url) || [],
+        "url": productUrl,
+        "sku": product._id,
+        "offers": {
+          "@type": "Offer",
+          "price": product.price,
+          "priceCurrency": "INR",
+          "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          "seller": {
+            "@type": "Organization",
+            "name": "Laiq Bags",
+            "url": "https://www.laiq.shop"
+          }
+        }
+      };
+      
+      // Insert structured data before closing head tag
+      const structuredDataScript = `<script type="application/ld+json">${JSON.stringify(structuredData, null, 2)}</script>`;
+      html = html.replace('</head>', `${structuredDataScript}\n</head>`);
+      
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+      
+    } catch (error) {
+      console.error('Product SEO route error:', error);
+      res.sendFile(path.join(__dirname, 'product.html'));
+    }
+  });
+
   app.use(express.static(path.join(__dirname)));
   
   // Explicitly serve assets folder with proper MIME types
