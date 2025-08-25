@@ -268,25 +268,18 @@ if (process.env.NODE_ENV === 'development') {
   app.get('/product.html', async (req, res) => {
     try {
       const { slug, id } = req.query;
-      
-      if (!slug && !id) {
-        // No product specified, serve generic product page
-        return res.sendFile(path.join(__dirname, 'product.html'));
-      }
-      
-      // Find product by slug or id
       let product;
+      
       if (slug) {
-        product = await Product.findOne({ slug: slug });
+        product = await Product.findOne({ slug });
       } else if (id) {
         product = await Product.findById(id);
       }
       
       if (!product) {
-        return res.status(404).sendFile(path.join(__dirname, '404.html'));
+        return res.sendFile(path.join(__dirname, 'product.html'));
       }
       
-      // Read the product.html template
       let html = fs.readFileSync(path.join(__dirname, 'product.html'), 'utf8');
       
       // Replace meta tags with product-specific content
@@ -353,6 +346,66 @@ if (process.env.NODE_ENV === 'development') {
     } catch (error) {
       console.error('Product SEO route error:', error);
       res.sendFile(path.join(__dirname, 'product.html'));
+    }
+  });
+
+  // Dynamic homepage with product catalog schema
+  app.get('/', async (req, res) => {
+    try {
+      let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+      
+      // Fetch all products for dynamic schema
+      const Product = require('./models/Product'); // Added missing import
+      const products = await Product.find({}).limit(6).sort({ createdAt: -1 });
+      
+      if (products.length > 0) {
+        // Generate dynamic product catalog schema
+        const productCatalogSchema = {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "Laiq Bags Product Catalog",
+          "description": "Premium bags and accessories collection",
+          "url": "https://www.laiq.shop/shop.html",
+          "numberOfItems": products.length,
+          "itemListElement": products.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+              "@type": "Product",
+              "name": product.name,
+              "description": product.description,
+              "url": `https://www.laiq.shop/product.html?slug=${product.slug || product._id}`,
+              "image": product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
+              "brand": {
+                "@type": "Brand",
+                "name": "Laiq Bags"
+              },
+              "category": product.category,
+              "offers": {
+                "@type": "Offer",
+                "price": product.price,
+                "priceCurrency": "INR",
+                "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                "seller": {
+                  "@type": "Organization",
+                  "name": "Laiq Bags"
+                }
+              }
+            }
+          }))
+        };
+        
+        // Replace static schema with dynamic schema
+        const dynamicSchemaScript = `<script type="application/ld+json">${JSON.stringify(productCatalogSchema, null, 2)}</script>`;
+        html = html.replace(/<!-- Product Catalog Schema - All 6 Products -->[\s\S]*?<\/script>/s, `<!-- Product Catalog Schema - Dynamic -->\n${dynamicSchemaScript}`);
+      }
+      
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+      
+    } catch (error) {
+      console.error('Homepage dynamic schema error:', error);
+      res.sendFile(path.join(__dirname, 'index.html'));
     }
   });
 
