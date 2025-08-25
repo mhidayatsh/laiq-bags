@@ -159,6 +159,15 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   
+  // Special handling for Google's crawler
+  if (req.get('User-Agent')?.includes('Googlebot')) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('X-Robots-Tag', 'index, follow');
+    res.header('X-Content-Type-Options', 'nosniff');
+  }
+  
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -429,6 +438,15 @@ if (process.env.NODE_ENV === 'development') {
         res.set('Content-Type', 'image/svg+xml');
       } else if (path.endsWith('.ico')) {
         res.set('Content-Type', 'image/x-icon');
+      }
+      
+      // Add CORS headers for all assets
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Cache-Control', 'public, max-age=86400');
+      
+      // Special handling for Google's crawler
+      if (req.get('User-Agent')?.includes('Googlebot')) {
+        res.set('X-Robots-Tag', 'index, follow');
       }
     }
   }));
