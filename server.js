@@ -343,8 +343,6 @@ if (process.env.NODE_ENV === 'development') {
     }
   });
 
-  app.use(express.static(path.join(__dirname)));
-  
   // Explicitly serve assets folder with proper MIME types
   app.use('/assets', express.static(path.join(__dirname, 'assets'), {
     maxAge: '1d',
@@ -630,6 +628,9 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/', sitemapRoutes);
 // Analytics routes are handled separately above
+
+// Serve static files AFTER API routes to prevent conflicts
+app.use(express.static(path.join(__dirname)));
 
 // Newsletter subscription endpoint (placeholder)
 app.post('/api/newsletter/subscribe', validateInput, (req, res) => {
