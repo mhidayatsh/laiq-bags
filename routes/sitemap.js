@@ -9,7 +9,7 @@ router.get('/sitemap.xml', async (req, res) => {
         res.set('Content-Type', 'text/xml');
         
         // Get all products from database
-        const products = await Product.find({ isActive: true }).select('slug updatedAt');
+        const products = await Product.find({}).select('slug updatedAt _id name');
         
         // Get current date
         const currentDate = new Date().toISOString().split('T')[0];
@@ -46,9 +46,12 @@ router.get('/sitemap.xml', async (req, res) => {
                 new Date(product.updatedAt).toISOString().split('T')[0] : 
                 currentDate;
             
+            // Use slug if available, otherwise use ID
+            const productIdentifier = product.slug || product._id;
+            
             sitemap += `
   <url>
-    <loc>https://www.laiq.shop/product.html?slug=${product.slug}</loc>
+    <loc>https://www.laiq.shop/product.html?slug=${productIdentifier}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
