@@ -791,6 +791,72 @@ if (process.env.NODE_ENV === 'production') {
     }
   });
 
+  // Dynamic sitemap route (must be before static file serving)
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      // Set XML content type
+      res.set('Content-Type', 'text/xml');
+      
+      // Get all products from database
+      const Product = require('./models/Product');
+      const products = await Product.find({ isActive: true }).select('slug updatedAt');
+      
+      // Get current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      
+      // Start XML sitemap
+      let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+
+      // Add static pages
+      const staticPages = [
+        { url: '/', priority: '1.0', changefreq: 'daily' },
+        { url: '/shop.html', priority: '0.9', changefreq: 'daily' },
+        { url: '/about.html', priority: '0.7', changefreq: 'monthly' },
+        { url: '/contact.html', priority: '0.7', changefreq: 'monthly' },
+        { url: '/size-guide.html', priority: '0.6', changefreq: 'monthly' },
+        { url: '/customer-login.html', priority: '0.5', changefreq: 'monthly' },
+        { url: '/customer-register.html', priority: '0.5', changefreq: 'monthly' }
+      ];
+
+      // Add static pages to sitemap
+      staticPages.forEach(page => {
+        sitemap += `
+  <url>
+    <loc>https://www.laiq.shop${page.url}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`;
+      });
+
+      // Add product pages dynamically
+      products.forEach(product => {
+        const lastmod = product.updatedAt ? 
+          new Date(product.updatedAt).toISOString().split('T')[0] : 
+          currentDate;
+        
+        sitemap += `
+  <url>
+    <loc>https://www.laiq.shop/product.html?slug=${product.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+      });
+
+      // Close XML
+      sitemap += `
+</urlset>`;
+
+      res.send(sitemap);
+
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
   // Server-side product SEO route for production
   app.get('/product.html', async (req, res) => {
     try {
@@ -874,7 +940,16 @@ if (process.env.NODE_ENV === 'production') {
     }
   });
 
-  app.use(express.static(path.join(__dirname)));
+  // Serve static files but exclude sitemap.xml to allow dynamic generation
+  app.use(express.static(path.join(__dirname), {
+    setHeaders: (res, path) => {
+      // Skip sitemap.xml to allow dynamic generation
+      if (path.endsWith('sitemap.xml')) {
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    }
+  }));
+  
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
   });
