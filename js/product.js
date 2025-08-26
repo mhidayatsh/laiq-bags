@@ -2552,9 +2552,9 @@ async function handleReviewSubmit(e) {
         if (response.success) {
             showToast(mode === 'edit' ? 'Review updated successfully' : 'Review submitted successfully', 'success');
             closeReviewModal();
-            // Reload the product to refresh reviews
-            if (typeof loadProduct === 'function') {
-                loadProduct();
+            // Reload reviews for this product
+            if (currentProductId) {
+                loadProductReviews(currentProductId);
             }
         }
     } catch (error) {
@@ -2569,11 +2569,18 @@ async function handleReviewSubmit(e) {
         });
         
         if (error.message.includes('400')) {
-            showToast('Please check your review data', 'error');
+            // Check for specific error messages
+            if (error.message.includes('already reviewed')) {
+                showToast('You have already reviewed this product. You can edit your existing review.', 'warning');
+            } else {
+                showToast('Please check your review data', 'error');
+            }
         } else if (error.message.includes('403')) {
             showToast('You can only edit your own reviews', 'error');
         } else if (error.message.includes('404')) {
             showToast('Review not found', 'error');
+        } else if (error.message.includes('409')) {
+            showToast('You have already reviewed this product. You can edit your existing review.', 'warning');
         } else {
             showToast('Failed to submit review', 'error');
         }
@@ -2623,6 +2630,13 @@ async function loadProductReviews(productId) {
                 // Check if current user owns this review
                 const currentUserId = getCurrentUserId();
                 const isOwnReview = review.user?._id === currentUserId;
+                
+                console.log('🔍 User ID comparison:', {
+                    reviewUserId: review.user?._id,
+                    currentUserId: currentUserId,
+                    isOwnReview: isOwnReview,
+                    reviewUser: review.user
+                });
                 
                 return `
                     <div class="bg-beige/30 rounded-xl p-6" data-review-id="${review._id}">
@@ -2736,9 +2750,9 @@ function addReviewActionListeners() {
                     
                     if (data.success) {
                         showToast('Review deleted successfully', 'success');
-                        // Reload the product to refresh reviews
-                        if (typeof loadProduct === 'function') {
-                            loadProduct();
+                        // Reload reviews for this product
+                        if (currentProductId) {
+                            loadProductReviews(currentProductId);
                         }
                     } else {
                         showToast(data.message || 'Failed to delete review', 'error');
@@ -2756,18 +2770,26 @@ function addReviewActionListeners() {
 // Get current user ID
 function getCurrentUserId() {
     try {
-        // Check if user data is available in localStorage
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            return user._id;
-        }
-        
-        // Check if user data is available in sessionStorage
-        const sessionUserData = sessionStorage.getItem('user');
-        if (sessionUserData) {
-            const user = JSON.parse(sessionUserData);
-            return user._id;
+        // Use the existing isCustomerLoggedIn function to check authentication
+        if (typeof isCustomerLoggedIn === 'function' && isCustomerLoggedIn()) {
+            // Check if user data is available in localStorage
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                return user._id;
+            }
+            
+            // Check if user data is available in sessionStorage
+            const sessionUserData = sessionStorage.getItem('user');
+            if (sessionUserData) {
+                const user = JSON.parse(sessionUserData);
+                return user._id;
+            }
+            
+            // Check if user data is available in the global user object
+            if (typeof window.currentUser !== 'undefined' && window.currentUser) {
+                return window.currentUser._id;
+            }
         }
         
         return null;
