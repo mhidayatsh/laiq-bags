@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backpacks Collection | Laiq Bags</title>
+    <meta name="description" content="Premium backpacks for daily use, travel, and outdoor activities. Shop premium backpacks with free shipping across India.">
+    <meta name="keywords" content="backpacks, bags, backpacks collection, premium bags, Laiq Bags">
+    <link rel="canonical" href="https://www.laiq.shop/backpacks.html">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Backpacks Collection",
+      "description": "Premium backpacks for daily use, travel, and outdoor activities",
+      "url": "https://www.laiq.shop/backpacks.html",
+      "mainEntity": {
+        "@type": "ItemList",
+        "name": "Backpacks Collection",
+        "description": "Premium backpacks for daily use, travel, and outdoor activities"
+      }
+    }
+    </script>
+    
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/shop.html">Shop</a>
+            <a href="/backpacks.html" class="active">Backpacks Collection</a>
+        </nav>
+    </header>
+    
+    <main>
+        <h1>Backpacks Collection</h1>
+        <p>Premium backpacks for daily use, travel, and outdoor activities</p>
+        
+        <div id="category-products" class="products-grid">
+            <!-- Products will be loaded here -->
+        </div>
+    </main>
+    
+    <script src="/js/product.js"></script>
+    <script>
+        // Load category-specific products
+        loadCategoryProducts('backpacks');
+    </script>
+</body>
+</html>

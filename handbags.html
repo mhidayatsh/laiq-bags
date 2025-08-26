@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handbags Collection | Laiq Bags</title>
+    <meta name="description" content="Stylish handbags for every occasion and outfit. Shop premium handbags with free shipping across India.">
+    <meta name="keywords" content="handbags, bags, handbags collection, premium bags, Laiq Bags">
+    <link rel="canonical" href="https://www.laiq.shop/handbags.html">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Handbags Collection",
+      "description": "Stylish handbags for every occasion and outfit",
+      "url": "https://www.laiq.shop/handbags.html",
+      "mainEntity": {
+        "@type": "ItemList",
+        "name": "Handbags Collection",
+        "description": "Stylish handbags for every occasion and outfit"
+      }
+    }
+    </script>
+    
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/shop.html">Shop</a>
+            <a href="/handbags.html" class="active">Handbags Collection</a>
+        </nav>
+    </header>
+    
+    <main>
+        <h1>Handbags Collection</h1>
+        <p>Stylish handbags for every occasion and outfit</p>
+        
+        <div id="category-products" class="products-grid">
+            <!-- Products will be loaded here -->
+        </div>
+    </main>
+    
+    <script src="/js/product.js"></script>
+    <script>
+        // Load category-specific products
+        loadCategoryProducts('handbags');
+    </script>
+</body>
+</html>
