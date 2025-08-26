@@ -270,11 +270,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   }
 }));
 
-// Serve static files in development
-if (process.env.NODE_ENV === 'development') {
-  
-  // Server-side product SEO route
-  app.get('/product.html', async (req, res) => {
+// Server-side product SEO route (works in both development and production)
+app.get('/product.html', async (req, res) => {
     try {
       const { slug, id } = req.query;
       let product;
