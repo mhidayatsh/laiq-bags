@@ -580,7 +580,12 @@ async function handleReviewSubmit(e) {
         if (response.success) {
             showToast(mode === 'edit' ? 'Review updated successfully' : 'Review submitted successfully', 'success');
             closeReviewModal();
-            loadReviews(); // Reload reviews
+            // Reload reviews using the correct function
+            if (typeof loadProductReviews === 'function' && currentProductId) {
+                loadProductReviews(currentProductId);
+            } else {
+                loadReviews(); // Fallback
+            }
         }
     } catch (error) {
         console.error('❌ Error submitting review:', error);
@@ -615,22 +620,8 @@ function formatDate(dateString) {
     });
 }
 
-// Get current user ID
-function getCurrentUserId() {
-    try {
-        const user = localStorage.getItem('customerUser');
-        if (user) {
-            const userData = JSON.parse(user);
-            console.log('👤 Current user data:', userData);
-            return userData._id;
-        }
-        console.log('❌ No user found in localStorage');
-        return null;
-    } catch (error) {
-        console.error('❌ Error getting current user ID:', error);
-        return null;
-    }
-}
+// Use the getCurrentUserId function from product.js
+// This function is already defined in product.js and handles all storage locations
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {

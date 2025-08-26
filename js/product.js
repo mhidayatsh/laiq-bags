@@ -2706,8 +2706,8 @@ function addReviewActionListeners() {
             console.log('📝 Edit review clicked:', reviewId);
             
             try {
-                // Fetch review data
-                const response = await fetch(`/api/review/${reviewId}`);
+                // Fetch review data using the correct endpoint
+                const response = await fetch(`/api/review/single/${reviewId}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -2735,11 +2735,18 @@ function addReviewActionListeners() {
             
             if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
                 try {
+                    // Get authentication token
+                    const token = localStorage.getItem('customerToken') || localStorage.getItem('token');
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
                     const response = await fetch(`/api/review/${reviewId}`, {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
+                        headers: headers
                     });
                     
                     if (!response.ok) {
