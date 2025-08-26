@@ -1705,6 +1705,7 @@ async function renderWishlistDrawer(items = null) {
     }
 
     // Enrich items with live product data to get discountInfo and accurate price
+    // Also clean up invalid products that no longer exist in database
     try {
         const needsEnrichment = currentItems.some(item => typeof item === 'string' || (typeof item === 'object' && !item.discountInfo))
         if (needsEnrichment && typeof api !== 'undefined') {
@@ -1713,16 +1714,28 @@ async function renderWishlistDrawer(items = null) {
             // Fetch details in parallel (limit to 12 to avoid overfetch)
             const toFetch = uniqueIds.slice(0, 12)
             const fetchedMap = new Map()
+            const validIds = new Set()
+            
             await Promise.all(toFetch.map(async (id) => {
                 try {
                     const res = await api.getProduct(id)
                     if (res.success && res.product) {
                         fetchedMap.set(id, res.product)
+                        validIds.add(id)
+                    } else {
+                        console.log('🗑️ Product not found, will be removed from wishlist:', id)
                     }
-                } catch (e) { /* ignore individual errors */ }
+                } catch (e) { 
+                    console.log('🗑️ Error fetching product, will be removed from wishlist:', id, e.message)
+                }
             }))
-            // Replace items with enriched ones when available
-            currentItems = currentItems.map(item => {
+            
+            // Filter out invalid items and replace with enriched ones when available
+            const originalCount = currentItems.length
+            currentItems = currentItems.filter(item => {
+                const id = typeof item === 'string' ? item : (item.id || item._id)
+                return validIds.has(id)
+            }).map(item => {
                 const id = typeof item === 'string' ? item : (item.id || item._id)
                 const enriched = fetchedMap.get(id)
                 if (enriched) {
@@ -1735,11 +1748,18 @@ async function renderWishlistDrawer(items = null) {
                         discount: enriched.discount,
                         isDiscountActive: enriched.isDiscountActive,
                         discountInfo: enriched.discountInfo
-                }
+                    }
                 }
                 return item
             })
-            // Persist enriched wishlist for future fast loads
+            
+            // Log cleanup results
+            const removedCount = originalCount - currentItems.length
+            if (removedCount > 0) {
+                console.log(`🧹 Cleaned up wishlist: removed ${removedCount} invalid products`)
+            }
+            
+            // Persist cleaned and enriched wishlist for future fast loads
             if (isCustomerLoggedIn()) {
                 wishlist = currentItems
                 saveUserWishlist(wishlist)
