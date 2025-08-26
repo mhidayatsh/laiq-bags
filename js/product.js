@@ -2184,3 +2184,117 @@ function showProductNotFound() {
     }
     metaDescription.content = 'Product not found. Browse our collection of premium bags and accessories.';
 } 
+
+// Load category-specific products
+async function loadCategoryProducts(category) {
+    console.log(`🛍️ Loading products for category: ${category}`);
+    
+    try {
+        // Show loading state
+        const productsGrid = document.getElementById('category-products');
+        if (productsGrid) {
+            productsGrid.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+                    <p class="text-charcoal/70">Loading ${category} products...</p>
+                </div>
+            `;
+        }
+        
+        // Fetch products from API
+        const response = await fetch(`/api/products?category=${category}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const products = data.products || [];
+        
+        console.log(`📦 Found ${products.length} products for category: ${category}`);
+        
+        // Render products
+        if (productsGrid) {
+            if (products.length === 0) {
+                productsGrid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="text-6xl mb-4">👜</div>
+                        <h2 class="text-2xl font-bold text-charcoal mb-4">No ${category} found</h2>
+                        <p class="text-charcoal/70 mb-6">We're currently updating our ${category} collection.</p>
+                        <a href="/shop.html" class="inline-block bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                            Browse All Products
+                        </a>
+                    </div>
+                `;
+            } else {
+                productsGrid.innerHTML = products.map(product => `
+                    <div class="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="relative">
+                            <img src="${product.images[0] || '/assets/placeholder-bag-1.jpg'}" 
+                                 alt="${product.name}" 
+                                 class="w-full h-64 object-cover"
+                                 loading="lazy">
+                            ${product.discount > 0 ? `
+                                <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-semibold">
+                                    -${product.discount}% OFF
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-lg text-charcoal mb-2">${product.name}</h3>
+                            <p class="text-charcoal/70 text-sm mb-3 line-clamp-2">${product.description}</p>
+                            <div class="flex justify-between items-center">
+                                <div class="price-info">
+                                    ${product.discount > 0 ? `
+                                        <span class="text-lg font-bold text-charcoal">₹${product.discountedPrice}</span>
+                                        <span class="text-sm text-charcoal/50 line-through ml-2">₹${product.price}</span>
+                                    ` : `
+                                        <span class="text-lg font-bold text-charcoal">₹${product.price}</span>
+                                    `}
+                                </div>
+                                <a href="/product.html?id=${product._id}" 
+                                   class="bg-gold text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-charcoal transition-colors">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Update page title and meta description
+        const categoryName = category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        document.title = `${categoryName} Collection | Laiq Bags`;
+        
+        // Update meta description
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) {
+            metaDescription.content = `Shop premium ${categoryName.toLowerCase()} with free shipping across India. Discover our collection of ${products.length} ${categoryName.toLowerCase()}.`;
+        }
+        
+        // Update product count
+        const productCountElement = document.getElementById('product-count');
+        if (productCountElement) {
+            productCountElement.textContent = products.length;
+        }
+        
+        console.log(`✅ Successfully loaded ${products.length} products for category: ${category}`);
+        
+    } catch (error) {
+        console.error(`❌ Error loading category products:`, error);
+        
+        const productsGrid = document.getElementById('category-products');
+        if (productsGrid) {
+            productsGrid.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h2 class="text-2xl font-bold text-charcoal mb-4">Unable to load products</h2>
+                    <p class="text-charcoal/70 mb-6">Please try again later or browse our main shop.</p>
+                    <a href="/shop.html" class="inline-block bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                        Browse All Products
+                    </a>
+                </div>
+            `;
+        }
+    }
+}

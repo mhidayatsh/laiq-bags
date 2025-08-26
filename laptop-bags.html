@@ -1,12 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Preconnect to Google Fonts for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Laptop Bags Collection | Laiq Bags</title>
-    <meta name="description" content="Secure and stylish laptop bags for professionals. Shop premium laptop-bags with free shipping across India.">
+    <meta name="description" content="Professional laptop bags with padded protection and organized compartments. Shop premium laptop bags with free shipping across India.">
     <meta name="keywords" content="laptop-bags, bags, laptop-bags collection, premium bags, Laiq Bags">
+    <meta name="author" content="Laiq Bags">
+    
+    <!-- Canonical URL -->
     <link rel="canonical" href="https://www.laiq.shop/laptop-bags.html">
+    
+    <!-- Language Alternates -->
+    <link rel="alternate" hreflang="en" href="https://www.laiq.shop/laptop-bags.html">
+    <link rel="alternate" hreflang="en-IN" href="https://www.laiq.shop/laptop-bags.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.laiq.shop/laptop-bags.html">
+    
+    <!-- Enhanced SEO Meta Tags -->
+    <meta name="application-name" content="Laiq Bags">
+    <meta name="apple-mobile-web-app-title" content="Laiq Bags">
+    <meta name="msapplication-TileColor" content="#d4af37">
+    <meta name="theme-color" content="#d4af37">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="Laptop Bags Collection | Laiq Bags">
+    <meta property="og:description" content="Professional laptop bags with padded protection and organized compartments.">
+    <meta property="og:image" content="https://www.laiq.shop/assets/laiq-logo.png">
+    <meta property="og:url" content="https://www.laiq.shop/laptop-bags.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Laiq Bags">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Laptop Bags Collection | Laiq Bags">
+    <meta name="twitter:description" content="Professional laptop bags with padded protection and organized compartments.">
+    <meta name="twitter:image" content="https://www.laiq.shop/assets/laiq-logo.png">
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -14,40 +53,186 @@
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       "name": "Laptop Bags Collection",
-      "description": "Secure and stylish laptop bags for professionals",
+      "description": "Professional laptop bags with padded protection and organized compartments",
       "url": "https://www.laiq.shop/laptop-bags.html",
       "mainEntity": {
         "@type": "ItemList",
         "name": "Laptop Bags Collection",
-        "description": "Secure and stylish laptop bags for professionals"
+        "description": "Professional laptop bags with padded protection and organized compartments"
       }
     }
     </script>
     
-    <link rel="stylesheet" href="/css/styles.css">
-</head>
-<body>
-    <header>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/shop.html">Shop</a>
-            <a href="/laptop-bags.html" class="active">Laptop Bags Collection</a>
-        </nav>
-    </header>
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.laiq.shop/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Shop",
+          "item": "https://www.laiq.shop/shop.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Laptop Bags Collection",
+          "item": "https://www.laiq.shop/laptop-bags.html"
+        }
+      ]
+    }
+    </script>
     
-    <main>
-        <h1>Laptop Bags Collection</h1>
-        <p>Secure and stylish laptop bags for professionals</p>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/tailwind.css">
+    
+    <!-- Google Fonts: Poppins & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;700&display=swap&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', 'Montserrat', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .laiq-logo-text { 
+            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Orbitron', 'Montserrat', sans-serif;
+        }
+        .laiq-logo { 
+            font-family: 'Orbitron', 'Montserrat', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-cream min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold laiq-logo">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-charcoal">Bags</span>
+                    </a>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="/" class="text-charcoal hover:text-gold transition-colors">Home</a>
+                    <a href="/shop.html" class="text-charcoal hover:text-gold transition-colors">Shop</a>
+                    <a href="/about.html" class="text-charcoal hover:text-gold transition-colors">About</a>
+                    <a href="/contact.html" class="text-charcoal hover:text-gold transition-colors">Contact</a>
+                </nav>
+                
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4">
+                    <a href="/customer-login.html" class="text-charcoal hover:text-gold transition-colors">Login</a>
+                    <a href="/customer-register.html" class="bg-gold text-white px-4 py-2 rounded-lg hover:bg-charcoal transition-colors">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Header -->
+    <section class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-6">
+            <nav class="flex items-center space-x-2 text-sm text-charcoal/70 mb-4">
+                <a href="/" class="hover:text-gold transition-colors">Home</a>
+                <span>/</span>
+                <a href="/shop.html" class="hover:text-gold transition-colors">Shop</a>
+                <span>/</span>
+                <span class="text-charcoal">Laptop Bags Collection</span>
+            </nav>
+            
+            <h1 class="text-3xl md:text-4xl font-bold font-montserrat mb-2">Laptop Bags Collection</h1>
+            <p class="text-charcoal/70 mb-6">Professional laptop bags with padded protection and organized compartments. Keep your devices safe and organized.</p>
+        </div>
         
-        <div id="category-products" class="products-grid">
+        <!-- Category Navigation -->
+        <div class="category-nav mb-8">
+            <h3 class="text-lg font-semibold mb-4">Shop by Category</h3>
+            <div class="flex flex-wrap gap-4">
+                <a href="/backpacks.html" class="px-4 py-2 bg-charcoal/10 text-charcoal rounded-lg hover:bg-gold hover:text-white transition-colors">Backpacks</a>
+                <a href="/handbags.html" class="px-4 py-2 bg-charcoal/10 text-charcoal rounded-lg hover:bg-gold hover:text-white transition-colors">Handbags</a>
+                <a href="/laptop-bags.html" class="px-4 py-2 bg-gold text-white rounded-lg">Laptop Bags</a>
+                <a href="/travel-bags.html" class="px-4 py-2 bg-charcoal/10 text-charcoal rounded-lg hover:bg-gold hover:text-white transition-colors">Travel Bags</a>
+                <a href="/sling-bags.html" class="px-4 py-2 bg-charcoal/10 text-charcoal rounded-lg hover:bg-gold hover:text-white transition-colors">Sling Bags</a>
+            </div>
+        </div>
+        
+        <!-- Product Count -->
+        <div class="text-sm text-charcoal/60 mb-6">
+            Showing <span id="product-count">0</span> laptop bags
+        </div>
+    </section>
+    
+    <!-- Products Grid -->
+    <section class="max-w-7xl mx-auto px-4 pb-12">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="category-products">
             <!-- Products will be loaded here -->
         </div>
-    </main>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-white py-12 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div class="col-span-1 md:col-span-2">
+                    <h3 class="text-2xl font-bold laiq-logo mb-4">
+                        <span class="laiq-logo-text">LAIQ</span> <span class="text-white">Bags</span>
+                    </h3>
+                    <p class="text-gray-300 mb-4">Carry Style with Confidence.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-gold transition-colors">Facebook</a>
+                        <a href="#" class="text-gray-300 hover:text-gold transition-colors">Instagram</a>
+                        <a href="#" class="text-gray-300 hover:text-gold transition-colors">Twitter</a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/shop.html" class="text-gray-300 hover:text-gold transition-colors">Shop</a></li>
+                        <li><a href="/about.html" class="text-gray-300 hover:text-gold transition-colors">About Us</a></li>
+                        <li><a href="/contact.html" class="text-gray-300 hover:text-gold transition-colors">Contact</a></li>
+                        <li><a href="/size-guide.html" class="text-gray-300 hover:text-gold transition-colors">Size Guide</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Customer Service</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/contact.html" class="text-gray-300 hover:text-gold transition-colors">Help Center</a></li>
+                        <li><a href="/contact.html" class="text-gray-300 hover:text-gold transition-colors">Shipping Info</a></li>
+                        <li><a href="/contact.html" class="text-gray-300 hover:text-gold transition-colors">Returns</a></li>
+                        <li><a href="/contact.html" class="text-gray-300 hover:text-gold transition-colors">Track Order</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 LAIQ Bags. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
     
     <script src="/js/product.js"></script>
     <script>
         // Load category-specific products
-        loadCategoryProducts('laptop-bags');
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategoryProducts('laptop-bags');
+        });
     </script>
 </body>
 </html>
