@@ -380,11 +380,6 @@ app.get('/product.html', async (req, res) => {
       // Add CORS headers for all assets
       res.set('Access-Control-Allow-Origin', '*');
       res.set('Cache-Control', 'public, max-age=86400');
-      
-      // Special handling for Google's crawler
-      if (req.get('User-Agent')?.includes('Googlebot')) {
-        res.set('X-Robots-Tag', 'index, follow');
-      }
     }
   }));
 
