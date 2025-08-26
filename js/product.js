@@ -2772,24 +2772,44 @@ function getCurrentUserId() {
     try {
         // Use the existing isCustomerLoggedIn function to check authentication
         if (typeof isCustomerLoggedIn === 'function' && isCustomerLoggedIn()) {
-            // Check if user data is available in localStorage
+            console.log('🔍 Checking localStorage for user data...');
+            
+            // Check if customer user data is available in localStorage
+            const customerUserData = localStorage.getItem('customerUser');
+            console.log('🔍 customerUser data:', customerUserData);
+            if (customerUserData) {
+                const user = JSON.parse(customerUserData);
+                console.log('✅ Found customer user:', user);
+                return user._id;
+            }
+            
+            // Check if user data is available in localStorage (fallback)
             const userData = localStorage.getItem('user');
+            console.log('🔍 user data:', userData);
             if (userData) {
                 const user = JSON.parse(userData);
+                console.log('✅ Found user:', user);
                 return user._id;
             }
             
             // Check if user data is available in sessionStorage
             const sessionUserData = sessionStorage.getItem('user');
+            console.log('🔍 sessionStorage user data:', sessionUserData);
             if (sessionUserData) {
                 const user = JSON.parse(sessionUserData);
+                console.log('✅ Found session user:', user);
                 return user._id;
             }
             
             // Check if user data is available in the global user object
             if (typeof window.currentUser !== 'undefined' && window.currentUser) {
+                console.log('✅ Found global user:', window.currentUser);
                 return window.currentUser._id;
             }
+            
+            console.log('❌ No user data found in any storage');
+        } else {
+            console.log('❌ User not logged in');
         }
         
         return null;
