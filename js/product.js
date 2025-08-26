@@ -1585,8 +1585,14 @@ function shareProduct() {
         }).then(() => {
             showToast('Product shared successfully!', 'success');
         }).catch((error) => {
-            console.log('Share cancelled or failed:', error);
-            fallbackShare(productUrl, shareText);
+            // Check if it's a user cancellation (normal behavior)
+            if (error.name === 'AbortError' || error.message.includes('cancel')) {
+                console.log('✅ Share cancelled by user (normal behavior)');
+                return; // Don't show fallback for user cancellation
+            } else {
+                console.log('⚠️ Share failed:', error);
+                fallbackShare(productUrl, shareText);
+            }
         });
     } else {
         // Fallback for desktop browsers
