@@ -1,5 +1,5 @@
 // Review functionality
-let currentProductId = null;
+let reviewsProductId = null;
 let currentReviews = [];
 let currentPage = 1;
 let hasMoreReviews = false;
@@ -40,17 +40,17 @@ function initializeReviews() {
         }
     }
     
-    currentProductId = productId;
+    reviewsProductId = productId;
     
     console.log('🔍 Product ID detection:', {
         urlParams: urlParams.get('id'),
         pathParts: window.location.pathname.split('/'),
         productElement: !!document.querySelector('[data-product-id]'),
         metaTag: !!document.querySelector('meta[name="product-id"]'),
-        finalProductId: currentProductId
+        finalProductId: reviewsProductId
     });
     
-    if (!currentProductId) {
+    if (!reviewsProductId) {
         console.log('❌ No product ID found in URL or page elements');
         return;
     }
@@ -61,15 +61,15 @@ function initializeReviews() {
     // Initialize review modal
     initializeReviewModal();
     
-    console.log('✅ Reviews initialized for product:', currentProductId);
+    console.log('✅ Reviews initialized for product:', reviewsProductId);
 }
 
 // Load reviews for product
 async function loadReviews() {
     try {
-        console.log('📝 Loading reviews for product:', currentProductId);
+        console.log('📝 Loading reviews for product:', reviewsProductId);
         
-        const response = await api.getProductReviews(currentProductId);
+        const response = await api.getProductReviews(reviewsProductId);
         
         if (response.success) {
             currentReviews = response.reviews;
@@ -277,7 +277,7 @@ function handleEditReview(e) {
     console.log('✏️ Edit review clicked:', {
         reviewId,
         dataset: e.currentTarget.dataset,
-        currentProductId
+        reviewsProductId
     });
     
     if (!reviewId || reviewId === 'undefined') {
@@ -417,7 +417,7 @@ function openReviewModal(review = null) {
         review,
         reviewId: review?._id,
         mode: review ? 'edit' : 'new',
-        currentProductId
+        reviewsProductId
     });
     
     if (review && review._id) {
@@ -455,7 +455,7 @@ function openReviewModal(review = null) {
         console.log('✅ New review mode set:', {
             reviewId: form.dataset.reviewId,
             mode: form.dataset.mode,
-            currentProductId
+            reviewsProductId
         });
     }
     
@@ -520,7 +520,7 @@ async function handleReviewSubmit(e) {
     console.log('📝 Review submission data:', {
         mode,
         reviewId,
-        currentProductId,
+        reviewsProductId,
         rating,
         title,
         comment,
@@ -528,7 +528,7 @@ async function handleReviewSubmit(e) {
     });
     
     // Validate product ID
-    if (!currentProductId) {
+    if (!reviewsProductId) {
         console.error('❌ No product ID available');
         showToast('Product information not found. Please refresh the page.', 'error');
         return;
@@ -556,7 +556,7 @@ async function handleReviewSubmit(e) {
         rating,
         title,
         comment,
-        productId: currentProductId
+        productId: reviewsProductId
     };
     
     try {
@@ -598,7 +598,7 @@ async function handleReviewSubmit(e) {
             reviewData,
             mode,
             reviewId,
-            currentProductId
+            reviewsProductId
         });
         
         if (error.message.includes('400')) {
