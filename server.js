@@ -355,66 +355,6 @@ app.get('/product.html', async (req, res) => {
     }
   });
 
-  // Dynamic homepage with product catalog schema
-  app.get('/', async (req, res) => {
-    try {
-      let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-      
-      // Fetch all products for dynamic schema
-      const Product = require('./models/Product'); // Added missing import
-      const products = await Product.find({}).limit(6).sort({ createdAt: -1 });
-      
-      if (products.length > 0) {
-        // Generate dynamic product catalog schema
-        const productCatalogSchema = {
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          "name": "Laiq Bags Product Catalog",
-          "description": "Premium bags and accessories collection",
-          "url": "https://www.laiq.shop/shop.html",
-          "numberOfItems": products.length,
-          "itemListElement": products.map((product, index) => ({
-            "@type": "ListItem",
-            "position": index + 1,
-            "item": {
-              "@type": "Product",
-              "name": product.name,
-              "description": product.description,
-              "url": `https://www.laiq.shop/product.html?slug=${product.slug || product._id}`,
-              "image": product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
-              "brand": {
-                "@type": "Brand",
-                "name": "Laiq Bags"
-              },
-              "category": product.category,
-              "offers": {
-                "@type": "Offer",
-                "price": product.price,
-                "priceCurrency": "INR",
-                "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-                "seller": {
-                  "@type": "Organization",
-                  "name": "Laiq Bags"
-                }
-              }
-            }
-          }))
-        };
-        
-        // Replace static schema with dynamic schema
-        const dynamicSchemaScript = `<script type="application/ld+json">${JSON.stringify(productCatalogSchema, null, 2)}</script>`;
-        html = html.replace(/<!-- Product Catalog Schema - All 6 Products -->[\s\S]*?<\/script>/s, `<!-- Product Catalog Schema - Dynamic -->\n${dynamicSchemaScript}`);
-      }
-      
-      res.set('Content-Type', 'text/html');
-      res.send(html);
-      
-    } catch (error) {
-      console.error('Homepage dynamic schema error:', error);
-      res.sendFile(path.join(__dirname, 'index.html'));
-    }
-  });
-
   // Explicitly serve assets folder with proper MIME types
   app.use('/assets', express.static(path.join(__dirname, 'assets'), {
     maxAge: '1d',
@@ -601,7 +541,7 @@ app.get('/favicon.ico', (req, res) => {
       next();
     }
   });
-}
+
 
 // Security headers middleware
 app.use((req, res, next) => {
