@@ -1068,9 +1068,9 @@ function fillReviewsSection(product) {
     console.log('🔍 Product numOfReviews:', product.numOfReviews);
     console.log('🔍 Product ratings:', product.ratings);
     
-    const reviewsContainer = document.getElementById('reviews-container');
-    if (!reviewsContainer) {
-        console.error('❌ Reviews container not found');
+    const reviewsSection = document.getElementById('reviews-section');
+    if (!reviewsSection) {
+        console.error('❌ Reviews section not found');
         return;
     }
     
@@ -1080,32 +1080,35 @@ function fillReviewsSection(product) {
     
     console.log('📊 Reviews data:', { reviews, numOfReviews, averageRating });
     
-    // Update review stats
-    const averageRatingElement = document.getElementById('average-rating');
-    const totalReviewsElement = document.getElementById('total-reviews');
+    // Generate the complete reviews section HTML
+    let reviewsHTML = '';
     
-    if (averageRatingElement) {
-        averageRatingElement.textContent = averageRating.toFixed(1);
-    }
+    // Review Stats Section
+    reviewsHTML += `
+        <div class="flex items-center gap-8 mb-8">
+            <div class="flex items-center gap-2">
+                <div class="flex text-gold">
+                    ${generateStars(averageRating)}
+                </div>
+                <span class="text-lg font-semibold">${averageRating.toFixed(1)}</span>
+            </div>
+            <div class="text-charcoal/60">
+                <span>${numOfReviews}</span> reviews
+            </div>
+        </div>
+        
+        <!-- Write Review Button -->
+        <div class="mb-8">
+            <button id="write-review-btn" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                Write a Review
+            </button>
+        </div>
+    `;
     
-    if (totalReviewsElement) {
-        totalReviewsElement.textContent = numOfReviews;
-    }
-    
-    // Update the star display in review stats
-    const reviewStatsStars = document.querySelector('.flex.text-gold');
-    if (reviewStatsStars) {
-        console.log('⭐ Updating review stats stars with rating:', averageRating);
-        reviewStatsStars.innerHTML = generateStars(averageRating);
-        console.log('✅ Review stats stars updated');
-    } else {
-        console.error('❌ Review stats stars container not found');
-    }
-    
-    // Update reviews content
+    // Reviews Content
     if (reviews.length === 0) {
         console.log('📝 No reviews found, showing empty state');
-        reviewsContainer.innerHTML = `
+        reviewsHTML += `
             <div class="text-center py-8">
                 <div class="text-charcoal/60 text-lg mb-4">No Reviews Yet</div>
                 <p class="text-charcoal/40 mb-6">Be the first to review this product!</p>
@@ -1116,7 +1119,7 @@ function fillReviewsSection(product) {
         `;
     } else {
         console.log('📝 Rendering', reviews.length, 'reviews');
-        reviewsContainer.innerHTML = `
+        reviewsHTML += `
             <div class="space-y-6">
                 ${reviews.map((review, index) => {
                     console.log(`📝 Rendering review ${index + 1}:`, review);
@@ -1142,6 +1145,30 @@ function fillReviewsSection(product) {
                 }).join('')}
             </div>
         `;
+    }
+    
+    // Load More Reviews Button (hidden for now)
+    reviewsHTML += `
+        <div class="text-center mt-8">
+            <button id="load-more-reviews" class="text-gold hover:text-charcoal transition-colors font-semibold hidden">
+                Load More Reviews
+            </button>
+        </div>
+    `;
+    
+    // Update the entire reviews section
+    reviewsSection.innerHTML = reviewsHTML;
+    
+    // Re-attach event listeners for the write review button
+    const writeReviewBtn = document.getElementById('write-review-btn');
+    if (writeReviewBtn) {
+        writeReviewBtn.addEventListener('click', () => {
+            if (typeof openReviewModal === 'function') {
+                openReviewModal();
+            } else {
+                console.error('❌ openReviewModal function not found');
+            }
+        });
     }
     
     console.log('✅ Reviews section filled');
@@ -2298,3 +2325,278 @@ async function loadCategoryProducts(category) {
         }
     }
 }
+
+// Review Modal Functions
+let currentProductId = null;
+
+// Initialize review modal
+function initializeReviewModal() {
+    console.log('📝 Initializing review modal...');
+    
+    // Get product ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    currentProductId = urlParams.get('id');
+    
+    if (!currentProductId) {
+        console.error('❌ No product ID found in URL');
+        return;
+    }
+    
+    // Add event listeners for review modal
+    const modal = document.getElementById('review-modal');
+    const form = document.getElementById('review-form');
+    const closeButtons = document.querySelectorAll('.close-review-modal');
+    const ratingStars = document.querySelectorAll('.rating-star');
+    const commentInput = document.getElementById('review-comment');
+    
+    if (!modal || !form) {
+        console.error('❌ Review modal elements not found');
+        return;
+    }
+    
+    // Close modal event listeners
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closeReviewModal);
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeReviewModal();
+        }
+    });
+    
+    // Rating stars event listeners
+    ratingStars.forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.dataset.rating);
+            setRating(rating);
+        });
+    });
+    
+    // Comment character count
+    if (commentInput) {
+        commentInput.addEventListener('input', () => {
+            const count = commentInput.value.length;
+            document.getElementById('comment-count').textContent = count;
+        });
+    }
+    
+    // Form submit
+    form.addEventListener('submit', handleReviewSubmit);
+    
+    console.log('✅ Review modal initialized');
+}
+
+// Open review modal
+function openReviewModal(review = null) {
+    if (!isCustomerLoggedIn()) {
+        showToast('Please login to write a review', 'error');
+        return;
+    }
+    
+    const modal = document.getElementById('review-modal');
+    const form = document.getElementById('review-form');
+    const ratingInput = document.getElementById('review-rating');
+    const titleInput = document.getElementById('review-title');
+    const commentInput = document.getElementById('review-comment');
+    
+    console.log('📝 Opening review modal:', {
+        review,
+        reviewId: review?._id,
+        mode: review ? 'edit' : 'new',
+        currentProductId
+    });
+    
+    if (review && review._id) {
+        // Edit mode
+        document.querySelector('#review-modal h3').textContent = 'Edit Review';
+        ratingInput.value = review.rating;
+        titleInput.value = review.title;
+        commentInput.value = review.comment;
+        setRating(review.rating);
+        form.dataset.reviewId = review._id;
+        form.dataset.mode = 'edit';
+        
+        // Update character count
+        document.getElementById('comment-count').textContent = commentInput.value.length;
+        
+        console.log('✅ Edit mode set:', {
+            reviewId: form.dataset.reviewId,
+            mode: form.dataset.mode,
+            rating: ratingInput.value,
+            title: titleInput.value,
+            comment: commentInput.value
+        });
+    } else {
+        // New review mode
+        document.querySelector('#review-modal h3').textContent = 'Write a Review';
+        form.reset();
+        ratingInput.value = '';
+        setRating(0);
+        delete form.dataset.reviewId;
+        form.dataset.mode = 'new';
+        
+        // Reset character count
+        document.getElementById('comment-count').textContent = '0';
+        
+        console.log('✅ New review mode set:', {
+            reviewId: form.dataset.reviewId,
+            mode: form.dataset.mode,
+            currentProductId
+        });
+    }
+    
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+}
+
+// Close review modal
+function closeReviewModal() {
+    const modal = document.getElementById('review-modal');
+    const form = document.getElementById('review-form');
+    
+    // Clear form data
+    form.reset();
+    delete form.dataset.reviewId;
+    delete form.dataset.mode;
+    
+    // Reset rating
+    setRating(0);
+    
+    // Reset character count
+    document.getElementById('comment-count').textContent = '0';
+    
+    console.log('🔒 Modal closed, form reset:', {
+        reviewId: form.dataset.reviewId,
+        mode: form.dataset.mode
+    });
+    
+    modal.classList.add('opacity-0', 'pointer-events-none');
+}
+
+// Set rating
+function setRating(rating) {
+    const stars = document.querySelectorAll('.rating-star');
+    const ratingInput = document.getElementById('review-rating');
+    
+    ratingInput.value = rating;
+    
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('text-gold');
+            star.classList.remove('text-charcoal/20');
+        } else {
+            star.classList.remove('text-gold');
+            star.classList.add('text-charcoal/20');
+        }
+    });
+}
+
+// Handle review submit
+async function handleReviewSubmit(e) {
+    e.preventDefault();
+    
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const mode = form.dataset.mode;
+    const reviewId = form.dataset.reviewId;
+    
+    const rating = parseInt(formData.get('rating'));
+    const title = formData.get('title').trim();
+    const comment = formData.get('comment').trim();
+    
+    console.log('📝 Review submission data:', {
+        mode,
+        reviewId,
+        currentProductId,
+        rating,
+        title,
+        comment,
+        formDataset: form.dataset
+    });
+    
+    // Validate product ID
+    if (!currentProductId) {
+        console.error('❌ No product ID available');
+        showToast('Product information not found. Please refresh the page.', 'error');
+        return;
+    }
+    
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+        showToast('Please select a valid rating (1-5 stars)', 'error');
+        return;
+    }
+    
+    // Validate title
+    if (!title || title.length < 3) {
+        showToast('Please enter a review title (minimum 3 characters)', 'error');
+        return;
+    }
+    
+    // Validate comment
+    if (!comment || comment.length < 10) {
+        showToast('Please enter a review comment (minimum 10 characters)', 'error');
+        return;
+    }
+    
+    const reviewData = {
+        rating,
+        title,
+        comment,
+        productId: currentProductId
+    };
+    
+    try {
+        let response;
+        
+        if (mode === 'edit') {
+            if (!reviewId || reviewId === 'undefined') {
+                console.error('❌ Review ID is undefined or invalid in edit mode:', reviewId);
+                showToast('Review ID not found. Please try again.', 'error');
+                return;
+            }
+            console.log('🔄 Updating review:', reviewId);
+            response = await api.updateReview(reviewId, reviewData);
+        } else {
+            console.log('➕ Creating new review');
+            response = await api.createReview(reviewData);
+        }
+        
+        console.log('✅ Review response:', response);
+        
+        if (response.success) {
+            showToast(mode === 'edit' ? 'Review updated successfully' : 'Review submitted successfully', 'success');
+            closeReviewModal();
+            // Reload the product to refresh reviews
+            if (typeof loadProduct === 'function') {
+                loadProduct();
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error submitting review:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            status: error.message.includes('400') ? '400' : 'Other',
+            reviewData,
+            mode,
+            reviewId,
+            currentProductId
+        });
+        
+        if (error.message.includes('400')) {
+            showToast('Please check your review data', 'error');
+        } else if (error.message.includes('403')) {
+            showToast('You can only edit your own reviews', 'error');
+        } else if (error.message.includes('404')) {
+            showToast('Review not found', 'error');
+        } else {
+            showToast('Failed to submit review', 'error');
+        }
+    }
+}
+
+// Initialize review modal when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeReviewModal();
+});
