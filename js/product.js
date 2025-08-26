@@ -2627,11 +2627,19 @@ async function loadProductReviews(productId) {
                 <div class="text-center py-8">
                     <div class="text-charcoal/60 text-lg mb-4">No Reviews Yet</div>
                     <p class="text-charcoal/40 mb-6">Be the first to review this product!</p>
-                    <button class="bg-gold text-white px-6 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                    <button id="write-first-review-btn" class="bg-gold text-white px-6 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors">
                         Write First Review
                     </button>
                 </div>
             `;
+            
+            // Add event listener for the "Write First Review" button
+            const writeFirstReviewBtn = document.getElementById('write-first-review-btn');
+            if (writeFirstReviewBtn && typeof openReviewModal === 'function') {
+                writeFirstReviewBtn.addEventListener('click', () => {
+                    openReviewModal();
+                });
+            }
         } else {
             reviewsList.innerHTML = reviews.map((review, index) => {
                 console.log(`📝 Rendering review ${index + 1}:`, review);
@@ -2639,13 +2647,6 @@ async function loadProductReviews(productId) {
                 // Check if current user owns this review
                 const currentUserId = getCurrentUserId();
                 const isOwnReview = review.user?._id === currentUserId;
-                
-                console.log('🔍 User ID comparison:', {
-                    reviewUserId: review.user?._id,
-                    currentUserId: currentUserId,
-                    isOwnReview: isOwnReview,
-                    reviewUser: review.user
-                });
                 
                 return `
                     <div class="bg-beige/30 rounded-xl p-6" data-review-id="${review._id}">
@@ -2725,7 +2726,12 @@ function addReviewActionListeners() {
                 const review = data.review;
                 
                 // Open review modal in edit mode
-                openReviewModal(review);
+                if (typeof openReviewModal === 'function') {
+                    openReviewModal(review);
+                } else {
+                    console.error('❌ openReviewModal function not found');
+                    showToast('Review editing is not available', 'error');
+                }
                 
             } catch (error) {
                 console.error('❌ Error fetching review for edit:', error);
@@ -2789,44 +2795,31 @@ function getCurrentUserId() {
     try {
         // Use the existing isCustomerLoggedIn function to check authentication
         if (typeof isCustomerLoggedIn === 'function' && isCustomerLoggedIn()) {
-            console.log('🔍 Checking localStorage for user data...');
-            
             // Check if customer user data is available in localStorage
             const customerUserData = localStorage.getItem('customerUser');
-            console.log('🔍 customerUser data:', customerUserData);
             if (customerUserData) {
                 const user = JSON.parse(customerUserData);
-                console.log('✅ Found customer user:', user);
                 return user._id;
             }
             
             // Check if user data is available in localStorage (fallback)
             const userData = localStorage.getItem('user');
-            console.log('🔍 user data:', userData);
             if (userData) {
                 const user = JSON.parse(userData);
-                console.log('✅ Found user:', user);
                 return user._id;
             }
             
             // Check if user data is available in sessionStorage
             const sessionUserData = sessionStorage.getItem('user');
-            console.log('🔍 sessionStorage user data:', sessionUserData);
             if (sessionUserData) {
                 const user = JSON.parse(sessionUserData);
-                console.log('✅ Found session user:', user);
                 return user._id;
             }
             
             // Check if user data is available in the global user object
             if (typeof window.currentUser !== 'undefined' && window.currentUser) {
-                console.log('✅ Found global user:', window.currentUser);
                 return window.currentUser._id;
             }
-            
-            console.log('❌ No user data found in any storage');
-        } else {
-            console.log('❌ User not logged in');
         }
         
         return null;
