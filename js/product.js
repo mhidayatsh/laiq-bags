@@ -2313,13 +2313,22 @@ async function loadCategoryProducts(category) {
 // Review Modal Functions
 let currentProductId = null;
 
+// Get product ID from URL
+function getCurrentProductId() {
+    if (!currentProductId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentProductId = urlParams.get('id');
+        console.log('🔍 Product ID from URL:', currentProductId);
+    }
+    return currentProductId;
+}
+
 // Initialize review modal
 function initializeReviewModal() {
     console.log('📝 Initializing review modal...');
     
     // Get product ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    currentProductId = urlParams.get('id');
+    currentProductId = getCurrentProductId();
     
     if (!currentProductId) {
         console.error('❌ No product ID found in URL');
@@ -2758,8 +2767,9 @@ function addReviewActionListeners() {
                     if (data.success) {
                         showToast('Review deleted successfully', 'success');
                         // Reload reviews for this product
-                        if (currentProductId) {
-                            loadProductReviews(currentProductId);
+                        const productId = getCurrentProductId();
+                        if (productId) {
+                            loadProductReviews(productId);
                         }
                     } else {
                         showToast(data.message || 'Failed to delete review', 'error');

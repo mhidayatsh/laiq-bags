@@ -581,8 +581,11 @@ async function handleReviewSubmit(e) {
             showToast(mode === 'edit' ? 'Review updated successfully' : 'Review submitted successfully', 'success');
             closeReviewModal();
             // Reload reviews using the correct function
-            if (typeof loadProductReviews === 'function' && currentProductId) {
-                loadProductReviews(currentProductId);
+            if (typeof loadProductReviews === 'function' && typeof getCurrentProductId === 'function') {
+                const productId = getCurrentProductId();
+                if (productId) {
+                    loadProductReviews(productId);
+                }
             } else {
                 loadReviews(); // Fallback
             }
