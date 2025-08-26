@@ -1106,7 +1106,7 @@ function fillReviewsSection(product) {
     `;
     
     // Reviews Content
-    if (reviews.length === 0) {
+    if (numOfReviews === 0) {
         console.log('📝 No reviews found, showing empty state');
         reviewsHTML += `
             <div class="text-center py-8">
@@ -1118,33 +1118,17 @@ function fillReviewsSection(product) {
             </div>
         `;
     } else {
-        console.log('📝 Rendering', reviews.length, 'reviews');
+        console.log('📝 Rendering', numOfReviews, 'reviews');
         reviewsHTML += `
-            <div class="space-y-6">
-                ${reviews.map((review, index) => {
-                    console.log(`📝 Rendering review ${index + 1}:`, review);
-                    return `
-                        <div class="bg-beige/30 rounded-xl p-6">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-white font-semibold">
-                                        ${review.name?.charAt(0) || 'U'}
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-charcoal">${review.name || 'Anonymous'}</div>
-                                        <div class="text-sm text-charcoal/60">${new Date(review.createdAt || Date.now()).toLocaleDateString()}</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center">
-                                    ${generateStars(review.rating)}
-                                </div>
-                            </div>
-                            <p class="text-charcoal/70">${review.comment}</p>
-                        </div>
-                    `;
-                }).join('')}
+            <div class="space-y-6" id="reviews-list">
+                <div class="text-center py-4">
+                    <div class="text-charcoal/60">Loading reviews...</div>
+                </div>
             </div>
         `;
+        
+        // Load actual reviews from API
+        loadProductReviews(product._id);
     }
     
     // Load More Reviews Button (hidden for now)
@@ -2600,3 +2584,79 @@ async function handleReviewSubmit(e) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeReviewModal();
 });
+
+// Load product reviews from API
+async function loadProductReviews(productId) {
+    try {
+        console.log('📝 Loading reviews for product:', productId);
+        
+        const response = await fetch(`/api/review/${productId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const reviews = data.reviews || [];
+        
+        console.log('📝 Loaded reviews:', reviews);
+        
+        const reviewsList = document.getElementById('reviews-list');
+        if (!reviewsList) {
+            console.error('❌ Reviews list container not found');
+            return;
+        }
+        
+        if (reviews.length === 0) {
+            reviewsList.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-charcoal/60 text-lg mb-4">No Reviews Yet</div>
+                    <p class="text-charcoal/40 mb-6">Be the first to review this product!</p>
+                    <button class="bg-gold text-white px-6 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors">
+                        Write First Review
+                    </button>
+                </div>
+            `;
+        } else {
+            reviewsList.innerHTML = reviews.map((review, index) => {
+                console.log(`📝 Rendering review ${index + 1}:`, review);
+                return `
+                    <div class="bg-beige/30 rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-white font-semibold">
+                                    ${review.user?.name?.charAt(0) || 'U'}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-charcoal">${review.user?.name || 'Anonymous'}</div>
+                                    <div class="text-sm text-charcoal/60">${new Date(review.createdAt).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                ${generateStars(review.rating)}
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-lg mb-2">${review.title}</h4>
+                            <p class="text-charcoal/80">${review.comment}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        console.log('✅ Reviews loaded and displayed');
+        
+    } catch (error) {
+        console.error('❌ Error loading reviews:', error);
+        
+        const reviewsList = document.getElementById('reviews-list');
+        if (reviewsList) {
+            reviewsList.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-charcoal/60 text-lg mb-4">Unable to load reviews</div>
+                    <p class="text-charcoal/40 mb-6">Please try refreshing the page.</p>
+                </div>
+            `;
+        }
+    }
+}
