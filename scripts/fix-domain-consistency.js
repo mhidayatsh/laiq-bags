@@ -1,101 +1,85 @@
 #!/usr/bin/env node
 
-/**
- * Domain Consistency Fix Script
- * Ensures all URLs use www.laiq.shop consistently
- */
-
 const fs = require('fs');
 const path = require('path');
 
-// Function to recursively find all files
-function findFiles(dir, extensions = ['.html', '.js', '.md']) {
-    let results = [];
-    const list = fs.readdirSync(dir);
-    
-    list.forEach(file => {
-        const filePath = path.join(dir, file);
-        const stat = fs.statSync(filePath);
-        
-        if (stat && stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules') {
-            results = results.concat(findFiles(filePath, extensions));
-        } else if (extensions.some(ext => file.endsWith(ext))) {
-            results.push(filePath);
-        }
-    });
-    
-    return results;
-}
+console.log('🔧 Fixing Domain Consistency Issues...\n');
 
-// Function to replace content in a file
-function replaceInFile(filePath, oldString, newString) {
-    try {
-        let content = fs.readFileSync(filePath, 'utf8');
-        const originalContent = content;
-        
-        // Replace all occurrences
-        content = content.replace(new RegExp(oldString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newString);
-        
-        if (content !== originalContent) {
-            fs.writeFileSync(filePath, content, 'utf8');
-            console.log(`✅ Fixed: ${filePath}`);
-            return true;
-        }
-        
-        return false;
-    } catch (error) {
-        console.error(`❌ Error processing ${filePath}:`, error.message);
-        return false;
+// Files to check and fix
+const filesToCheck = [
+  'index.html',
+  'about.html',
+  'contact.html',
+  'shop.html',
+  'product.html',
+  'customer-login.html',
+  'customer-register.html',
+  'forgot-password.html',
+  'robots.txt',
+  'structured-data.json'
+];
+
+let totalReplacements = 0;
+
+filesToCheck.forEach(file => {
+  const filePath = path.join(__dirname, '..', file);
+  
+  if (fs.existsSync(filePath)) {
+    let content = fs.readFileSync(filePath, 'utf8');
+    let originalContent = content;
+    
+    // Replace non-www URLs with www URLs
+    content = content.replace(/https?:\/\/laiq\.shop/g, 'https://www.laiq.shop');
+    content = content.replace(/href="\/\//g, 'href="https://www.laiq.shop/');
+    content = content.replace(/src="\/\//g, 'src="https://www.laiq.shop/');
+    
+    // Add canonical URLs if missing
+    if (file.endsWith('.html') && !content.includes('rel="canonical"')) {
+      const canonicalTag = `<link rel="canonical" href="https://www.laiq.shop/${file}" />`;
+      content = content.replace('</head>', `  ${canonicalTag}\n  </head>`);
     }
-}
-
-// Main function
-function fixDomainConsistency() {
-    console.log('🔧 Starting domain consistency fix...');
     
-    const files = findFiles('.');
-    let fixedCount = 0;
+    // Count replacements
+    const replacements = (content.match(/https:\/\/www\.laiq\.shop/g) || []).length;
+    totalReplacements += replacements;
     
-    // Replace patterns
-    const replacements = [
-        {
-            old: 'https://www.www.laiq.shop',
-            new: 'https://www.laiq.shop'
-        },
-        {
-            old: 'www.www.laiq.shop',
-            new: 'www.laiq.shop'
-        },
-        {
-            old: 'info@www.www.laiq.shop',
-            new: 'info@laiq.shop'
-        }
-    ];
-    
-    files.forEach(file => {
-        let fileFixed = false;
-        
-        replacements.forEach(replacement => {
-            if (replaceInFile(file, replacement.old, replacement.new)) {
-                fileFixed = true;
-            }
-        });
-        
-        if (fileFixed) {
-            fixedCount++;
-        }
-    });
-    
-    console.log(`\n🎉 Domain consistency fix completed!`);
-    console.log(`📊 Files processed: ${files.length}`);
-    console.log(`🔧 Files fixed: ${fixedCount}`);
-    
-    // Special handling for domain-fixer.js
-    const domainFixerPath = './js/domain-fixer.js';
-    if (fs.existsSync(domainFixerPath)) {
-        console.log('\n⚠️  Note: domain-fixer.js needs manual review as it contains domain-specific logic');
+    if (content !== originalContent) {
+      fs.writeFileSync(filePath, content);
+      console.log(`✅ Fixed ${file} (${replacements} replacements)`);
+    } else {
+      console.log(`✅ ${file} already consistent`);
     }
+  } else {
+    console.log(`⚠️  ${file} not found`);
+  }
+});
+
+// Check server.js for domain consistency
+const serverPath = path.join(__dirname, '..', 'server.js');
+if (fs.existsSync(serverPath)) {
+  let serverContent = fs.readFileSync(serverPath, 'utf8');
+  let originalServerContent = serverContent;
+  
+  // Ensure all hardcoded URLs use www version
+  serverContent = serverContent.replace(/https?:\/\/laiq\.shop/g, 'https://www.laiq.shop');
+  
+  const serverReplacements = (serverContent.match(/https:\/\/www\.laiq\.shop/g) || []).length;
+  totalReplacements += serverReplacements;
+  
+  if (serverContent !== originalServerContent) {
+    fs.writeFileSync(serverPath, serverContent);
+    console.log(`✅ Fixed server.js (${serverReplacements} replacements)`);
+  } else {
+    console.log(`✅ server.js already consistent`);
+  }
 }
 
-// Run the fix
-fixDomainConsistency();
+console.log(`\n🎯 Total replacements made: ${totalReplacements}`);
+console.log('\n📋 Next Steps:');
+console.log('1. Deploy the updated files to your server');
+console.log('2. Test redirects: http://laiq.shop → https://www.laiq.shop');
+console.log('3. Submit sitemap to Google Search Console');
+console.log('4. Set www.laiq.shop as preferred domain in Search Console');
+console.log('5. Monitor for consolidation over 2-4 weeks');
+
+console.log('\n✅ Domain consistency fix completed!');

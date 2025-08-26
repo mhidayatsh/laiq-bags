@@ -16,10 +16,10 @@
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta name="robots" content="index, follow">
-    <meta name="description" content="Premium bags and accessories from Laiq Bags. Shop stylish backpacks, handbags, laptop bags, and travel accessories. Free shipping across India. Carry style with confidence.">
-    <meta name="keywords" content="bags, backpacks, handbags, travel accessories, premium bags, stylish bags, laiq bags, fashion accessories">
+    <meta name="description" content="Laiq Bags - Premium bags and accessories for every occasion. Shop stylish backpacks, handbags, laptop bags, and travel accessories. Free shipping across India. Discover our collection today!">
+    <meta name="keywords" content="laiq bags, shop bags, premium bags, backpacks, handbags, laptop bags, travel accessories, free shipping, India bags, stylish bags, fashion accessories">
     <meta name="author" content="Laiq Bags">
-    <title>Laiq Bags - Premium Bags & Accessories | Carry Style with Confidence</title>
+    <title>Laiq Bags - Shop Premium Bags & Accessories | Free Shipping India</title>
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://www.laiq.shop/">
@@ -748,6 +748,51 @@
       }
     }
     </style>
+  
+    <!-- Product Collection Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Laiq Bags - Premium Collection",
+      "description": "Premium bags and accessories for every occasion",
+      "url": "https://www.laiq.shop/",
+      "mainEntity": {
+        "@type": "ItemList",
+        "name": "Premium Bags Collection",
+        "description": "Stylish backpacks, handbags, laptop bags, and travel accessories"
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "shippingDetails": {
+          "@type": "OfferShippingDetails",
+          "shippingRate": {
+            "@type": "MonetaryAmount",
+            "value": "0",
+            "currency": "INR"
+          },
+          "deliveryTime": {
+            "@type": "ShippingDeliveryTime",
+            "handlingTime": {
+              "@type": "QuantitativeValue",
+              "minValue": 1,
+              "maxValue": 2,
+              "unitCode": "DAY"
+            },
+            "transitTime": {
+              "@type": "QuantitativeValue",
+              "minValue": 3,
+              "maxValue": 7,
+              "unitCode": "DAY"
+            }
+          }
+        }
+      }
+    }
+    </script>
+  
   </head>
   <body class="bg-white text-charcoal min-h-screen flex flex-col">
     <!-- Header -->
