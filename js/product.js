@@ -2619,8 +2619,13 @@ async function loadProductReviews(productId) {
         } else {
             reviewsList.innerHTML = reviews.map((review, index) => {
                 console.log(`📝 Rendering review ${index + 1}:`, review);
+                
+                // Check if current user owns this review
+                const currentUserId = getCurrentUserId();
+                const isOwnReview = review.user?._id === currentUserId;
+                
                 return `
-                    <div class="bg-beige/30 rounded-xl p-6">
+                    <div class="bg-beige/30 rounded-xl p-6" data-review-id="${review._id}">
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-gold rounded-full flex items-center justify-center text-white font-semibold">
@@ -2631,8 +2636,20 @@ async function loadProductReviews(productId) {
                                     <div class="text-sm text-charcoal/60">${new Date(review.createdAt).toLocaleDateString()}</div>
                                 </div>
                             </div>
-                            <div class="flex items-center">
-                                ${generateStars(review.rating)}
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center">
+                                    ${generateStars(review.rating)}
+                                </div>
+                                ${isOwnReview ? `
+                                    <div class="flex gap-2 ml-4">
+                                        <button class="edit-review-btn text-sm text-gold hover:text-charcoal transition-colors" data-review-id="${review._id}">
+                                            Edit
+                                        </button>
+                                        <button class="delete-review-btn text-sm text-red-500 hover:text-red-700 transition-colors" data-review-id="${review._id}">
+                                            Delete
+                                        </button>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                         <div class="mb-4">
@@ -2642,6 +2659,9 @@ async function loadProductReviews(productId) {
                     </div>
                 `;
             }).join('');
+            
+            // Add event listeners for edit and delete buttons
+            addReviewActionListeners();
         }
         
         console.log('✅ Reviews loaded and displayed');
@@ -2658,5 +2678,101 @@ async function loadProductReviews(productId) {
                 </div>
             `;
         }
+    }
+}
+
+// Add event listeners for review action buttons
+function addReviewActionListeners() {
+    // Edit review buttons
+    const editButtons = document.querySelectorAll('.edit-review-btn');
+    editButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const reviewId = button.dataset.reviewId;
+            console.log('📝 Edit review clicked:', reviewId);
+            
+            try {
+                // Fetch review data
+                const response = await fetch(`/api/review/${reviewId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const review = data.review;
+                
+                // Open review modal in edit mode
+                openReviewModal(review);
+                
+            } catch (error) {
+                console.error('❌ Error fetching review for edit:', error);
+                showToast('Failed to load review for editing', 'error');
+            }
+        });
+    });
+    
+    // Delete review buttons
+    const deleteButtons = document.querySelectorAll('.delete-review-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const reviewId = button.dataset.reviewId;
+            console.log('🗑️ Delete review clicked:', reviewId);
+            
+            if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/api/review/${reviewId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showToast('Review deleted successfully', 'success');
+                        // Reload the product to refresh reviews
+                        if (typeof loadProduct === 'function') {
+                            loadProduct();
+                        }
+                    } else {
+                        showToast(data.message || 'Failed to delete review', 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error deleting review:', error);
+                    showToast('Failed to delete review', 'error');
+                }
+            }
+        });
+    });
+}
+
+// Get current user ID
+function getCurrentUserId() {
+    try {
+        // Check if user data is available in localStorage
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            const user = JSON.parse(userData);
+            return user._id;
+        }
+        
+        // Check if user data is available in sessionStorage
+        const sessionUserData = sessionStorage.getItem('user');
+        if (sessionUserData) {
+            const user = JSON.parse(sessionUserData);
+            return user._id;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('❌ Error getting current user ID:', error);
+        return null;
     }
 }
