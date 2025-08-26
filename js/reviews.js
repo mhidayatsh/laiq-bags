@@ -517,18 +517,23 @@ async function handleReviewSubmit(e) {
     const title = formData.get('title').trim();
     const comment = formData.get('comment').trim();
     
+    // Get product ID from product.js function or fallback to reviewsProductId
+    let productId = reviewsProductId;
+    if (!productId && typeof getCurrentProductId === 'function') {
+        productId = getCurrentProductId();
+    }
+    
     console.log('📝 Review submission data:', {
         mode,
         reviewId,
-        reviewsProductId,
+        productId: productId,
         rating,
         title,
         comment,
         formDataset: form.dataset
     });
     
-    // Validate product ID
-    if (!reviewsProductId) {
+    if (!productId) {
         console.error('❌ No product ID available');
         showToast('Product information not found. Please refresh the page.', 'error');
         return;
@@ -556,7 +561,7 @@ async function handleReviewSubmit(e) {
         rating,
         title,
         comment,
-        productId: reviewsProductId
+        productId: productId
     };
     
     try {
@@ -598,7 +603,7 @@ async function handleReviewSubmit(e) {
             reviewData,
             mode,
             reviewId,
-            reviewsProductId
+            productId: productId
         });
         
         if (error.message.includes('400')) {
