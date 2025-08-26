@@ -553,22 +553,91 @@ app.use((req, res, next) => {
   next();
 });
 
-// Root route - serve the main website
-app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, 'index.html');
-  console.log('🏠 Serving main website:', indexPath);
-  
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    // Fallback to JSON if index.html doesn't exist
-    res.json({
-      status: 'OK',
-      message: 'Laiq Bags E-commerce API is running',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      port: process.env.PORT || 'not set'
-    });
+// Root route - serve the main website with dynamic schema
+app.get('/', async (req, res) => {
+  try {
+    const indexPath = path.join(__dirname, 'index.html');
+    console.log('🏠 Serving main website with dynamic schema:', indexPath);
+    
+    if (fs.existsSync(indexPath)) {
+      let html = fs.readFileSync(indexPath, 'utf8');
+      
+      // Fetch latest products for dynamic schema
+      const Product = require('./models/Product');
+      const products = await Product.find({}).limit(6).sort({ createdAt: -1 });
+      
+      if (products.length > 0) {
+        // Generate dynamic product catalog schema
+        const productCatalogSchema = {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "Laiq Bags Product Catalog",
+          "description": "Premium bags and accessories collection",
+          "url": "https://www.laiq.shop/shop.html",
+          "numberOfItems": products.length,
+          "itemListElement": products.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+              "@type": "Product",
+              "name": product.name,
+              "description": product.description,
+              "url": `https://www.laiq.shop/product.html?id=${product._id}`,
+              "image": product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
+              "brand": {
+                "@type": "Brand",
+                "name": "Laiq Bags"
+              },
+              "category": product.category,
+              "offers": {
+                "@type": "Offer",
+                "price": product.price,
+                "priceCurrency": "INR",
+                "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                "seller": {
+                  "@type": "Organization",
+                  "name": "Laiq Bags",
+                  "url": "https://www.laiq.shop"
+                }
+              }
+            }
+          }))
+        };
+        
+        // Replace static schema with dynamic schema
+        const dynamicSchemaScript = `<script type="application/ld+json">${JSON.stringify(productCatalogSchema, null, 2)}</script>`;
+        html = html.replace(/<!-- Product Catalog Schema - All 6 Products -->[\s\S]*?<\/script>/s, `<!-- Product Catalog Schema - Dynamic -->\n    ${dynamicSchemaScript}`);
+        
+        console.log(`✅ Dynamic schema generated with ${products.length} products`);
+      } else {
+        console.log('⚠️ No products found for dynamic schema, using static schema');
+      }
+      
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    } else {
+      // Fallback to JSON if index.html doesn't exist
+      res.json({
+        status: 'OK',
+        message: 'Laiq Bags E-commerce API is running',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        port: process.env.PORT || 'not set'
+      });
+    }
+  } catch (error) {
+    console.error('❌ Homepage dynamic schema error:', error);
+    // Fallback to static file if dynamic generation fails
+    const indexPath = path.join(__dirname, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(500).json({
+        status: 'ERROR',
+        message: 'Homepage generation failed',
+        error: error.message
+      });
+    }
   }
 });
 
