@@ -725,6 +725,36 @@ app.use('/', sitemapRoutes);
 // Product page route - handled by the route above
 
 // Serve static files AFTER API routes to prevent conflicts
+// Serve JavaScript files with correct MIME type
+app.use('/js', express.static(path.join(__dirname, 'js'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// Serve CSS files with correct MIME type
+app.use('/css', express.static(path.join(__dirname, 'css'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
+
+// Serve assets with correct MIME type
+app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        } else if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
+
+// Serve all other static files
 app.use(express.static(path.join(__dirname)));
 
 // Newsletter subscription endpoint (placeholder)
