@@ -40,7 +40,7 @@ router.get('/sitemap.xml', async (req, res) => {
   </url>`;
         });
 
-        // Add product pages dynamically
+        // Add product pages dynamically with both formats
         products.forEach(product => {
             const lastmod = product.updatedAt ? 
                 new Date(product.updatedAt).toISOString().split('T')[0] : 
@@ -49,9 +49,24 @@ router.get('/sitemap.xml', async (req, res) => {
             // Use slug if available, otherwise use ID
             const productIdentifier = product.slug || product._id;
             
+            // Generate SEO-friendly URL
+            const seoFriendlySlug = product.slug ? 
+                `${product.slug}-${product._id}` : 
+                product._id;
+            
+            // Add query parameter format (existing functionality)
             sitemap += `
   <url>
     <loc>https://www.laiq.shop/product.html?slug=${productIdentifier}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+            
+            // Add SEO-friendly format (new enhancement)
+            sitemap += `
+  <url>
+    <loc>https://www.laiq.shop/product/${seoFriendlySlug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
