@@ -2711,6 +2711,11 @@ async function loadProductReviews(productId) {
         
         console.log('✅ Reviews loaded and displayed');
         
+        // Initialize reviews system to ensure proper functionality
+        if (typeof initializeReviews === 'function') {
+            initializeReviews();
+        }
+        
     } catch (error) {
         console.error('❌ Error loading reviews:', error);
         
@@ -2722,6 +2727,11 @@ async function loadProductReviews(productId) {
                     <p class="text-charcoal/40 mb-6">Please try refreshing the page.</p>
                 </div>
             `;
+        }
+        
+        // Initialize reviews system even if loading failed
+        if (typeof initializeReviews === 'function') {
+            initializeReviews();
         }
     }
 }
