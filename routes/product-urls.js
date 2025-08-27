@@ -6,8 +6,12 @@ const path = require('path');
 // Handle SEO-friendly product URLs: /product/product-name-id
 // Only match URLs that contain a dash (indicating product-name-id format)
 router.get('/product/:slug', async (req, res) => {
-    // Skip if this is a static file request or doesn't contain a dash
-    if (req.params.slug.includes('.') || !req.params.slug.includes('-')) {
+    // Skip if this is a static file request, js/css path, or doesn't contain a dash
+    if (req.params.slug.includes('.') || 
+        req.params.slug.startsWith('js/') || 
+        req.params.slug.startsWith('css/') || 
+        req.params.slug.startsWith('assets/') ||
+        !req.params.slug.includes('-')) {
         return res.status(404).send('Not found');
     }
     try {

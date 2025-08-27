@@ -723,12 +723,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/', sitemapRoutes);
 // Analytics routes are handled separately above
 
-// Product URL routes - must come before static file serving
-app.use('/', productUrlRoutes);
-
-// Product page route - handled by the route above
-
-// Serve static files AFTER API routes to prevent conflicts
+// Serve static files FIRST to prevent route conflicts
 // Serve JavaScript files with correct MIME type
 app.use('/js', express.static(path.join(__dirname, 'js'), {
     setHeaders: (res, path) => {
@@ -757,6 +752,13 @@ app.use('/assets', express.static(path.join(__dirname, 'assets'), {
         }
     }
 }));
+
+// Product URL routes - must come AFTER static file serving
+app.use('/', productUrlRoutes);
+
+// Product page route - handled by the route above
+
+// Serve all other static files
 
 // Serve all other static files
 app.use(express.static(path.join(__dirname)));
