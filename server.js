@@ -41,6 +41,7 @@ const {
 // Import routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
+const productUrlRoutes = require('./routes/product-urls');
 const orderRoutes = require('./routes/orders');
 const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
@@ -721,6 +722,9 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/', sitemapRoutes);
 // Analytics routes are handled separately above
+
+// Product URL routes - must come before static file serving
+app.use('/', productUrlRoutes);
 
 // Product page route - handled by the route above
 
