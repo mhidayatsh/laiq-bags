@@ -8,19 +8,28 @@ let hasMoreReviews = false;
 function initializeReviews() {
     console.log('📝 Initializing reviews...');
     
-    // Get product ID from URL - try multiple methods
+    // Get product ID from URL - support both query parameter and SEO-friendly URLs
     let productId = null;
     
-    // Method 1: URL search params
+    // Method 1: Query parameter format (?id=...)
     const urlParams = new URLSearchParams(window.location.search);
     productId = urlParams.get('id');
     
-    // Method 2: URL path (for product detail pages)
+    // Method 2: SEO-friendly URL format (/product/product-name-id)
     if (!productId) {
-        const pathParts = window.location.pathname.split('/');
-        const productIndex = pathParts.findIndex(part => part === 'product');
-        if (productIndex !== -1 && pathParts[productIndex + 1]) {
-            productId = pathParts[productIndex + 1];
+        const pathSegments = window.location.pathname.split('/');
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        
+        // Check if last segment contains a valid ObjectId (24 character hex string)
+        if (lastSegment && /^[0-9a-fA-F]{24}$/.test(lastSegment)) {
+            productId = lastSegment;
+        } else if (lastSegment && lastSegment.includes('-')) {
+            // Extract ID from format: product-name-id
+            const parts = lastSegment.split('-');
+            const potentialId = parts[parts.length - 1];
+            if (/^[0-9a-fA-F]{24}$/.test(potentialId)) {
+                productId = potentialId;
+            }
         }
     }
     
@@ -44,7 +53,8 @@ function initializeReviews() {
     
     console.log('🔍 Product ID detection:', {
         urlParams: urlParams.get('id'),
-        pathParts: window.location.pathname.split('/'),
+        pathSegments: window.location.pathname.split('/'),
+        lastSegment: window.location.pathname.split('/').pop(),
         productElement: !!document.querySelector('[data-product-id]'),
         metaTag: !!document.querySelector('meta[name="product-id"]'),
         finalProductId: reviewsProductId
@@ -62,6 +72,41 @@ function initializeReviews() {
     initializeReviewModal();
     
     console.log('✅ Reviews initialized for product:', reviewsProductId);
+}
+
+// Get current product ID - can be used by other scripts
+function getCurrentProductId() {
+    // First try to get from reviewsProductId
+    if (reviewsProductId) {
+        return reviewsProductId;
+    }
+    
+    // Fallback: extract from URL using the same logic as initializeReviews
+    let productId = null;
+    
+    // Method 1: Query parameter format (?id=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    productId = urlParams.get('id');
+    
+    // Method 2: SEO-friendly URL format (/product/product-name-id)
+    if (!productId) {
+        const pathSegments = window.location.pathname.split('/');
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        
+        // Check if last segment contains a valid ObjectId (24 character hex string)
+        if (lastSegment && /^[0-9a-fA-F]{24}$/.test(lastSegment)) {
+            productId = lastSegment;
+        } else if (lastSegment && lastSegment.includes('-')) {
+            // Extract ID from format: product-name-id
+            const parts = lastSegment.split('-');
+            const potentialId = parts[parts.length - 1];
+            if (/^[0-9a-fA-F]{24}$/.test(potentialId)) {
+                productId = potentialId;
+            }
+        }
+    }
+    
+    return productId;
 }
 
 // Load reviews for product
