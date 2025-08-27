@@ -129,9 +129,14 @@ async function loadReviews() {
 
 // Render reviews
 function renderReviews() {
-    const container = document.getElementById('reviews-container');
+    // Try both possible container IDs
+    let container = document.getElementById('reviews-container');
     if (!container) {
-        console.error('❌ Reviews container not found');
+        container = document.getElementById('reviews-list');
+    }
+    
+    if (!container) {
+        console.log('📝 Reviews container not found - reviews may be handled by product.js');
         return;
     }
     
@@ -365,20 +370,35 @@ async function handleDeleteReview(e) {
 
 // Update review stats
 function updateReviewStats() {
+    const averageRatingElement = document.getElementById('average-rating');
+    const totalReviewsElement = document.getElementById('total-reviews');
+    
+    // Check if review stats elements exist
+    if (!averageRatingElement || !totalReviewsElement) {
+        console.log('📝 Review stats elements not found - stats may be handled by product.js');
+        return;
+    }
+    
     if (currentReviews.length === 0) {
-        document.getElementById('average-rating').textContent = '0';
-        document.getElementById('total-reviews').textContent = '0';
+        averageRatingElement.textContent = '0';
+        totalReviewsElement.textContent = '0';
+        
+        // Try to update stars display if it exists
+        const starsContainer = averageRatingElement.parentElement?.querySelector('.flex');
+        if (starsContainer) {
+            starsContainer.innerHTML = generateStars(0);
+        }
         return;
     }
     
     const totalRating = currentReviews.reduce((sum, review) => sum + review.rating, 0);
     const averageRating = (totalRating / currentReviews.length).toFixed(1);
     
-    document.getElementById('average-rating').textContent = averageRating;
-    document.getElementById('total-reviews').textContent = currentReviews.length;
+    averageRatingElement.textContent = averageRating;
+    totalReviewsElement.textContent = currentReviews.length;
     
-    // Update stars display
-    const starsContainer = document.querySelector('#average-rating').parentElement.querySelector('.flex');
+    // Update stars display if it exists
+    const starsContainer = averageRatingElement.parentElement?.querySelector('.flex');
     if (starsContainer) {
         starsContainer.innerHTML = generateStars(averageRating);
     }
