@@ -43,9 +43,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     try {
-        // Get product ID from URL
+        // Get product ID from URL - support both query parameter and SEO-friendly URLs
+        let productId = null;
+        
+        // First try query parameter format (?id=...)
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
+        productId = urlParams.get('id');
+        
+        // If not found, try SEO-friendly URL format (/product/product-name-id)
+        if (!productId) {
+            const pathSegments = window.location.pathname.split('/');
+            const lastSegment = pathSegments[pathSegments.length - 1];
+            
+            // Check if last segment contains a valid ObjectId (24 character hex string)
+            if (lastSegment && /^[0-9a-fA-F]{24}$/.test(lastSegment)) {
+                productId = lastSegment;
+            } else if (lastSegment && lastSegment.includes('-')) {
+                // Extract ID from format: product-name-id
+                const parts = lastSegment.split('-');
+                const potentialId = parts[parts.length - 1];
+                if (/^[0-9a-fA-F]{24}$/.test(potentialId)) {
+                    productId = potentialId;
+                }
+            }
+        }
         
         console.log('🔍 Product ID from URL:', productId);
         
