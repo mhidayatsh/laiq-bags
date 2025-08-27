@@ -758,7 +758,23 @@ app.use('/', productUrlRoutes);
 
 // Product page route - handled by the route above
 
-// Serve all other static files
+// Handle /product/js/ requests to serve JavaScript files correctly
+app.use('/product/js', express.static(path.join(__dirname, 'js'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// Handle /product/css/ requests to serve CSS files correctly
+app.use('/product/css', express.static(path.join(__dirname, 'css'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
 
 // Serve all other static files
 app.use(express.static(path.join(__dirname)));
