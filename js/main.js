@@ -469,7 +469,7 @@ function switchCustomerUser() {
     
     // Redirect to login page
     setTimeout(() => {
-        window.location.href = 'customer-login.html'
+        window.location.href = '/customer-login.html'
     }, 1500)
 }
 
@@ -1983,12 +1983,12 @@ function proceedToCheckout() {
     if (!isCustomerLoggedIn()) {
         showToast('Please login to checkout', 'error')
         setTimeout(() => {
-            window.location.href = 'customer-login.html';}, 2000)
+            window.location.href = '/customer-login.html';}, 2000)
         return
     }
     
     // Redirect to checkout page
-    window.location.href = 'checkout.html';
+    window.location.href = '/checkout.html';
 }
 
 function updateCartCount() {
@@ -2668,7 +2668,7 @@ function openQuickViewModal(product) {
                     showToast('Please select a color on the product page', 'error')
                     closeQuickViewModal()
                     setTimeout(() => {
-                        window.location.href = `product.html?id=${product._id || product.id}`
+                        window.location.href = `/product.html?id=${product._id || product.id}`
                     }, 1500)
                     return
                 }

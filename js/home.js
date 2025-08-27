@@ -378,7 +378,7 @@ function handleAddToCart(e) {
         showToast('Please select a color on the product page', 'info');
         
         // Redirect to product detail page
-        window.location.href = `product.html?id=${productId}`;
+        window.location.href = `/product.html?id=${productId}`;
         return;
     }
     

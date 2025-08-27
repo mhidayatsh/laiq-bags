@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Redirect to home page
           setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
           }, 1500);
         } else {
           // Handle cases where login is not successful but doesn't throw an error

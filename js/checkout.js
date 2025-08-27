@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!isCustomerLoggedIn()) {
             showToast('Please login to checkout', 'error');
             setTimeout(() => {
-                window.location.href = 'customer-login.html';
+                window.location.href = '/customer-login.html';
             }, 2000);
             return;
         }
@@ -222,7 +222,7 @@ async function loadOrderItems() {
         if (currentCart.length === 0) {
             showToast('Your cart is empty', 'error');
             setTimeout(() => {
-                window.location.href = 'shop.html';
+                window.location.href = '/shop.html';
             }, 2000);
             return;
         }
@@ -985,7 +985,7 @@ async function processRazorpayPayment(orderData) {
                             
                             // Redirect to order confirmation
                             setTimeout(() => {
-                                window.location.href = `order-confirmation.html?id=${orderResponse.order._id}`;
+                                window.location.href = `/order-confirmation.html?id=${orderResponse.order._id}`;
                             }, 2000);
                         } else {
                             showToast('Error creating order: ' + orderResponse.message, 'error');
@@ -1129,7 +1129,7 @@ async function createOrder(orderData) {
             
             // Redirect to order confirmation
             setTimeout(() => {
-                window.location.href = `order-confirmation.html?id=${response.order._id}`;
+                window.location.href = `/order-confirmation.html?id=${response.order._id}`;
             }, 2000);
         } else {
             showToast('Error creating order: ' + response.message, 'error');
