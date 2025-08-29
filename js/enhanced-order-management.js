@@ -805,13 +805,14 @@ function printOrder(orderId) {
             <head>
                 <title>Order #${order._id.slice(-8)} - Laiq Bags</title>
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+                    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
                     
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     
                     body { 
                         font-family: 'Inter', Arial, sans-serif; 
-                        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         min-height: 100vh;
                         padding: 40px 20px;
                         color: #1e293b;
@@ -819,18 +820,36 @@ function printOrder(orderId) {
                     }
                     
                     .invoice-container {
-                        max-width: 800px;
+                        max-width: 900px;
                         margin: 0 auto;
                         background: white;
-                        border-radius: 16px;
-                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                        border-radius: 24px;
+                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
                         overflow: hidden;
+                        position: relative;
+                    }
+                    
+                    .invoice-container::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 6px;
+                        background: linear-gradient(90deg, #d97706, #f59e0b, #eab308, #d97706);
+                        background-size: 200% 100%;
+                        animation: shimmer 3s ease-in-out infinite;
+                    }
+                    
+                    @keyframes shimmer {
+                        0%, 100% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
                     }
                     
                     .header {
-                        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+                        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
                         color: white;
-                        padding: 40px;
+                        padding: 50px 40px;
                         text-align: center;
                         position: relative;
                         overflow: hidden;
@@ -844,188 +863,343 @@ function printOrder(orderId) {
                         width: 200%;
                         height: 200%;
                         background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+                        opacity: 0.2;
+                    }
+                    
+                    .header::after {
+                        content: '👜';
+                        position: absolute;
+                        top: 20px;
+                        right: 20px;
+                        font-size: 2rem;
                         opacity: 0.3;
                     }
                     
                     .header h1 {
-                        font-size: 2.5rem;
+                        font-family: 'Playfair Display', serif;
+                        font-size: 3rem;
                         font-weight: 700;
-                        margin-bottom: 8px;
+                        margin-bottom: 12px;
                         position: relative;
                         z-index: 1;
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
                     }
                     
                     .header h2 {
-                        font-size: 1.5rem;
+                        font-size: 1.8rem;
                         font-weight: 600;
-                        margin-bottom: 4px;
+                        margin-bottom: 8px;
                         position: relative;
                         z-index: 1;
+                        color: #fbbf24;
                     }
                     
                     .header p {
-                        font-size: 1rem;
+                        font-size: 1.1rem;
                         opacity: 0.9;
                         position: relative;
                         z-index: 1;
+                        font-weight: 500;
                     }
                     
                     .content {
-                        padding: 40px;
+                        padding: 50px;
                     }
                     
                     .info-grid {
                         display: grid;
                         grid-template-columns: 1fr 1fr;
-                        gap: 30px;
-                        margin-bottom: 40px;
+                        gap: 40px;
+                        margin-bottom: 50px;
                     }
                     
                     .info-section {
-                        background: #f8fafc;
-                        padding: 24px;
-                        border-radius: 12px;
-                        border-left: 4px solid #d97706;
+                        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                        padding: 32px;
+                        border-radius: 16px;
+                        border-left: 6px solid #d97706;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .info-section::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        width: 60px;
+                        height: 60px;
+                        background: linear-gradient(135deg, #d97706, #f59e0b);
+                        border-radius: 0 16px 0 60px;
+                        opacity: 0.1;
                     }
                     
                     .info-section h3 {
-                        font-size: 1.1rem;
-                        font-weight: 600;
+                        font-size: 1.2rem;
+                        font-weight: 700;
                         color: #d97706;
-                        margin-bottom: 16px;
+                        margin-bottom: 20px;
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 1px;
+                        position: relative;
+                    }
+                    
+                    .info-section h3::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -8px;
+                        left: 0;
+                        width: 30px;
+                        height: 3px;
+                        background: linear-gradient(90deg, #d97706, #f59e0b);
+                        border-radius: 2px;
                     }
                     
                     .info-section p {
-                        margin-bottom: 8px;
-                        font-size: 0.95rem;
+                        margin-bottom: 12px;
+                        font-size: 1rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
                     }
                     
                     .info-section strong {
                         color: #374151;
                         font-weight: 600;
+                        min-width: 120px;
                     }
                     
                     .status-badge {
-                        display: inline-block;
-                        padding: 4px 12px;
-                        border-radius: 20px;
-                        font-size: 0.8rem;
-                        font-weight: 600;
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 6px 16px;
+                        border-radius: 25px;
+                        font-size: 0.85rem;
+                        font-weight: 700;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     }
                     
-                    .status-pending { background: #fef3c7; color: #92400e; }
-                    .status-processing { background: #dbeafe; color: #1e40af; }
-                    .status-shipped { background: #d1fae5; color: #065f46; }
-                    .status-delivered { background: #dcfce7; color: #166534; }
-                    .status-cancelled { background: #fee2e2; color: #991b1b; }
+                    .status-pending { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+                    .status-processing { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
+                    .status-shipped { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
+                    .status-delivered { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #166534; }
+                    .status-cancelled { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; }
                     
                     .items-section {
-                        margin-bottom: 40px;
+                        margin-bottom: 50px;
                     }
                     
                     .items-section h3 {
-                        font-size: 1.3rem;
+                        font-family: 'Playfair Display', serif;
+                        font-size: 1.5rem;
                         font-weight: 600;
                         color: #1e293b;
-                        margin-bottom: 20px;
+                        margin-bottom: 25px;
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 1px;
+                        position: relative;
+                        padding-bottom: 10px;
+                    }
+                    
+                    .items-section h3::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        width: 60px;
+                        height: 4px;
+                        background: linear-gradient(90deg, #d97706, #f59e0b);
+                        border-radius: 2px;
                     }
                     
                     .items-table {
                         width: 100%;
                         border-collapse: collapse;
                         background: white;
-                        border-radius: 12px;
+                        border-radius: 16px;
                         overflow: hidden;
-                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
                     }
                     
                     .items-table th {
-                        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+                        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
                         color: white;
-                        padding: 16px;
+                        padding: 20px 16px;
                         text-align: left;
-                        font-weight: 600;
+                        font-weight: 700;
                         font-size: 0.9rem;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
+                        position: relative;
+                    }
+                    
+                    .items-table th:first-child {
+                        border-top-left-radius: 16px;
+                    }
+                    
+                    .items-table th:last-child {
+                        border-top-right-radius: 16px;
                     }
                     
                     .items-table td {
-                        padding: 16px;
+                        padding: 20px 16px;
                         border-bottom: 1px solid #e5e7eb;
-                        font-size: 0.95rem;
+                        font-size: 1rem;
+                        vertical-align: middle;
                     }
                     
                     .items-table tr:nth-child(even) {
-                        background: #f9fafb;
+                        background: #f8fafc;
                     }
                     
                     .items-table tr:hover {
-                        background: #f3f4f6;
+                        background: #f1f5f9;
+                        transform: translateY(-1px);
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .items-table tr:last-child td {
+                        border-bottom: none;
                     }
                     
                     .total-section {
                         background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
                         color: white;
-                        padding: 30px;
-                        border-radius: 12px;
+                        padding: 40px;
+                        border-radius: 20px;
                         text-align: center;
-                        margin-bottom: 30px;
+                        margin-bottom: 40px;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .total-section::before {
+                        content: '';
+                        position: absolute;
+                        top: -50%;
+                        left: -50%;
+                        width: 200%;
+                        height: 200%;
+                        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+                        opacity: 0.3;
                     }
                     
                     .total-section h3 {
-                        font-size: 1.2rem;
-                        font-weight: 600;
-                        margin-bottom: 8px;
+                        font-size: 1.3rem;
+                        font-weight: 700;
+                        margin-bottom: 12px;
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 1px;
+                        position: relative;
+                        z-index: 1;
                     }
                     
                     .total-amount {
-                        font-size: 2.5rem;
+                        font-family: 'Playfair Display', serif;
+                        font-size: 3rem;
                         font-weight: 700;
                         color: #fbbf24;
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                        position: relative;
+                        z-index: 1;
                     }
                     
                     .tracking-section {
-                        background: #f0f9ff;
-                        padding: 24px;
-                        border-radius: 12px;
-                        border-left: 4px solid #0ea5e9;
+                        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                        padding: 32px;
+                        border-radius: 16px;
+                        border-left: 6px solid #0ea5e9;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .tracking-section::before {
+                        content: '🚚';
+                        position: absolute;
+                        top: 20px;
+                        right: 20px;
+                        font-size: 2rem;
+                        opacity: 0.2;
                     }
                     
                     .tracking-section h3 {
-                        font-size: 1.1rem;
-                        font-weight: 600;
+                        font-size: 1.2rem;
+                        font-weight: 700;
                         color: #0ea5e9;
-                        margin-bottom: 16px;
+                        margin-bottom: 20px;
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: 1px;
+                        position: relative;
+                    }
+                    
+                    .tracking-section h3::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -8px;
+                        left: 0;
+                        width: 30px;
+                        height: 3px;
+                        background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+                        border-radius: 2px;
                     }
                     
                     .footer {
-                        background: #f8fafc;
-                        padding: 30px 40px;
+                        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                        padding: 40px;
                         text-align: center;
                         border-top: 1px solid #e2e8f0;
+                        position: relative;
+                    }
+                    
+                    .footer::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 60px;
+                        height: 4px;
+                        background: linear-gradient(90deg, #d97706, #f59e0b);
+                        border-radius: 2px;
                     }
                     
                     .footer p {
                         color: #64748b;
+                        font-size: 1rem;
+                        font-weight: 500;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .footer p:last-child {
+                        margin-bottom: 0;
                         font-size: 0.9rem;
+                        opacity: 0.8;
+                    }
+                    
+                    .payment-method-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 6px 16px;
+                        border-radius: 25px;
+                        font-size: 0.85rem;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        background: linear-gradient(135deg, #10b981, #34d399);
+                        color: white;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     }
                     
                     @media print {
                         body { background: white; padding: 0; }
                         .invoice-container { box-shadow: none; border-radius: 0; }
-                        .header { background: #d97706 !important; }
+                        .header { background: #1e293b !important; }
                         .total-section { background: #1e293b !important; }
+                        .invoice-container::before { display: none; }
                     }
                 </style>
             </head>
@@ -1044,25 +1218,25 @@ function printOrder(orderId) {
                     <div class="content">
                         <div class="info-grid">
                             <div class="info-section">
-                                <h3>Order Information</h3>
-                                <p><strong>Order ID:</strong> #${order._id.slice(-8)}</p>
+                                <h3>📋 Order Information</h3>
+                                <p><strong>Order ID:</strong> <span style="color: #d97706; font-weight: 700;">#${order._id.slice(-8)}</span></p>
                                 <p><strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span></p>
-                                <p><strong>Payment Method:</strong> ${formatPaymentMethod(order.paymentMethod)}</p>
-                                <p><strong>Payment Status:</strong> ${order.paymentInfo?.status || 'N/A'}</p>
+                                <p><strong>Payment:</strong> <span class="payment-method-badge">${formatPaymentMethod(order.paymentMethod)}</span></p>
+                                <p><strong>Payment Status:</strong> <span style="color: #64748b;">${order.paymentInfo?.status || 'N/A'}</span></p>
                             </div>
                             
                             <div class="info-section">
-                                <h3>Customer Information</h3>
-                                <p><strong>Name:</strong> ${order.user?.name || 'N/A'}</p>
-                                <p><strong>Email:</strong> ${order.user?.email || 'N/A'}</p>
-                                <p><strong>Address:</strong> ${order.shippingInfo ? 
+                                <h3>👤 Customer Information</h3>
+                                <p><strong>Name:</strong> <span style="color: #1e293b; font-weight: 600;">${order.user?.name || 'N/A'}</span></p>
+                                <p><strong>Email:</strong> <span style="color: #64748b;">${order.user?.email || 'N/A'}</span></p>
+                                <p><strong>Address:</strong> <span style="color: #64748b; line-height: 1.4;">${order.shippingInfo ? 
                                     `${order.shippingInfo.street}, ${order.shippingInfo.city}, ${order.shippingInfo.state} - ${order.shippingInfo.pincode}` : 
-                                    'N/A'}</p>
+                                    'N/A'}</span></p>
                             </div>
                         </div>
                         
                         <div class="items-section">
-                            <h3>Order Items</h3>
+                            <h3>🛍️ Order Items</h3>
                             <table class="items-table">
                                 <thead>
                                     <tr>
@@ -1075,34 +1249,35 @@ function printOrder(orderId) {
                                 <tbody>
                                     ${order.orderItems?.map(item => `
                                         <tr>
-                                            <td><strong>${item.name}</strong></td>
-                                            <td>${item.quantity}</td>
-                                            <td>₹${parseFloat(item.price).toLocaleString()}</td>
-                                            <td><strong>₹${(parseFloat(item.price) * item.quantity).toLocaleString()}</strong></td>
+                                            <td><strong style="color: #1e293b;">${item.name}</strong></td>
+                                            <td><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: 600;">${item.quantity}</span></td>
+                                            <td style="color: #64748b;">₹${parseFloat(item.price).toLocaleString()}</td>
+                                            <td><strong style="color: #d97706; font-size: 1.1rem;">₹${(parseFloat(item.price) * item.quantity).toLocaleString()}</strong></td>
                                         </tr>
-                                    `).join('') || '<tr><td colspan="4" style="text-align: center; padding: 20px;">No items found</td></tr>'}
+                                    `).join('') || '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #64748b; font-style: italic;">No items found</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
                         
                         <div class="total-section">
-                            <h3>Total Amount</h3>
+                            <h3>💰 Total Amount</h3>
                             <div class="total-amount">₹${(order.totalAmount || 0).toLocaleString()}</div>
                         </div>
                         
                         ${order.trackingInfo?.trackingNumber ? `
                             <div class="tracking-section">
-                                <h3>Tracking Information</h3>
-                                <p><strong>Tracking Number:</strong> ${order.trackingInfo.trackingNumber}</p>
-                                <p><strong>Courier:</strong> ${order.trackingInfo.courierName || 'N/A'}</p>
-                                ${order.trackingInfo.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${new Date(order.trackingInfo.estimatedDelivery).toLocaleDateString('en-IN')}</p>` : ''}
+                                <h3>🚚 Tracking Information</h3>
+                                <p><strong>Tracking Number:</strong> <span style="color: #0ea5e9; font-weight: 600; font-family: monospace;">${order.trackingInfo.trackingNumber}</span></p>
+                                <p><strong>Courier:</strong> <span style="color: #64748b;">${order.trackingInfo.courierName || 'N/A'}</span></p>
+                                ${order.trackingInfo.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> <span style="color: #64748b;">${new Date(order.trackingInfo.estimatedDelivery).toLocaleDateString('en-IN')}</span></p>` : ''}
                             </div>
                         ` : ''}
                     </div>
                     
                     <div class="footer">
-                        <p>Thank you for choosing LAIQ Bags! 👜</p>
-                        <p>For any queries, please contact our customer support.</p>
+                        <p style="font-size: 1.2rem; font-weight: 600; color: #1e293b; margin-bottom: 12px;">Thank you for choosing LAIQ Bags! 👜</p>
+                        <p>For any queries, please contact our customer support at support@laiqbags.com</p>
+                        <p style="margin-top: 16px; font-size: 0.8rem; color: #94a3b8;">This is a computer-generated invoice. No signature required.</p>
                     </div>
                 </div>
             </body>
