@@ -22,7 +22,7 @@ class AnalyticsTracker {
     async init() {
         // Check if analytics is enabled
         try {
-            const base = (window.api && window.api.baseURL) || 'http://localhost:3001/api';
+            const base = (window.api && window.api.baseURL) || 'http://localhost:3003/api';
             const response = await fetch(`${base}/analytics/config`);
             if (response.ok) {
                 const config = await response.json();

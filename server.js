@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Server Configuration
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
 
 // Import security middleware

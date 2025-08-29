@@ -9,7 +9,7 @@ function resolveApiBaseUrl() {
       const isHttps = protocol === 'https:';
 
       // If the site is being served by our Express dev server, use same-origin
-      if (isLocalHost && (port === '3001' || port === '3443')) {
+      if (isLocalHost && (port === '3003' || port === '3443')) {
         return `${origin}/api`;
       }
 
@@ -199,14 +199,14 @@ class ApiService {
                     const apiIsHttp = typeof this.baseURL === 'string' && this.baseURL.startsWith('http://');
                     if (isHttpsPage && apiIsHttp) {
                         console.warn('Mixed content blocked: page is HTTPS but API is HTTP');
-                        throw new Error('Mixed content blocked - Use HTTPS for both site and API, or open the site on http://localhost:3001');
+                        throw new Error('Mixed content blocked - Use HTTPS for both site and API, or open the site on http://localhost:3003');
                     }
                 } catch (_) {
                     // ignore detection errors
                 }
 
                 console.warn('CORS or network error detected. If using file://, please use a local server.');
-                throw new Error('CORS/network error - Serve the site via http://localhost:3001 or Live Server instead of file://');
+                throw new Error('CORS/network error - Serve the site via http://localhost:3003 or Live Server instead of file://');
             }
             
             throw error;
