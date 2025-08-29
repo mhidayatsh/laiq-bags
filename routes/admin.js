@@ -695,12 +695,24 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
         // Search filter
         if (req.query.search) {
             const searchRegex = new RegExp(req.query.search, 'i');
-            filterQuery.$or = [
-                { _id: { $regex: searchRegex } },
+            const searchConditions = [
                 { 'user.name': { $regex: searchRegex } },
-                { 'user.email': { $regex: searchRegex } },
-                { 'orderItems.name': { $regex: searchRegex } }
+                { 'user.email': { $regex: searchRegex } }
             ];
+            
+            // Only add ObjectId search if it looks like a valid ObjectId
+            if (/^[0-9a-fA-F]{24}$/.test(req.query.search)) {
+                try {
+                    searchConditions.push({ _id: req.query.search });
+                } catch (error) {
+                    console.log('⚠️ Invalid ObjectId format for search:', req.query.search);
+                }
+            }
+            
+            // Add product name search if orderItems exist
+            searchConditions.push({ 'orderItems.name': { $regex: searchRegex } });
+            
+            filterQuery.$or = searchConditions;
             console.log('🔍 Applying search filter:', req.query.search);
         }
         
