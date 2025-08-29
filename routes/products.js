@@ -80,7 +80,42 @@ router.get('/', productLimiter, async (req, res) => {
 
     // Build match query
     const hasKeyword = Boolean(req.query.keyword && String(req.query.keyword).trim());
+    const hasSlug = Boolean(req.query.slug && String(req.query.slug).trim());
     const matchQuery = {};
+    
+    // Handle slug query - return single product
+    if (hasSlug) {
+      const slug = String(req.query.slug).trim();
+      try {
+        const product = await Product.findOne({ slug: slug }).exec();
+        if (!product) {
+          return res.status(404).json({
+            success: false,
+            message: 'Product not found'
+          });
+        }
+        
+        // Return single product in the same format as the list
+        return res.status(200).json({
+          success: true,
+          product: product,
+          productsCount: 1,
+          resPerPage: 1,
+          currentPage: 1,
+          totalPages: 1,
+          filteredProductsCount: 1,
+          totalProducts: 1,
+          products: [product]
+        });
+      } catch (error) {
+        console.error('Error finding product by slug:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error finding product'
+        });
+      }
+    }
+    
     if (hasKeyword) {
       const keyword = String(req.query.keyword).trim();
       // Use regex-based search to avoid $meta textScore (unstable under apiStrict)
