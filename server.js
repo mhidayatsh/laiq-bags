@@ -636,7 +636,60 @@ app.use('/api/contact', contactRoutes);
 app.use('/', sitemapRoutes);
 // Analytics routes are handled separately above
 
-// Dynamic product SEO route - MUST come AFTER API routes to prevent conflicts
+// Serve static files FIRST to prevent route conflicts
+// Serve JavaScript files with correct MIME type
+app.use('/js', express.static(path.join(__dirname, 'js'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// Serve CSS files with correct MIME type
+app.use('/css', express.static(path.join(__dirname, 'css'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
+
+// Serve assets with correct MIME type
+app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        } else if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
+
+// Product URL routes - must come AFTER static file serving
+app.use('/', productUrlRoutes);
+
+// Product page route - handled by the route above
+
+// Handle /product/js/ requests to serve JavaScript files correctly
+app.use('/product/js', express.static(path.join(__dirname, 'js'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// Handle /product/css/ requests to serve CSS files correctly
+app.use('/product/css', express.static(path.join(__dirname, 'css'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+    }
+}));
+
+// Dynamic product SEO route - MUST come BEFORE static file handler
 app.get('/product.html', async (req, res) => {
   try {
     const { slug, id } = req.query;
@@ -735,59 +788,6 @@ app.get('/product.html', async (req, res) => {
     res.status(404).sendFile(path.join(__dirname, '404.html'));
   }
 });
-
-// Serve static files FIRST to prevent route conflicts
-// Serve JavaScript files with correct MIME type
-app.use('/js', express.static(path.join(__dirname, 'js'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        }
-    }
-}));
-
-// Serve CSS files with correct MIME type
-app.use('/css', express.static(path.join(__dirname, 'css'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
-    }
-}));
-
-// Serve assets with correct MIME type
-app.use('/assets', express.static(path.join(__dirname, 'assets'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        } else if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
-    }
-}));
-
-// Product URL routes - must come AFTER static file serving
-app.use('/', productUrlRoutes);
-
-// Product page route - handled by the route above
-
-// Handle /product/js/ requests to serve JavaScript files correctly
-app.use('/product/js', express.static(path.join(__dirname, 'js'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        }
-    }
-}));
-
-// Handle /product/css/ requests to serve CSS files correctly
-app.use('/product/css', express.static(path.join(__dirname, 'css'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
-    }
-}));
 
 // Serve all other static files
 app.use(express.static(path.join(__dirname)));
