@@ -299,11 +299,8 @@ async function loadStatistics() {
             }
             
             if (document.getElementById('pending-orders')) {
-                // Calculate pending orders from recent orders
-                const pendingOrders = data.recentOrders?.filter(order => 
-                    ['pending', 'processing', 'confirmed'].includes(order.status)
-                ).length || 0;
-                document.getElementById('pending-orders').textContent = pendingOrders;
+                // Use accurate count from backend
+                document.getElementById('pending-orders').textContent = data.pendingOrdersCount || 0;
             }
             
             if (document.getElementById('total-revenue')) {
@@ -311,13 +308,8 @@ async function loadStatistics() {
             }
             
             if (document.getElementById('delivered-today')) {
-                // Calculate delivered today from recent orders
-                const today = new Date().toDateString();
-                const deliveredToday = data.recentOrders?.filter(order => 
-                    order.status === 'delivered' && 
-                    new Date(order.createdAt).toDateString() === today
-                ).length || 0;
-                document.getElementById('delivered-today').textContent = deliveredToday;
+                // Use accurate count from backend
+                document.getElementById('delivered-today').textContent = data.deliveredTodayCount || 0;
             }
         }
     } catch (error) {

@@ -76,7 +76,9 @@ router.get('/dashboard', adminAuth, catchAsyncErrors(async (req, res) => {
             totalOrders,
             totalCustomers,
             recentOrders,
-            revenueData
+            revenueData,
+            pendingOrdersCount,
+            deliveredTodayCount
         ] = await Promise.all([
             Product.countDocuments(),
             Order.countDocuments(),
@@ -89,7 +91,15 @@ router.get('/dashboard', adminAuth, catchAsyncErrors(async (req, res) => {
             Order.aggregate([
                 { $match: { status: { $in: ['delivered', 'shipped'] } } },
                 { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } }
-            ])
+            ]),
+            Order.countDocuments({ status: { $in: ['pending', 'processing', 'confirmed'] } }),
+            Order.countDocuments({ 
+                status: 'delivered',
+                createdAt: { 
+                    $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                    $lte: new Date(new Date().setHours(23, 59, 59, 999))
+                }
+            })
         ]);
         
         const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
@@ -116,7 +126,9 @@ router.get('/dashboard', adminAuth, catchAsyncErrors(async (req, res) => {
                 totalRevenue,
                 totalCustomers,
                 recentOrders,
-                topProducts
+                topProducts,
+                pendingOrdersCount,
+                deliveredTodayCount
             }
         };
         
