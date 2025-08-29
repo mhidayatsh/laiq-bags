@@ -10,6 +10,16 @@ let selectedAddress = null;
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Checkout page initialized - Standalone');
     
+    // Check if user is coming back from order confirmation (prevent resubmission)
+    if (window.history.state && window.history.state.orderCompleted) {
+        console.log('⚠️ User returned from order confirmation, redirecting to shop');
+        showToast('Order already completed. Redirecting to shop...', 'info');
+        setTimeout(() => {
+            window.location.href = '/shop.html';
+        }, 2000);
+        return;
+    }
+    
     // Show loading state
     showLoadingState(true, 'Loading checkout page...');
     
@@ -1156,6 +1166,10 @@ async function createOrder(orderData) {
                 localStorage.removeItem('guestCart');
                 console.log('🧹 Guest cart cleared');
             }
+            
+            // Prevent back button from resubmitting order
+            // Replace current history entry to prevent form resubmission
+            window.history.replaceState({ orderCompleted: true }, '', window.location.href);
             
             // Redirect to order confirmation
             setTimeout(() => {
