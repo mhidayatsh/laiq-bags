@@ -167,34 +167,64 @@ async function loadOrderItems() {
         let currentCart = [];
         
         if (token) {
-            // Logged in user - get from backend
-            try {
-                const response = await api.getCart();
-                console.log('📦 Backend cart response:', response);
+            // Logged in user - prioritize localStorage first, then backend
+            const userCartData = localStorage.getItem('userCart');
+            const localStorageCart = userCartData ? JSON.parse(userCartData) : [];
+            
+            console.log('👤 localStorage cart items:', localStorageCart);
+            
+            if (localStorageCart.length > 0) {
+                // Use localStorage cart if it has items
+                currentCart = localStorageCart;
+                console.log('✅ Using localStorage cart with', currentCart.length, 'items');
                 
-                if (response.success && response.cart && response.cart.items) {
-                    currentCart = response.cart.items.map(item => ({
-                        id: item.product?._id || item.product || item.productId || 'unknown',
-                        name: item.name || item.product?.name || 'Unknown Product',
-                        price: parseFloat(item.price) || parseFloat(item.product?.price) || 0,
-                        qty: parseInt(item.quantity) || parseInt(item.qty) || 1,
-                        image: item.image || item.product?.images?.[0]?.url || item.product?.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9Ijc1IiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjc3NDhCIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+Cjwvc3ZnPgo=',
-                        color: item.color || null
-                    })).filter(item => item.id !== 'unknown' && item.price > 0);
-                    
-                    console.log('👤 Backend cart items:', currentCart);
-                } else {
-                    // Fallback to localStorage
-                    const userCartData = localStorage.getItem('userCart');
-                    currentCart = userCartData ? JSON.parse(userCartData) : [];
-                    console.log('👤 Fallback to localStorage cart items:', currentCart);
+                // Sync to backend in background (non-blocking)
+                try {
+                    console.log('🔄 Syncing localStorage cart to backend...');
+                    const response = await api.getCart();
+                    if (response.success && response.cart && response.cart.items) {
+                        const backendCart = response.cart.items;
+                        console.log('📦 Backend cart has', backendCart.length, 'items');
+                        
+                        // If backend cart is empty but localStorage has items, sync them
+                        if (backendCart.length === 0 && localStorageCart.length > 0) {
+                            console.log('🔄 Backend cart is empty, syncing localStorage items...');
+                            for (const item of localStorageCart) {
+                                try {
+                                    await api.addToCart(item.id, item.qty, item.color);
+                                    console.log('✅ Synced item to backend:', item.name);
+                                } catch (error) {
+                                    console.warn('⚠️ Failed to sync item to backend:', item.name, error.message);
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Backend sync failed, continuing with localStorage cart:', error.message);
                 }
-            } catch (error) {
-                console.error('❌ Error loading cart from backend:', error);
-                // Fallback to localStorage
-                const userCartData = localStorage.getItem('userCart');
-                currentCart = userCartData ? JSON.parse(userCartData) : [];
-                console.log('👤 Fallback to localStorage cart items:', currentCart);
+            } else {
+                // localStorage is empty, try backend
+                try {
+                    const response = await api.getCart();
+                    console.log('📦 Backend cart response:', response);
+                    
+                    if (response.success && response.cart && response.cart.items) {
+                        currentCart = response.cart.items.map(item => ({
+                            id: item.product?._id || item.product || item.productId || 'unknown',
+                            name: item.name || item.product?.name || 'Unknown Product',
+                            price: parseFloat(item.price) || parseFloat(item.product?.price) || 0,
+                            qty: parseInt(item.quantity) || parseInt(item.qty) || 1,
+                            image: item.image || item.product?.images?.[0]?.url || item.product?.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9Ijc1IiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjc3NDhCIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+Cjwvc3ZnPgo=',
+                            color: item.color || null
+                        })).filter(item => item.id !== 'unknown' && item.price > 0);
+                        
+                        console.log('👤 Backend cart items:', currentCart);
+                    } else {
+                        console.log('👤 Backend cart is empty');
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading cart from backend:', error);
+                }
             }
         } else {
             // Guest user - get from guest cart
@@ -1197,6 +1227,17 @@ function getCurrentOrderData() {
             return null;
         }
         
+        // Debug: Log the order items before creating order
+        console.log('📦 Creating order with items:', orderItems);
+        console.log('📊 Order items count:', orderItems.length);
+        console.log('💰 Order total:', orderTotal);
+        
+        if (orderItems.length === 0) {
+            console.error('❌ No items in order! This will cause stock update to fail.');
+            showToast('No items in order. Please add items to cart first.', 'error');
+            return null;
+        }
+        
         // Create order data with color information
         const orderData = {
             orderItems: orderItems.map(item => ({
@@ -1217,6 +1258,7 @@ function getCurrentOrderData() {
             totalAmount: orderData.totalAmount,
             itemsWithColors: orderData.orderItems.map(item => ({
                 name: item.name,
+                quantity: item.quantity,
                 color: item.color?.name || 'N/A'
             }))
         });
