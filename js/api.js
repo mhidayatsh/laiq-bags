@@ -558,6 +558,13 @@ class ApiService {
         });
     }
 
+    async updateOrderTracking(orderId, trackingData) {
+        return await this.request(`/orders/admin/${orderId}/tracking`, {
+            method: 'PUT',
+            body: JSON.stringify(trackingData)
+        });
+    }
+
     async getAdminCustomers() {
         return await this.request('/admin/customers');
     }
