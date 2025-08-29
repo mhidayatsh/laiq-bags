@@ -377,7 +377,7 @@ function renderOrders() {
                     
                     <div class="mb-4">
                         <p class="text-sm text-gray-600">Payment Method</p>
-                        <p class="font-medium text-charcoal">${order.paymentMethod?.toUpperCase() || 'N/A'}</p>
+                        <p class="font-medium text-charcoal">${formatPaymentMethod(order.paymentMethod)}</p>
                         <p class="text-xs text-gray-500">${order.paymentInfo?.status || 'N/A'}</p>
                     </div>
                     
@@ -805,81 +805,325 @@ function printOrder(orderId) {
             <head>
                 <title>Order #${order._id.slice(-8)} - Laiq Bags</title>
                 <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    .header { text-align: center; margin-bottom: 30px; }
-                    .order-info { margin-bottom: 20px; }
-                    .customer-info { margin-bottom: 20px; }
-                    .items { margin-bottom: 20px; }
-                    .total { font-weight: bold; font-size: 18px; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; }
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                    
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    
+                    body { 
+                        font-family: 'Inter', Arial, sans-serif; 
+                        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                        min-height: 100vh;
+                        padding: 40px 20px;
+                        color: #1e293b;
+                        line-height: 1.6;
+                    }
+                    
+                    .invoice-container {
+                        max-width: 800px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                        overflow: hidden;
+                    }
+                    
+                    .header {
+                        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+                        color: white;
+                        padding: 40px;
+                        text-align: center;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .header::before {
+                        content: '';
+                        position: absolute;
+                        top: -50%;
+                        left: -50%;
+                        width: 200%;
+                        height: 200%;
+                        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+                        opacity: 0.3;
+                    }
+                    
+                    .header h1 {
+                        font-size: 2.5rem;
+                        font-weight: 700;
+                        margin-bottom: 8px;
+                        position: relative;
+                        z-index: 1;
+                    }
+                    
+                    .header h2 {
+                        font-size: 1.5rem;
+                        font-weight: 600;
+                        margin-bottom: 4px;
+                        position: relative;
+                        z-index: 1;
+                    }
+                    
+                    .header p {
+                        font-size: 1rem;
+                        opacity: 0.9;
+                        position: relative;
+                        z-index: 1;
+                    }
+                    
+                    .content {
+                        padding: 40px;
+                    }
+                    
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 30px;
+                        margin-bottom: 40px;
+                    }
+                    
+                    .info-section {
+                        background: #f8fafc;
+                        padding: 24px;
+                        border-radius: 12px;
+                        border-left: 4px solid #d97706;
+                    }
+                    
+                    .info-section h3 {
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        color: #d97706;
+                        margin-bottom: 16px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .info-section p {
+                        margin-bottom: 8px;
+                        font-size: 0.95rem;
+                    }
+                    
+                    .info-section strong {
+                        color: #374151;
+                        font-weight: 600;
+                    }
+                    
+                    .status-badge {
+                        display: inline-block;
+                        padding: 4px 12px;
+                        border-radius: 20px;
+                        font-size: 0.8rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .status-pending { background: #fef3c7; color: #92400e; }
+                    .status-processing { background: #dbeafe; color: #1e40af; }
+                    .status-shipped { background: #d1fae5; color: #065f46; }
+                    .status-delivered { background: #dcfce7; color: #166534; }
+                    .status-cancelled { background: #fee2e2; color: #991b1b; }
+                    
+                    .items-section {
+                        margin-bottom: 40px;
+                    }
+                    
+                    .items-section h3 {
+                        font-size: 1.3rem;
+                        font-weight: 600;
+                        color: #1e293b;
+                        margin-bottom: 20px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .items-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        background: white;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .items-table th {
+                        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+                        color: white;
+                        padding: 16px;
+                        text-align: left;
+                        font-weight: 600;
+                        font-size: 0.9rem;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .items-table td {
+                        padding: 16px;
+                        border-bottom: 1px solid #e5e7eb;
+                        font-size: 0.95rem;
+                    }
+                    
+                    .items-table tr:nth-child(even) {
+                        background: #f9fafb;
+                    }
+                    
+                    .items-table tr:hover {
+                        background: #f3f4f6;
+                    }
+                    
+                    .total-section {
+                        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 12px;
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+                    
+                    .total-section h3 {
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .total-amount {
+                        font-size: 2.5rem;
+                        font-weight: 700;
+                        color: #fbbf24;
+                    }
+                    
+                    .tracking-section {
+                        background: #f0f9ff;
+                        padding: 24px;
+                        border-radius: 12px;
+                        border-left: 4px solid #0ea5e9;
+                    }
+                    
+                    .tracking-section h3 {
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        color: #0ea5e9;
+                        margin-bottom: 16px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .footer {
+                        background: #f8fafc;
+                        padding: 30px 40px;
+                        text-align: center;
+                        border-top: 1px solid #e2e8f0;
+                    }
+                    
+                    .footer p {
+                        color: #64748b;
+                        font-size: 0.9rem;
+                    }
+                    
+                    @media print {
+                        body { background: white; padding: 0; }
+                        .invoice-container { box-shadow: none; border-radius: 0; }
+                        .header { background: #d97706 !important; }
+                        .total-section { background: #1e293b !important; }
+                    }
                 </style>
             </head>
             <body>
-                <div class="header">
-                    <h1>LAIQ Bags</h1>
-                    <h2>Order #${order._id.slice(-8)}</h2>
-                    <p>Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
-                </div>
-                
-                <div class="order-info">
-                    <h3>Order Information</h3>
-                    <p><strong>Status:</strong> ${order.status.toUpperCase()}</p>
-                    <p><strong>Payment Method:</strong> ${order.paymentMethod?.toUpperCase()}</p>
-                    <p><strong>Payment Status:</strong> ${order.paymentInfo?.status}</p>
-                </div>
-                
-                <div class="customer-info">
-                    <h3>Customer Information</h3>
-                    <p><strong>Name:</strong> ${order.user?.name}</p>
-                    <p><strong>Email:</strong> ${order.user?.email}</p>
-                    <p><strong>Address:</strong> ${order.shippingInfo ? 
-                        `${order.shippingInfo.street}, ${order.shippingInfo.city}, ${order.shippingInfo.state} - ${order.shippingInfo.pincode}` : 
-                        'N/A'}</p>
-                </div>
-                
-                <div class="items">
-                    <h3>Order Items</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${order.orderItems?.map(item => `
-                                <tr>
-                                    <td>${item.name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>₹${item.price}</td>
-                                    <td>₹${item.price * item.quantity}</td>
-                                </tr>
-                            `).join('') || ''}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="total">
-                    <p><strong>Total Amount: ₹${(order.totalAmount || 0).toLocaleString()}</strong></p>
-                </div>
-                
-                ${order.trackingInfo?.trackingNumber ? `
-                    <div class="tracking">
-                        <h3>Tracking Information</h3>
-                        <p><strong>Tracking Number:</strong> ${order.trackingInfo.trackingNumber}</p>
-                        <p><strong>Courier:</strong> ${order.trackingInfo.courierName}</p>
-                        ${order.trackingInfo.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${new Date(order.trackingInfo.estimatedDelivery).toLocaleDateString('en-IN')}</p>` : ''}
+                <div class="invoice-container">
+                    <div class="header">
+                        <h1>LAIQ Bags</h1>
+                        <h2>Order #${order._id.slice(-8)}</h2>
+                        <p>Date: ${new Date(order.createdAt).toLocaleDateString('en-IN', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        })}</p>
                     </div>
-                ` : ''}
+                    
+                    <div class="content">
+                        <div class="info-grid">
+                            <div class="info-section">
+                                <h3>Order Information</h3>
+                                <p><strong>Order ID:</strong> #${order._id.slice(-8)}</p>
+                                <p><strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span></p>
+                                <p><strong>Payment Method:</strong> ${formatPaymentMethod(order.paymentMethod)}</p>
+                                <p><strong>Payment Status:</strong> ${order.paymentInfo?.status || 'N/A'}</p>
+                            </div>
+                            
+                            <div class="info-section">
+                                <h3>Customer Information</h3>
+                                <p><strong>Name:</strong> ${order.user?.name || 'N/A'}</p>
+                                <p><strong>Email:</strong> ${order.user?.email || 'N/A'}</p>
+                                <p><strong>Address:</strong> ${order.shippingInfo ? 
+                                    `${order.shippingInfo.street}, ${order.shippingInfo.city}, ${order.shippingInfo.state} - ${order.shippingInfo.pincode}` : 
+                                    'N/A'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="items-section">
+                            <h3>Order Items</h3>
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${order.orderItems?.map(item => `
+                                        <tr>
+                                            <td><strong>${item.name}</strong></td>
+                                            <td>${item.quantity}</td>
+                                            <td>₹${parseFloat(item.price).toLocaleString()}</td>
+                                            <td><strong>₹${(parseFloat(item.price) * item.quantity).toLocaleString()}</strong></td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" style="text-align: center; padding: 20px;">No items found</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="total-section">
+                            <h3>Total Amount</h3>
+                            <div class="total-amount">₹${(order.totalAmount || 0).toLocaleString()}</div>
+                        </div>
+                        
+                        ${order.trackingInfo?.trackingNumber ? `
+                            <div class="tracking-section">
+                                <h3>Tracking Information</h3>
+                                <p><strong>Tracking Number:</strong> ${order.trackingInfo.trackingNumber}</p>
+                                <p><strong>Courier:</strong> ${order.trackingInfo.courierName || 'N/A'}</p>
+                                ${order.trackingInfo.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${new Date(order.trackingInfo.estimatedDelivery).toLocaleDateString('en-IN')}</p>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Thank you for choosing LAIQ Bags! 👜</p>
+                        <p>For any queries, please contact our customer support.</p>
+                    </div>
+                </div>
             </body>
         </html>
     `);
     printWindow.document.close();
     printWindow.print();
+}
+
+// Format payment method for display
+function formatPaymentMethod(method) {
+    if (!method) return 'N/A';
+    
+    const methodMap = {
+        'cod': 'Cash on Delivery',
+        'razorpay': 'Razorpay',
+        'stripe': 'Stripe',
+        'online': 'Online Payment'
+    };
+    
+    return methodMap[method.toLowerCase()] || method.toUpperCase();
 }
 
 // Show toast notification

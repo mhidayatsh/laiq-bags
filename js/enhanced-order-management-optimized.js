@@ -1,6 +1,20 @@
 // Enhanced Order Management - Optimized Version
 // Uses shared modules for authentication, caching, error handling, and API optimization
 
+// Format payment method for display
+function formatPaymentMethod(method) {
+    if (!method) return 'N/A';
+    
+    const methodMap = {
+        'cod': 'Cash on Delivery',
+        'razorpay': 'Razorpay',
+        'stripe': 'Stripe',
+        'online': 'Online Payment'
+    };
+    
+    return methodMap[method.toLowerCase()] || method.toUpperCase();
+}
+
 let orders = [];
 let currentPage = 1;
 let totalPages = 1;
@@ -372,7 +386,7 @@ function renderOrders() {
                         
                         <div class="mb-4">
                             <p class="text-sm text-gray-600">Payment Method</p>
-                            <p class="font-medium text-charcoal">${order.paymentMethod?.toUpperCase() || 'N/A'}</p>
+                            <p class="font-medium text-charcoal">${formatPaymentMethod(order.paymentMethod)}</p>
                             <p class="text-xs text-gray-500">${order.paymentInfo?.status || 'N/A'}</p>
                         </div>
                         

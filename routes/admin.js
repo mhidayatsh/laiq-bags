@@ -689,7 +689,7 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
             .skip(skip)
             .limit(limit)
             .lean()
-            .select('orderItems totalAmount status createdAt user shippingInfo paymentInfo')
+            .select('orderItems totalAmount status createdAt user shippingInfo paymentInfo paymentMethod')
             .maxTimeMS(15000); // 15 second timeout for admin order queries
         
         const response = {

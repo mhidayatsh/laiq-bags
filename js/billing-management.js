@@ -1,4 +1,19 @@
 // Billing Management JavaScript
+
+// Format payment method for display
+function formatPaymentMethod(method) {
+    if (!method) return 'N/A';
+    
+    const methodMap = {
+        'cod': 'Cash on Delivery',
+        'razorpay': 'Razorpay',
+        'stripe': 'Stripe',
+        'online': 'Online Payment'
+    };
+    
+    return methodMap[method.toLowerCase()] || method.toUpperCase();
+}
+
 let transactions = [];
 let currentPage = 1;
 let totalPages = 1;
@@ -301,7 +316,7 @@ function renderTransactions() {
                     
                     <div class="mb-4">
                         <p class="text-sm text-gray-600">Payment Method</p>
-                        <p class="font-medium text-charcoal">${transaction.paymentMethod?.toUpperCase() || 'N/A'}</p>
+                        <p class="font-medium text-charcoal">${formatPaymentMethod(transaction.paymentMethod)}</p>
                     </div>
                     
                     <div class="mb-4">
@@ -447,7 +462,7 @@ function renderTransactionModal(transaction) {
                 <div class="space-y-2 text-sm">
                     <div>
                         <p class="text-gray-600">Payment Method</p>
-                        <p class="font-medium">${transaction.paymentMethod?.toUpperCase() || 'N/A'}</p>
+                        <p class="font-medium">${formatPaymentMethod(transaction.paymentMethod)}</p>
                     </div>
                     <div>
                         <p class="text-gray-600">Transaction ID</p>
@@ -592,7 +607,7 @@ function printInvoice(transactionId) {
                 <div class="invoice-info">
                     <h3>Invoice Information</h3>
                     <p><strong>Payment Status:</strong> ${transaction.paymentInfo?.status?.toUpperCase()}</p>
-                    <p><strong>Payment Method:</strong> ${transaction.paymentMethod?.toUpperCase()}</p>
+                                            <p><strong>Payment Method:</strong> ${formatPaymentMethod(transaction.paymentMethod)}</p>
                     <p><strong>Transaction ID:</strong> ${transaction.paymentInfo?.razorpayPaymentId || transaction.paymentInfo?.stripePaymentIntentId || 'N/A'}</p>
                 </div>
                 
