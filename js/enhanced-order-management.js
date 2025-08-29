@@ -233,6 +233,8 @@ function initializeEventListeners() {
 function handleFilterChange(e) {
     const filterType = e.target.id.replace('-filter', '');
     filters[filterType] = e.target.value;
+    console.log('🔍 Filter changed:', filterType, '=', e.target.value);
+    console.log('🔍 Current filters:', filters);
     currentPage = 1;
     loadOrders();
 }
@@ -253,6 +255,9 @@ async function loadOrders() {
         if (filters.paymentMethod) params.append('paymentMethod', filters.paymentMethod);
         if (filters.date) params.append('date', filters.date);
         if (filters.search) params.append('search', filters.search);
+        
+        console.log('🔍 Sending request with params:', params.toString());
+        console.log('🔍 Current filters:', filters);
         
         const response = await api.getAdminOrders(`?${params.toString()}`);
         

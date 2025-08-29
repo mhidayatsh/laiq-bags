@@ -663,13 +663,55 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 50; // Default 50 orders per page
         const skip = (page - 1) * limit;
+        
+        // Build filter query
+        const filterQuery = {};
+        
+        // Status filter
+        if (req.query.status && req.query.status !== '' && req.query.status !== 'all') {
+            filterQuery.status = req.query.status;
+            console.log('🔍 Applying status filter:', req.query.status);
+        }
+        
+        // Payment method filter
+        if (req.query.paymentMethod && req.query.paymentMethod !== '' && req.query.paymentMethod !== 'all') {
+            filterQuery.paymentMethod = req.query.paymentMethod;
+            console.log('🔍 Applying payment method filter:', req.query.paymentMethod);
+        }
+        
+        // Date filter
+        if (req.query.date) {
+            const filterDate = new Date(req.query.date);
+            if (!isNaN(filterDate.getTime())) {
+                const startOfDay = new Date(filterDate);
+                startOfDay.setHours(0, 0, 0, 0);
+                const endOfDay = new Date(filterDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                filterQuery.createdAt = { $gte: startOfDay, $lte: endOfDay };
+                console.log('🔍 Applying date filter:', req.query.date);
+            }
+        }
+        
+        // Search filter
+        if (req.query.search) {
+            const searchRegex = new RegExp(req.query.search, 'i');
+            filterQuery.$or = [
+                { _id: { $regex: searchRegex } },
+                { 'user.name': { $regex: searchRegex } },
+                { 'user.email': { $regex: searchRegex } },
+                { 'orderItems.name': { $regex: searchRegex } }
+            ];
+            console.log('🔍 Applying search filter:', req.query.search);
+        }
+        
         console.log('📊 Orders pagination params:', { page, limit, skip });
+        console.log('🔍 Filter query:', filterQuery);
         
-        // Get total count for pagination
-        const totalOrders = await Order.countDocuments();
+        // Get total count for pagination with filters
+        const totalOrders = await Order.countDocuments(filterQuery);
         
-        // Get orders with pagination and limited population
-        const orders = await Order.find()
+        // Get orders with pagination, filters, and limited population
+        const orders = await Order.find(filterQuery)
             .populate('user', 'name email')
             .populate({
                 path: 'orderItems.product',
