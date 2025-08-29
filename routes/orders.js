@@ -141,6 +141,40 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
       console.log('✅ COD order validated for authenticated user');
     }
 
+    // Validate stock availability before creating order
+    try {
+      console.log('📦 Validating stock availability...');
+      for (const item of safeOrderItems) {
+        if (item.product && item.quantity) {
+          const product = await Product.findById(item.product);
+          if (!product) {
+            console.error(`❌ Product not found: ${item.product}`);
+            return res.status(400).json({
+              success: false,
+              message: `Product not found: ${item.name}`
+            });
+          }
+          
+          if (product.stock < item.quantity) {
+            console.error(`❌ Insufficient stock for product ${item.product}: requested ${item.quantity}, available ${product.stock}`);
+            return res.status(400).json({
+              success: false,
+              message: `Insufficient stock for ${item.name}. Available: ${product.stock}, Requested: ${item.quantity}`
+            });
+          }
+          
+          console.log(`✅ Stock validated for ${item.name}: ${product.stock} available, ${item.quantity} requested`);
+        }
+      }
+      console.log('✅ All products have sufficient stock');
+    } catch (stockValidationError) {
+      console.error('❌ Error validating stock:', stockValidationError);
+      return res.status(500).json({
+        success: false,
+        message: 'Error validating product stock'
+      });
+    }
+
     const order = await Order.create({
       orderItems: safeOrderItems,
       shippingInfo: validatedShippingAddress,
@@ -152,6 +186,22 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
     });
 
     console.log('✅ Order created successfully:', order._id);
+
+    // Update product stock quantities
+    try {
+      console.log('📦 Updating product stock quantities...');
+      for (const item of safeOrderItems) {
+        if (item.product && item.quantity) {
+          await updateStock(item.product, item.quantity);
+          console.log(`✅ Stock updated for product ${item.product}: -${item.quantity}`);
+        }
+      }
+      console.log('✅ All product stock quantities updated successfully');
+    } catch (stockError) {
+      console.error('❌ Error updating product stock:', stockError);
+      // Don't fail the order if stock update fails, but log the error
+      // In production, you might want to implement a retry mechanism or alert system
+    }
 
     // Save address if requested
     if (saveAddress && req.user.role === 'user') {
@@ -547,6 +597,21 @@ router.post('/:id/cancel', isAuthenticatedUser, async (req, res) => {
     
     await order.save();
     
+    // Restore product stock quantities
+    try {
+      console.log('📦 Restoring product stock quantities...');
+      for (const item of order.orderItems) {
+        if (item.product && item.quantity) {
+          await restoreStock(item.product, item.quantity);
+          console.log(`✅ Stock restored for product ${item.product}: +${item.quantity}`);
+        }
+      }
+      console.log('✅ All product stock quantities restored successfully');
+    } catch (stockError) {
+      console.error('❌ Error restoring product stock:', stockError);
+      // Don't fail the cancellation if stock restoration fails, but log the error
+    }
+    
     console.log('✅ Order cancelled by customer:', order._id);
     
     res.status(200).json({
@@ -608,6 +673,21 @@ router.post('/admin/:id/cancel', isAuthenticatedUser, authorizeRoles('admin'), a
     };
     
     await order.save();
+    
+    // Restore product stock quantities
+    try {
+      console.log('📦 Restoring product stock quantities...');
+      for (const item of order.orderItems) {
+        if (item.product && item.quantity) {
+          await restoreStock(item.product, item.quantity);
+          console.log(`✅ Stock restored for product ${item.product}: +${item.quantity}`);
+        }
+      }
+      console.log('✅ All product stock quantities restored successfully');
+    } catch (stockError) {
+      console.error('❌ Error restoring product stock:', stockError);
+      // Don't fail the cancellation if stock restoration fails, but log the error
+    }
     
     console.log('✅ Order cancelled by admin:', order._id);
     
@@ -773,6 +853,14 @@ async function updateStock(id, quantity) {
   const product = await Product.findById(id);
 
   product.stock = product.stock - quantity;
+
+  await product.save({ validateBeforeSave: false });
+}
+
+async function restoreStock(id, quantity) {
+  const product = await Product.findById(id);
+
+  product.stock = product.stock + quantity;
 
   await product.save({ validateBeforeSave: false });
 }
