@@ -190,15 +190,35 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
     // Update product stock quantities
     try {
       console.log('📦 Updating product stock quantities...');
+      let stockUpdateSuccess = true;
+      
       for (const item of safeOrderItems) {
         if (item.product && item.quantity) {
-          await updateStock(item.product, item.quantity);
-          console.log(`✅ Stock updated for product ${item.product}: -${item.quantity}`);
+          try {
+            await updateStock(item.product, item.quantity);
+            console.log(`✅ Stock updated for product ${item.product}: -${item.quantity}`);
+          } catch (itemStockError) {
+            console.error(`❌ Failed to update stock for product ${item.product}:`, itemStockError);
+            stockUpdateSuccess = false;
+            // Continue with other items but mark overall success as false
+          }
         }
       }
-      console.log('✅ All product stock quantities updated successfully');
+      
+      if (stockUpdateSuccess) {
+        console.log('✅ All product stock quantities updated successfully');
+      } else {
+        console.error('⚠️ Some stock updates failed - check logs above');
+        // In production, you might want to send an alert or create a retry job
+      }
     } catch (stockError) {
-      console.error('❌ Error updating product stock:', stockError);
+      console.error('❌ Critical error updating product stock:', stockError);
+      console.error('❌ Stock update error details:', {
+        error: stockError.message,
+        stack: stockError.stack,
+        orderId: order._id,
+        items: safeOrderItems.map(item => ({ product: item.product, quantity: item.quantity }))
+      });
       // Don't fail the order if stock update fails, but log the error
       // In production, you might want to implement a retry mechanism or alert system
     }
@@ -850,19 +870,55 @@ router.post('/:id/notes', isAuthenticatedUser, async (req, res) => {
 });
 
 async function updateStock(id, quantity) {
-  const product = await Product.findById(id);
-
-  product.stock = product.stock - quantity;
-
-  await product.save({ validateBeforeSave: false });
+  try {
+    console.log(`🔄 Updating stock for product ${id} by -${quantity}`);
+    
+    const product = await Product.findById(id);
+    
+    if (!product) {
+      throw new Error(`Product not found with ID: ${id}`);
+    }
+    
+    const oldStock = product.stock;
+    const newStock = oldStock - quantity;
+    
+    if (newStock < 0) {
+      throw new Error(`Stock would become negative: ${oldStock} - ${quantity} = ${newStock}`);
+    }
+    
+    product.stock = newStock;
+    await product.save({ validateBeforeSave: false });
+    
+    console.log(`✅ Stock updated successfully: ${oldStock} → ${newStock} (-${quantity})`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Stock update failed for product ${id}:`, error.message);
+    throw error; // Re-throw to be handled by caller
+  }
 }
 
 async function restoreStock(id, quantity) {
-  const product = await Product.findById(id);
-
-  product.stock = product.stock + quantity;
-
-  await product.save({ validateBeforeSave: false });
+  try {
+    console.log(`🔄 Restoring stock for product ${id} by +${quantity}`);
+    
+    const product = await Product.findById(id);
+    
+    if (!product) {
+      throw new Error(`Product not found with ID: ${id}`);
+    }
+    
+    const oldStock = product.stock;
+    const newStock = oldStock + quantity;
+    
+    product.stock = newStock;
+    await product.save({ validateBeforeSave: false });
+    
+    console.log(`✅ Stock restored successfully: ${oldStock} → ${newStock} (+${quantity})`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Stock restoration failed for product ${id}:`, error.message);
+    throw error; // Re-throw to be handled by caller
+  }
 }
 
 module.exports = router; 
