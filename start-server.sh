@@ -1,21 +1,20 @@
 #!/bin/bash
+cd "$(dirname "$0")"
+export NODE_ENV=production
+export PORT=3001
 
-echo "🚀 Starting Laiq Bags Server..."
-
-# Kill any existing Node.js processes on port 3001
-echo "🔧 Checking for existing processes..."
-lsof -ti:3001 | xargs kill -9 2>/dev/null || echo "✅ No existing processes found"
-
-# Wait for port to be free
-sleep 2
-
-# Check if MongoDB is accessible
-echo "📊 Checking MongoDB connection..."
-if curl -s http://localhost:3001/api/health > /dev/null 2>&1; then
-    echo "❌ Port 3001 is still in use"
-    exit 1
+# Check if PM2 is installed
+if command -v pm2 &> /dev/null; then
+    echo "🚀 Starting server with PM2..."
+    pm2 start ecosystem.config.js
+    pm2 save
+    pm2 startup
+else
+    echo "🚀 Starting server with Node.js..."
+    nohup node server.js > logs/server.log 2>&1 &
+    echo $! > server.pid
 fi
 
-# Start the server
-echo "🚀 Starting server..."
-node server.js 
+echo "✅ Server started successfully!"
+echo "📊 Monitor logs: tail -f logs/server.log"
+echo "🔗 Server URL: http://localhost:3001"
