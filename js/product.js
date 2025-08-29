@@ -256,8 +256,10 @@ async function loadProductFromAPI(productIdentifier, identifierType = 'id') {
         
         console.log('🌐 API URL:', apiUrl);
         
-        // Add cache-busting parameter
-        const response = await api.getProduct(productIdentifier + '?_t=' + Date.now());
+        // Add cache-busting parameter and use correct API URL
+        const separator = apiUrl.includes('?') ? '&' : '?';
+        const finalApiUrl = apiUrl + separator + '_t=' + Date.now();
+        const response = await api.getProduct(finalApiUrl);
         console.log('📦 API Response:', response);
         
         if (!response || !response.product) {
