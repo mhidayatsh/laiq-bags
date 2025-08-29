@@ -24,12 +24,12 @@ function resolveApiBaseUrl() {
       }
 
       // Default dev API
-      return 'http://localhost:3001/api';
+      return 'http://localhost:3003/api';
     }
   } catch (_) {
     // no-op, fall back below
   }
-  return 'http://localhost:3001/api';
+  return 'http://localhost:3003/api';
 }
 
 const API_BASE_URL = resolveApiBaseUrl();

@@ -8,11 +8,11 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
-// Load environment variables based on NODE_ENV
-const envPath = process.env.NODE_ENV === 'production' 
-  ? './config.env.production' 
-  : './config.env';
-require('dotenv').config({ path: envPath });
+// Load environment variables - use .env for development, config.env.production for production
+require('dotenv').config({ path: './.env' });
+if (process.env.NODE_ENV === 'production') {
+  require('dotenv').config({ path: './config.env.production' });
+}
 
 // Server Configuration
 const PORT = process.env.PORT || 3001;
@@ -116,6 +116,8 @@ app.use(helmet({
         "'self'", 
         "http://localhost:3001",
         "http://127.0.0.1:3001",
+        "http://localhost:3003",
+        "http://127.0.0.1:3003",
         "https://localhost:3443",
         "https://127.0.0.1:3443",
         "https://api.razorpay.com",
@@ -145,6 +147,8 @@ app.use(cors({
     'http://127.0.0.1:8000',
     'http://localhost:3001',
     'http://127.0.0.1:3001',
+    'http://localhost:3003',
+    'http://127.0.0.1:3003',
     'https://localhost:3443',
     'https://127.0.0.1:3443',
     'null'
