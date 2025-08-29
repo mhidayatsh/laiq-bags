@@ -15,10 +15,14 @@ async function forceRefreshProductDetails() {
     clearProductCache();
     
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
+    const slug = urlParams.get('slug');
+    const id = urlParams.get('id');
     
-    if (productId) {
-        await loadProductFromAPI(productId);
+    if (slug) {
+        await loadProductFromAPI(slug, 'slug');
+        renderProductDetail();
+    } else if (id) {
+        await loadProductFromAPI(id, 'id');
         renderProductDetail();
     }
 }
@@ -43,36 +47,48 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     try {
-        // Get product ID from URL - support both query parameter and SEO-friendly URLs
-        let productId = null;
+        // Get product identifier from URL - support both slug and ID parameters
+        let productIdentifier = null;
+        let identifierType = null;
         
-        // First try query parameter format (?id=...)
+        // First try slug parameter format (?slug=...)
         const urlParams = new URLSearchParams(window.location.search);
-        productId = urlParams.get('id');
+        const slug = urlParams.get('slug');
+        const id = urlParams.get('id');
         
-        // If not found, try SEO-friendly URL format (/product/product-name-id)
-        if (!productId) {
+        if (slug) {
+            productIdentifier = slug;
+            identifierType = 'slug';
+            console.log('🔍 Found product slug:', slug);
+        } else if (id) {
+            productIdentifier = id;
+            identifierType = 'id';
+            console.log('🔍 Found product ID:', id);
+        } else {
+            // If not found, try SEO-friendly URL format (/product/product-name-id)
             const pathSegments = window.location.pathname.split('/');
             const lastSegment = pathSegments[pathSegments.length - 1];
             
             // Check if last segment contains a valid ObjectId (24 character hex string)
             if (lastSegment && /^[0-9a-fA-F]{24}$/.test(lastSegment)) {
-                productId = lastSegment;
+                productIdentifier = lastSegment;
+                identifierType = 'id';
             } else if (lastSegment && lastSegment.includes('-')) {
                 // Extract ID from format: product-name-id
                 const parts = lastSegment.split('-');
                 const potentialId = parts[parts.length - 1];
                 if (/^[0-9a-fA-F]{24}$/.test(potentialId)) {
-                    productId = potentialId;
+                    productIdentifier = potentialId;
+                    identifierType = 'id';
                 }
             }
         }
         
-        console.log('🔍 Product ID from URL:', productId);
+        console.log('🔍 Product identifier from URL:', productIdentifier, 'Type:', identifierType);
         
-        if (!productId) {
-            console.error('❌ No product ID found in URL');
-            showError('Product ID not found');
+        if (!productIdentifier) {
+            console.error('❌ No product identifier found in URL');
+            showError('Product not found');
             return;
         }
         
@@ -82,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Load product from API with caching
         console.log('📡 Starting to load product from API');
-        await loadProductFromAPI(productId);
+        await loadProductFromAPI(productIdentifier, identifierType);
         
         // Render product details first, then hide loader after first paint (or main image load)
         console.log('🎨 Starting to render product details');
@@ -218,21 +234,30 @@ async function waitForImagesOrFallbacks(timeout = 3000) {
 }
 
 // Load product from API with caching
-async function loadProductFromAPI(productId) {
+async function loadProductFromAPI(productIdentifier, identifierType = 'id') {
     try {
-        console.log('📡 Loading product from API:', productId);
-        console.log('🌐 API URL:', `${api.baseURL}/products/${productId}`);
+        console.log('📡 Loading product from API:', productIdentifier, 'Type:', identifierType);
         
         // Check cache first
-        const cachedProduct = productCache.get(productId);
+        const cachedProduct = productCache.get(productIdentifier);
         if (cachedProduct && (Date.now() - cachedProduct.timestamp) < PRODUCT_CACHE_DURATION) {
             console.log('📦 Using cached product data');
             currentProduct = cachedProduct.data;
             return;
         }
         
+        // Build API URL based on identifier type
+        let apiUrl;
+        if (identifierType === 'slug') {
+            apiUrl = `${api.baseURL}/products?slug=${encodeURIComponent(productIdentifier)}`;
+        } else {
+            apiUrl = `${api.baseURL}/products/${productIdentifier}`;
+        }
+        
+        console.log('🌐 API URL:', apiUrl);
+        
         // Add cache-busting parameter
-        const response = await api.getProduct(productId + '?_t=' + Date.now());
+        const response = await api.getProduct(productIdentifier + '?_t=' + Date.now());
         console.log('📦 API Response:', response);
         
         if (!response || !response.product) {
@@ -248,7 +273,7 @@ async function loadProductFromAPI(productId) {
         console.log('📝 Product ratings from API:', currentProduct.ratings);
         
         // Cache the product
-        productCache.set(productId, {
+        productCache.set(productIdentifier, {
             data: currentProduct,
             timestamp: Date.now()
         });
@@ -265,7 +290,7 @@ async function loadProductFromAPI(productId) {
         console.error('❌ Failed to load product from API:', error);
         
         // Try cached data as fallback
-        const cachedProduct = productCache.get(productId);
+        const cachedProduct = productCache.get(productIdentifier);
         if (cachedProduct) {
             console.log('⚠️ Using cached product data as fallback');
             currentProduct = cachedProduct.data;
@@ -276,10 +301,14 @@ async function loadProductFromAPI(productId) {
         console.log('⚠️ Using local data as final fallback');
         const localProducts = PRODUCTS || [];
         
-        // Try to find product by ID (for both numeric and ObjectId formats)
-        currentProduct = localProducts.find(p => p.id == productId);
+        // Try to find product by slug or ID
+        if (identifierType === 'slug') {
+            currentProduct = localProducts.find(p => p.slug === productIdentifier);
+        } else {
+            currentProduct = localProducts.find(p => p.id == productIdentifier);
+        }
         
-        // If not found by ID, show product not found page
+        // If not found, show product not found page
         if (!currentProduct) {
             console.warn('⚠️ Product not found in local data');
             showProductNotFound();
