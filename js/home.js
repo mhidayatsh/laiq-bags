@@ -121,7 +121,6 @@ async function loadFeaturedProducts() {
         console.error('❌ Failed to load featured products from API:', error);
         throw error;
     }
-}
 
 // Simplified image handling - using standard onerror fallback
 }
