@@ -187,7 +187,25 @@ class ApiService {
                 throw new Error(errorMessage);
             }
             
-            return await response.json();
+            const responseText = await response.text();
+            
+            // Log the response for debugging
+            console.log('🔍 API Response received:', {
+                url: url,
+                status: response.status,
+                contentType: response.headers.get('content-type'),
+                responseLength: responseText.length,
+                firstChars: responseText.substring(0, 100)
+            });
+            
+            // Try to parse as JSON
+            try {
+                return JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ JSON Parse Error:', parseError);
+                console.error('📄 Response content:', responseText);
+                throw new Error(`Invalid JSON response: ${parseError.message}`);
+            }
         } catch (error) {
             console.error('API Request failed:', error);
             
