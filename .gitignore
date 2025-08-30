@@ -121,4 +121,10 @@ build/
 test/
 tests/
 *.test.js
-*.spec.js 
+*.spec.js
+
+# Backup files
+*.backup
+*.backup.*
+backup/
+backups/ 
