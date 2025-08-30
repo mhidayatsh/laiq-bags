@@ -176,7 +176,7 @@ class AuthModule {
             console.log('🔄 Refreshing authentication token...');
             
             // Call refresh endpoint
-            const response = await fetch('/api/auth/refresh', {
+            const response = await fetch('https://www.laiq.shop/api/auth/refresh', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.authState.token}`,
@@ -280,7 +280,7 @@ class AuthModule {
             
             // Call logout endpoint
             if (this.authState.token) {
-                await fetch('/api/auth/logout', {
+                await fetch('https://www.laiq.shop/api/auth/logout', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${this.authState.token}`

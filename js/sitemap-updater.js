@@ -2,7 +2,7 @@
 // Sitemap Updater for Product Pages
 async function updateProductSitemap() {
     try {
-        const response = await fetch('/api/products');
+        const response = await fetch('https://www.laiq.shop/api/products');
         const products = await response.json();
         
         const productUrls = products.map(product => {

@@ -2474,7 +2474,7 @@ function initializeContactForm() {
             }
             
             // Send contact form data
-            const response = await fetch('/api/contact/submit', {
+            const response = await fetch('https://www.laiq.shop/api/contact/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

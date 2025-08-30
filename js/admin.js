@@ -4929,7 +4929,7 @@ async function loadContactMessages(page = 1, limit = 10) {
         const status = document.getElementById('message-status-filter')?.value || '';
         const search = document.getElementById('message-search')?.value || '';
         
-        const response = await fetch(`/api/contact/messages?page=${page}&limit=${limit}&status=${status}&search=${encodeURIComponent(search)}`, {
+        const response = await fetch(`https://www.laiq.shop/api/contact/messages?page=${page}&limit=${limit}&status=${status}&search=${encodeURIComponent(search)}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('customerToken')}`
             }
@@ -5058,7 +5058,7 @@ function updateContactMessagesPagination(pagination) {
 // Load contact messages statistics
 async function loadContactMessagesStats() {
     try {
-        const response = await fetch('/api/contact/stats', {
+        const response = await fetch('https://www.laiq.shop/api/contact/stats', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('customerToken')}`
             }
@@ -5080,7 +5080,7 @@ async function loadContactMessagesStats() {
 // View contact message details
 async function viewContactMessage(messageId) {
     try {
-        const response = await fetch(`/api/contact/messages/${messageId}`, {
+        const response = await fetch(`https://www.laiq.shop/api/contact/messages/${messageId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('customerToken')}`
             }
@@ -5171,7 +5171,7 @@ async function viewContactMessage(messageId) {
 // Mark message as read
 async function markMessageAsRead(messageId) {
     try {
-        const response = await fetch(`/api/contact/messages/${messageId}/read`, {
+        const response = await fetch(`https://www.laiq.shop/api/contact/messages/${messageId}/read`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('customerToken')}`
@@ -5222,7 +5222,7 @@ async function sendReply() {
     }
     
     try {
-        const response = await fetch(`/api/contact/messages/${currentMessageId}/reply`, {
+        const response = await fetch(`https://www.laiq.shop/api/contact/messages/${currentMessageId}/reply`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -5255,7 +5255,7 @@ async function deleteContactMessage(messageId) {
     }
     
     try {
-        const response = await fetch(`/api/contact/messages/${messageId}`, {
+        const response = await fetch(`https://www.laiq.shop/api/contact/messages/${messageId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('customerToken')}`
