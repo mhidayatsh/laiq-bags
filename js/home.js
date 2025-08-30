@@ -115,15 +115,28 @@ async function loadFeaturedProducts() {
         featuredProducts = (response && response.products) ? response.products : [];
         console.log(`✅ Loaded ${featuredProducts.length} featured products from API`);
         
-        // Render featured products
-        renderFeaturedProducts();
-    } catch (error) {
-        console.error('❌ Failed to load featured products from API:', error);
-        throw error;
+        
+// Enhanced image loading handler
+function handleImageLoad(img) {
+    const fallback = img.nextElementSibling;
+    if (fallback && fallback.tagName === 'DIV') {
+        fallback.style.display = 'none';
+    }
+    img.style.display = 'block';
+}
+
+// Enhanced image error handler
+function handleImageError(img) {
+    img.onerror = null;
+    img.src = 'assets/thumbnail.jpg';
+    img.style.display = 'block';
+    const fallback = img.nextElementSibling;
+    if (fallback && fallback.tagName === 'DIV') {
+        fallback.style.display = 'none';
     }
 }
 
-// Render featured products
+// Update the renderFeaturedProducts function to use better image handling
 function renderFeaturedProducts() {
     const container = document.getElementById('featured-products');
     if (!container) return;
@@ -151,8 +164,14 @@ function renderFeaturedProducts() {
                         <img src="${imgSrc}" alt="${product.name}"
                              loading="lazy" decoding="async" fetchpriority="low"
                              width="400" height="256"
-                             onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
+                             onload="handleImageLoad(this)"
+                             onerror="handleImageError(this)"
+                             style="display: none;"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <!-- Fallback div that shows while image loads -->
+                        <div class="w-full h-64 bg-gray-200 flex items-center justify-center" style="display: block;">
+                            <div class="text-gray-400 text-sm">Loading...</div>
+                        </div>
                     </a>
                     
                     <!-- Discount Badge -->
