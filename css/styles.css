@@ -235,14 +235,3 @@ html, body {
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
-/* Prevent layout shifts in featured products container */
-#featured-products {
-    min-height: 400px; /* Reserve space for skeleton loader */
-}
-
-/* Ensure skeleton cards have proper dimensions */
-#featured-products .animate-pulse {
-    height: 400px;
-    width: 100%;
-}

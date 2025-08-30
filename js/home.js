@@ -1,57 +1,4 @@
 // Home Page JavaScript
-
-// Add skeleton loader to prevent layout shift - IMMEDIATE execution
-(function() {
-    // Show skeleton immediately, don't wait for DOMContentLoaded
-    const container = document.getElementById('featured-products');
-    if (container) {
-        const skeletonHTML = Array(4).fill(0).map(() => `
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
-                <div class="relative">
-                    <div class="w-full h-64 bg-gray-200"></div>
-                    <div class="absolute top-3 left-3 w-16 h-6 bg-gray-200 rounded-full"></div>
-                </div>
-                <div class="p-4">
-                    <div class="h-6 bg-gray-200 rounded mb-2"></div>
-                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
-                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
-                    <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-            </div>
-        `).join('');
-        container.innerHTML = skeletonHTML;
-        console.log('🔄 Skeleton loader applied immediately');
-    }
-})();
-
-// Also show skeleton on DOMContentLoaded as backup
-function showHomeSkeletonLoader() {
-    const container = document.getElementById('featured-products');
-    if (container && container.children.length === 0) {
-        const skeletonHTML = Array(4).fill(0).map(() => `
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
-                <div class="relative">
-                    <div class="w-full h-64 bg-gray-200"></div>
-                    <div class="absolute top-3 left-3 w-16 h-6 bg-gray-200 rounded-full"></div>
-                </div>
-                <div class="p-4">
-                    <div class="h-6 bg-gray-200 rounded mb-2"></div>
-                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
-                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
-                    <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-            </div>
-        `).join('');
-        container.innerHTML = skeletonHTML;
-        console.log('🔄 Skeleton loader applied on DOMContentLoaded');
-    }
-}
-
-// Show skeleton loader immediately when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    showHomeSkeletonLoader();
-});
-
 let featuredProducts = [];
 let countdownTimers = {};
 
@@ -121,40 +68,9 @@ async function loadFeaturedProducts() {
         console.error('❌ Failed to load featured products from API:', error);
         throw error;
     }
-
-// Simplified image handling - using standard onerror fallback
 }
 
-
-// Debug image loading
-function debugImageLoading() {
-    console.log('🔍 Debugging image loading...');
-    
-    // Check if images are loading
-    const images = document.querySelectorAll('#featured-products img');
-    console.log('📸 Found', images.length, 'images in featured products');
-    
-    images.forEach((img, index) => {
-        console.log(`Image ${index + 1}:`, {
-            src: img.src,
-            naturalWidth: img.naturalWidth,
-            naturalHeight: img.naturalHeight,
-            complete: img.complete,
-            currentSrc: img.currentSrc
-        });
-        
-        // Add event listeners to track loading
-        img.addEventListener('load', () => {
-            console.log(`✅ Image ${index + 1} loaded successfully:`, img.src);
-        });
-        
-        img.addEventListener('error', (e) => {
-            console.error(`❌ Image ${index + 1} failed to load:`, img.src, e);
-        });
-    });
-}
-
-// Call debug function after products are rendered
+// Render featured products
 function renderFeaturedProducts() {
     const container = document.getElementById('featured-products');
     if (!container) return;
@@ -174,25 +90,16 @@ function renderFeaturedProducts() {
         const originalPrice = product.price;
         const productId = product._id || product.id;
         
-        // Use a reliable fallback chain
-        const imgSrc = product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg';
-        
-        console.log('🖼️ Rendering product image:', {
-            productName: product.name,
-            imgSrc: imgSrc,
-            hasImage: !!product.images?.[0]?.url,
-            hasFallback: !!product.image
-        });
-        
         return `
             <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div class="relative">
                     <a href="product?id=${productId}" class="block">
-                        <img src="${imgSrc}" alt="${product.name}"
-                             loading="lazy" decoding="async" fetchpriority="low"
-                             width="400" height="256"
-                             onerror="this.onerror=null; this.src='assets/thumbnail.jpg'; console.log('🔄 Fallback to thumbnail for:', this.alt);"
-                             onload="console.log('✅ Image loaded:', this.src);"
+                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" 
+                             alt="${product.name}" 
+                             loading="lazy" 
+                             decoding="async" 
+                             fetchpriority="low"
+                             onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
                     
@@ -260,161 +167,30 @@ function renderFeaturedProducts() {
         `;
     }).join('');
     
+    // Initialize countdown timers for products with active discounts
+    featuredProducts.forEach(product => {
+        if (product.discountInfo && product.discountInfo.status === 'active' && product.discountInfo.timeRemaining) {
+            initializeCountdownTimer(product._id || product.id, product.discountInfo.timeRemaining);
+        }
+    });
+    
     // Add event listeners for add to cart buttons
-    addFeaturedProductEventListeners();
-    
-    // Debug image loading after rendering
-    setTimeout(debugImageLoading, 100);
+    addCartEventListeners();
 }
 
-// Add event listeners to featured product buttons
-function addFeaturedProductEventListeners() {
-    // Add to Cart buttons
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', handleAddToCart);
-    });
+// Get display price (with discount if applicable)
+function getDisplayPrice(product) {
+    if (product.discountInfo && product.discountInfo.status === 'active') {
+        const discountValue = parseFloat(product.discountInfo.value.replace('%', ''));
+        return Math.round(product.price * (1 - discountValue / 100));
+    }
+    return product.price;
 }
-
-// Handle Add to Cart
-function handleAddToCart(e) {
-    const btn = e.currentTarget;
-    const productId = btn.dataset.id;
-    const productName = btn.dataset.name;
-    const productPrice = parseInt(btn.dataset.price);
-    const productImage = btn.dataset.image;
-    
-    console.log('🛒 Adding to cart from home page:', productName);
-    
-    // Find the product to check color variants
-    const product = featuredProducts.find(p => (p._id || p.id) === productId);
-    
-    if (!product) {
-        console.error('❌ Product not found:', productId);
-        showToast('Product not found', 'error');
-        return;
-    }
-    
-    // Check if product has multiple color variants
-    const hasMultipleColors = product.colorVariants && product.colorVariants.length > 1;
-    const hasLegacyColors = product.colors && product.colors.length > 1;
-    
-    if (hasMultipleColors || hasLegacyColors) {
-        // Multi-color product - redirect to product detail page
-        console.log('🎨 Multi-color product detected, redirecting to product detail');
-        showToast('Please select a color on the product page', 'info');
-        
-        // Redirect to product detail page
-        window.location.href = `/product?id=${productId}`;
-        return;
-    }
-    
-    // Single color or no color variants - auto-add to cart
-    let selectedColor = null;
-    
-    if (product.colorVariants && product.colorVariants.length === 1) {
-        // Single color variant
-        const colorVariant = product.colorVariants[0];
-        if (colorVariant.isAvailable && colorVariant.stock > 0) {
-            selectedColor = { name: colorVariant.name, code: colorVariant.code || '#000000' };
-            console.log('🎨 Auto-selected single color variant:', selectedColor);
-        }
-    } else if (product.colors && product.colors.length === 1) {
-        // Single legacy color
-        selectedColor = { name: product.colors[0], code: '#000000' };
-        console.log('🎨 Auto-selected single legacy color:', selectedColor);
-    }
-    
-    console.log('🎨 Final selected color for cart:', selectedColor);
-    
-    // Add to cart with color information
-    addToCart(productId, productName, productPrice, productImage, selectedColor);
-    
-    // Show success message
-    showToast('Added to cart!', 'success');
-    
-    // Update cart count
-    updateCartCount();
-}
-
-// Initialize newsletter
-function initializeNewsletter() {
-    const form = document.getElementById('newsletter-form');
-    if (!form) return;
-    
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const emailInput = document.getElementById('newsletter-email');
-        const email = emailInput.value.trim();
-        
-        if (!email) {
-            showToast('Please enter your email address', 'error');
-            return;
-        }
-        
-        try {
-            console.log('📧 Subscribing to newsletter:', email);
-            
-            // Try API first
-            try {
-                await api.subscribeNewsletter(email);
-                showToast('Successfully subscribed to newsletter!', 'success');
-            } catch (apiError) {
-                console.log('⚠️ API failed, using localStorage fallback');
-                // Fallback to localStorage
-                const subscribers = JSON.parse(localStorage.getItem('newsletter_subscribers') || '[]');
-                if (!subscribers.includes(email)) {
-                    subscribers.push(email);
-                    localStorage.setItem('newsletter_subscribers', JSON.stringify(subscribers));
-                }
-                showToast('Successfully subscribed to newsletter!', 'success');
-            }
-            
-            emailInput.value = '';
-        } catch (error) {
-            console.error('❌ Newsletter subscription failed:', error);
-            showToast('Failed to subscribe. Please try again.', 'error');
-        }
-    });
-}
-
-// Show toast notification
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all duration-300 transform translate-x-full`;
-    
-    switch (type) {
-        case 'success':
-            toast.classList.add('bg-green-500');
-            break;
-        case 'error':
-            toast.classList.add('bg-red-500');
-            break;
-        default:
-            toast.classList.add('bg-charcoal');
-    }
-    
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => {
-        toast.classList.remove('translate-x-full');
-    }, 100);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        toast.classList.add('translate-x-full');
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 300);
-    }, 3000);
-} 
 
 // Generate star rating HTML
 function generateStars(rating) {
     const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+    const hasHalfStar = rating % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     
     let starsHTML = '';
@@ -435,28 +211,116 @@ function generateStars(rating) {
     }
     
     return starsHTML;
-} 
+}
 
-// Testimonials carousel
+// Initialize countdown timer
+function initializeCountdownTimer(productId, timeRemaining) {
+    const countdownElement = document.querySelector(`[data-countdown="${productId}"]`);
+    if (!countdownElement) return;
+    
+    let timeLeft = timeRemaining;
+    
+    const updateTimer = () => {
+        if (timeLeft <= 0) {
+            countdownElement.innerHTML = '<div class="text-red-500 text-sm font-semibold">Offer Expired!</div>';
+            return;
+        }
+        
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        countdownElement.innerHTML = `
+            <div class="text-xs text-charcoal/60 mb-1">Offer ends in:</div>
+            <div class="flex gap-1 text-xs">
+                <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${days.toString().padStart(2, '0')}</div>
+                <div class="text-charcoal/60 self-center">:</div>
+                <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${hours.toString().padStart(2, '0')}</div>
+                <div class="text-charcoal/60 self-center">:</div>
+                <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${minutes.toString().padStart(2, '0')}</div>
+                <div class="text-charcoal/60 self-center">:</div>
+                <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${seconds.toString().padStart(2, '0')}</div>
+            </div>
+        `;
+        
+        timeLeft -= 1000;
+    };
+    
+    updateTimer();
+    countdownTimers[productId] = setInterval(updateTimer, 1000);
+}
+
+// Get countdown timer HTML
+function getCountdownTimerHTML(productId, timeRemaining) {
+    const timeLeft = timeRemaining;
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    
+    return `
+        <div class="text-xs text-charcoal/60 mb-1">Offer ends in:</div>
+        <div class="flex gap-1 text-xs">
+            <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${days.toString().padStart(2, '0')}</div>
+            <div class="text-charcoal/60 self-center">:</div>
+            <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${hours.toString().padStart(2, '0')}</div>
+            <div class="text-charcoal/60 self-center">:</div>
+            <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${minutes.toString().padStart(2, '0')}</div>
+            <div class="text-charcoal/60 self-center">:</div>
+            <div class="bg-red-500 text-white px-2 py-1 rounded font-mono">${seconds.toString().padStart(2, '0')}</div>
+        </div>
+    `;
+}
+
+// Add cart event listeners
+function addCartEventListeners() {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+    
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            const productName = this.getAttribute('data-name');
+            const productPrice = parseFloat(this.getAttribute('data-price'));
+            const productImage = this.getAttribute('data-image');
+            
+            // Add to cart using the shared cart module
+            if (window.cartModule && window.cartModule.addToCart) {
+                window.cartModule.addToCart({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage,
+                    quantity: 1
+                });
+            } else {
+                console.error('Cart module not available');
+            }
+        });
+    });
+}
+
+// Initialize testimonials carousel
 function initializeTestimonialCarousel() {
     try {
-        const track = document.getElementById('testimonial-track');
-        const prevBtn = document.getElementById('testimonial-prev');
-        const nextBtn = document.getElementById('testimonial-next');
-        const wrapper = document.getElementById('testimonial-carousel');
-        if (!track || !wrapper) return;
-
-        const slides = Array.from(track.children);
-        if (slides.length === 0) return;
-
+        const wrapper = document.querySelector('.testimonials-carousel');
+        if (!wrapper) return;
+        
+        const track = wrapper.querySelector('.testimonials-track');
+        const slides = wrapper.querySelectorAll('.testimonial-slide');
+        const nextBtn = wrapper.querySelector('.next-btn');
+        const prevBtn = wrapper.querySelector('.prev-btn');
+        
+        if (!track || slides.length === 0) return;
+        
         let currentIndex = 0;
-        let autoTimer = null;
         let isAnimating = false;
-
-        // Enforce one-slide-per-view sizing
+        let autoTimer = null;
+        
+        const isMobile = window.innerWidth <= 768;
+        
         const applySizes = () => {
             const slideWidth = wrapper.clientWidth;
-            const isMobile = window.innerWidth <= 640;
             
             // Set each slide to exactly the wrapper width
             slides.forEach(slide => {
@@ -491,7 +355,7 @@ function initializeTestimonialCarousel() {
                 track.style.alignItems = 'center';
             }
         };
-
+        
         const goTo = (index) => {
             if (isAnimating) return;
             isAnimating = true;
@@ -501,19 +365,19 @@ function initializeTestimonialCarousel() {
             // Unlock after CSS transition
             setTimeout(() => { isAnimating = false; }, 520);
         };
-
+        
         const next = () => goTo(currentIndex + 1);
         const prev = () => goTo(currentIndex - 1);
-
+        
         const onManual = (fn) => {
             stopAuto();
             fn();
             startAuto();
         };
-
+        
         nextBtn && nextBtn.addEventListener('click', () => onManual(next));
         prevBtn && prevBtn.addEventListener('click', () => onManual(prev));
-
+        
         // Auto-rotate every 6s
         const startAuto = () => {
             stopAuto();
@@ -524,11 +388,11 @@ function initializeTestimonialCarousel() {
             autoTimer = null;
         };
         startAuto();
-
+        
         // Pause on hover (desktop)
         wrapper.addEventListener('mouseenter', stopAuto);
         wrapper.addEventListener('mouseleave', startAuto);
-
+        
         // Touch swipe (mobile)
         let touchStartX = 0;
         let touchDeltaX = 0;
@@ -546,14 +410,89 @@ function initializeTestimonialCarousel() {
             }
             startAuto();
         });
-
+        
         // Recalculate sizes on resize and keep position
         window.addEventListener('resize', applySizes);
-
+        
         // Initial position
         applySizes();
         goTo(0);
     } catch (e) {
         console.warn('Testimonials carousel init failed:', e);
     }
+}
+
+// Initialize newsletter form
+function initializeNewsletter() {
+    const form = document.getElementById('newsletter-form');
+    if (!form) return;
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = form.querySelector('input[type="email"]').value.trim();
+        if (!email) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/newsletter/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showNotification('Thank you for subscribing!', 'success');
+                form.reset();
+            } else {
+                showNotification(data.message || 'Subscription failed', 'error');
+            }
+        } catch (error) {
+            console.error('Newsletter subscription error:', error);
+            showNotification('Subscription failed. Please try again.', 'error');
+        }
+    });
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+    
+    // Set background color based on type
+    switch (type) {
+        case 'success':
+            notification.className += ' bg-green-500 text-white';
+            break;
+        case 'error':
+            notification.className += ' bg-red-500 text-white';
+            break;
+        default:
+            notification.className += ' bg-blue-500 text-white';
+    }
+    
+    notification.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
