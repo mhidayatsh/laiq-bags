@@ -50,6 +50,10 @@ class ApiService {
     async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
         
+        // Add cache-busting parameter to prevent CDN issues
+        const separator = url.includes('?') ? '&' : '?';
+        const cacheBustedUrl = url + separator + '_t=' + Date.now();
+        
         // Get token from localStorage with context-aware preference
         let token = null;
         try {
@@ -108,6 +112,8 @@ class ApiService {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache',
                 ...options.headers
             },
             ...options
@@ -136,7 +142,7 @@ class ApiService {
             if (options && options.keepalive === true) {
                 fetchOptions.keepalive = true;
             }
-            const response = await fetch(url, fetchOptions);
+            const response = await fetch(cacheBustedUrl, fetchOptions);
             
             if (timeoutId) {
                 clearTimeout(timeoutId);

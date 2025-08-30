@@ -291,6 +291,37 @@ async function loadProductFromAPI(productIdentifier, identifierType = 'id') {
     } catch (error) {
         console.error('❌ Failed to load product from API:', error);
         
+        // Enhanced error handling for HTML responses
+        if (error.message && error.message.includes('HTML')) {
+            console.warn('⚠️ Server returned HTML instead of JSON - possible CDN/redirect issue');
+            
+            // Try alternative API call method
+            try {
+                console.log('🔄 Attempting alternative API call...');
+                const alternativeResponse = await fetch(`https://www.laiq.shop/api/products/${productIdentifier}?_t=${Date.now()}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (alternativeResponse.ok) {
+                    const responseText = await alternativeResponse.text();
+                    if (responseText && !responseText.trim().startsWith('<!DOCTYPE')) {
+                        const data = JSON.parse(responseText);
+                        if (data && data.product) {
+                            currentProduct = data.product;
+                            console.log('✅ Product loaded via alternative API call:', currentProduct.name);
+                            return;
+                        }
+                    }
+                }
+            } catch (altError) {
+                console.error('❌ Alternative API call also failed:', altError);
+            }
+        }
+        
         // Try cached data as fallback
         const cachedProduct = productCache.get(productIdentifier);
         if (cachedProduct) {
