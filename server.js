@@ -1039,6 +1039,15 @@ if (process.env.NODE_ENV === 'production') {
   }));
   
   app.get('*', (req, res) => {
+    // Don't serve index.html for API routes - they should return JSON
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({
+        success: false,
+        message: 'API endpoint not found'
+      });
+    }
+    
+    // For non-API routes, serve the frontend
     res.sendFile(path.join(__dirname, 'index.html'));
   });
 }
@@ -1052,12 +1061,16 @@ app.post('/payment-callback.html', (req, res) => {
   res.redirect(`/payment-callback.html?${queryParams}`);
 });
 
-// 404 handler
+// 404 handler - differentiate between API and frontend routes
 app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({
+      success: false,
+      message: 'API endpoint not found'
+    });
+  } else {
+    res.status(404).send('Page not found');
+  }
 });
 
 // Global error handler
