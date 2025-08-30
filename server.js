@@ -696,7 +696,7 @@ app.use('/product/css', express.static(path.join(__dirname, 'css'), {
 }));
 
 // Dynamic product SEO route - MUST come BEFORE static file handler
-app.get('/product-share', async (req, res) => {
+app.get('/product', async (req, res) => {
     try {
       const { slug, id } = req.query;
       console.log('🔍 DYNAMIC Product page request:', { slug, id, url: req.url });
