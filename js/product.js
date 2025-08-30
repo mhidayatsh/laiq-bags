@@ -2265,7 +2265,7 @@ async function loadCategoryProducts(category) {
         }
         
         // Fetch products from API
-        const response = await fetch(`/api/products?category=${category}`);
+        const response = await fetch(`https://www.laiq.shop/api/products?category=${category}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -2658,7 +2658,7 @@ async function loadProductReviews(productId) {
     try {
         console.log('📝 Loading reviews for product:', productId);
         
-        const response = await fetch(`/api/review/${productId}`);
+        const response = await fetch(`https://www.laiq.shop/api/review/${productId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -2779,7 +2779,7 @@ function addReviewActionListeners() {
             
             try {
                 // Fetch review data using the correct endpoint
-                const response = await fetch(`/api/review/single/${reviewId}`);
+                const response = await fetch(`https://www.laiq.shop/api/review/single/${reviewId}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -2821,7 +2821,7 @@ function addReviewActionListeners() {
                         headers['Authorization'] = `Bearer ${token}`;
                     }
                     
-                    const response = await fetch(`/api/review/${reviewId}`, {
+                    const response = await fetch(`https://www.laiq.shop/api/review/${reviewId}`, {
                         method: 'DELETE',
                         headers: headers
                     });
