@@ -193,11 +193,13 @@ app.use((req, res, next) => {
   console.log(`🌐 Incoming request: ${protocol}://${host}${req.url} (User-Agent: ${userAgent?.substring(0, 50)}...)`);
   
   // Check if it's a production environment and the request is for the non-www domain
+  // BUT exclude API routes from redirect to prevent API call issues
   if (process.env.NODE_ENV === 'production' && 
       host === 'laiq.shop' && 
-      !host.startsWith('www.')) {
+      !host.startsWith('www.') &&
+      !req.url.startsWith('/api/')) {
     
-    // Redirect to www version with HTTPS
+    // Redirect to www version with HTTPS (but not for API calls)
     const redirectUrl = `https://www.laiq.shop${req.url}`;
     console.log(`🔄 Redirecting ${protocol}://${host}${req.url} to ${redirectUrl}`);
     return res.redirect(301, redirectUrl);
