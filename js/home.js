@@ -1,4 +1,32 @@
 // Home Page JavaScript
+
+// Add skeleton loader to prevent layout shift
+function showHomeSkeletonLoader() {
+    const container = document.getElementById('featured-products');
+    if (container) {
+        const skeletonHTML = Array(4).fill(0).map(() => `
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+                <div class="relative">
+                    <div class="w-full h-64 bg-gray-200"></div>
+                    <div class="absolute top-3 left-3 w-16 h-6 bg-gray-200 rounded-full"></div>
+                </div>
+                <div class="p-4">
+                    <div class="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        `).join('');
+        container.innerHTML = skeletonHTML;
+    }
+}
+
+// Show skeleton loader immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    showHomeSkeletonLoader();
+});
+
 let featuredProducts = [];
 let countdownTimers = {};
 
@@ -70,178 +98,6 @@ async function loadFeaturedProducts() {
     }
 }
 
-// Load local featured products as fallback
-function loadLocalFeaturedProducts() {
-    console.log('⚠️ Using local data as fallback');
-    const localProducts = window.products || [];
-    featuredProducts = localProducts.filter(p => p.featured).slice(0, 4);
-    renderFeaturedProducts();
-}
-
-// Get display price (with discount if applicable)
-function getDisplayPrice(product) {
-    // First check if discountInfo is available and active
-    if (product.discountInfo && product.discountInfo.status === 'active') {
-        return product.discountInfo.discountPrice;
-    }
-    
-    // Fallback: check discount manually with real-time validation
-    if (product.discount > 0) {
-        const now = new Date();
-        let isActive = true;
-        
-        // Check start date
-        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
-            isActive = false;
-        }
-        // Check end date
-        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
-            isActive = false;
-        }
-        
-        if (isActive) {
-            return Math.round(product.price * (1 - product.discount / 100));
-        }
-    }
-    
-    return product.price;
-}
-
-// Format time remaining for better display
-function formatTimeRemaining(timeRemaining) {
-    if (!timeRemaining) return null;
-    
-    const { days, hours, minutes } = timeRemaining;
-    
-    if (days > 0) {
-        return `${days} days ${hours} hours`;
-    } else if (hours > 0) {
-        return `${hours} hours ${minutes} minutes`;
-    } else {
-        return `${minutes} minutes`;
-    }
-}
-
-// Get countdown timer HTML
-function getCountdownTimerHTML(productId, timeRemaining) {
-    if (!timeRemaining) return '';
-    
-    const formattedTime = formatTimeRemaining(timeRemaining);
-    const urgencyClass = timeRemaining.days === 0 && timeRemaining.hours < 24 ? 'bg-red-500' : 'bg-orange-500';
-    
-    return `
-        <div class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div class="flex items-center justify-between mb-2">
-                <div class="text-xs text-red-600 font-medium">
-                    <i class="fas fa-clock mr-1"></i>Offer ends in:
-                </div>
-                <div class="text-xs text-red-500 font-bold">${formattedTime}</div>
-            </div>
-            <div class="flex items-center space-x-1 text-xs">
-                ${timeRemaining.days > 0 ? `
-                    <div class="flex flex-col items-center">
-                        <span class="${urgencyClass} text-white px-2 py-1 rounded font-bold">${timeRemaining.days}</span>
-                        <span class="text-red-600 text-xs mt-1">Days</span>
-                    </div>
-                ` : ''}
-                ${timeRemaining.hours > 0 ? `
-                    <div class="flex flex-col items-center">
-                        <span class="${urgencyClass} text-white px-2 py-1 rounded font-bold">${timeRemaining.hours}</span>
-                        <span class="text-red-600 text-xs mt-1">Hours</span>
-                    </div>
-                ` : ''}
-                <div class="flex flex-col items-center">
-                    <span class="${urgencyClass} text-white px-2 py-1 rounded font-bold">${timeRemaining.minutes}</span>
-                    <span class="text-red-600 text-xs mt-1">Mins</span>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Start countdown timers for all products
-function startCountdownTimers() {
-    // Clear existing timers
-    Object.values(countdownTimers).forEach(timer => clearInterval(timer));
-    countdownTimers = {};
-    
-    featuredProducts.forEach(product => {
-        if (product.discountInfo && product.discountInfo.status === 'active' && product.discountInfo.timeRemaining) {
-            const productId = product._id || product.id;
-            countdownTimers[productId] = setInterval(() => {
-                updateCountdownTimer(productId, product.discountInfo.timeRemaining);
-            }, 60000); // Update every minute
-        }
-    });
-}
-
-// Update countdown timer for specific product
-function updateCountdownTimer(productId, timeRemaining) {
-    if (!timeRemaining) return;
-    
-    const timerContainer = document.querySelector(`[data-countdown="${productId}"]`);
-    if (!timerContainer) return;
-    
-    // Calculate new time remaining
-    const now = new Date();
-    const endDate = new Date(now.getTime() + 
-        (timeRemaining.days * 24 * 60 * 60 * 1000) + 
-        (timeRemaining.hours * 60 * 60 * 1000) + 
-        (timeRemaining.minutes * 60 * 1000));
-    
-    const diff = endDate - now;
-    
-    if (diff <= 0) {
-        // Timer expired
-        timerContainer.innerHTML = `
-            <div class="mb-3 p-3 bg-gray-100 border border-gray-300 rounded-lg">
-                <div class="text-xs text-gray-600 font-medium text-center">
-                    <i class="fas fa-clock mr-1"></i>Offer Expired
-                </div>
-            </div>
-        `;
-        clearInterval(countdownTimers[productId]);
-        return;
-    }
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    const newTimeRemaining = { days, hours, minutes };
-    const formattedTime = formatTimeRemaining(newTimeRemaining);
-    const urgencyClass = days === 0 && hours < 24 ? 'bg-red-500' : 'bg-orange-500';
-    
-    timerContainer.innerHTML = `
-        <div class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div class="flex items-center justify-between mb-2">
-                <div class="text-xs text-red-600 font-medium">
-                    <i class="fas fa-clock mr-1"></i>Offer ends in:
-                </div>
-                <div class="text-xs text-red-500 font-bold">${formattedTime}</div>
-            </div>
-            <div class="flex items-center space-x-1 text-xs">
-                ${days > 0 ? `
-                    <div class="flex flex-col items-center">
-                        <span class="${urgencyClass} text-white px-2 py-1 rounded font-bold">${days}</span>
-                        <span class="text-red-600 text-xs mt-1">Days</span>
-                    </div>
-                ` : ''}
-                ${hours > 0 ? `
-                    <div class="flex flex-col items-center">
-                        <span class="${urgencyClass} text-white px-2 py-1 rounded font-bold">${hours}</span>
-                        <span class="text-red-600 text-xs mt-1">Hours</span>
-                    </div>
-                ` : ''}
-                <div class="flex flex-col items-center">
-                    <span class="${urgencyClass} text-white px-2 py-1 rounded font-bold">${minutes}</span>
-                    <span class="text-red-600 text-xs mt-1">Mins</span>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
 // Render featured products
 function renderFeaturedProducts() {
     const container = document.getElementById('featured-products');
@@ -269,6 +125,7 @@ function renderFeaturedProducts() {
                     <a href="product?id=${productId}" class="block">
                         <img src="${imgSrc}" alt="${product.name}"
                              loading="lazy" decoding="async" fetchpriority="low"
+                             width="400" height="256"
                              onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
