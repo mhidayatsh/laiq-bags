@@ -1338,7 +1338,7 @@ function renderSuggestedProducts(products) {
     
     container.innerHTML = products.map(product => `
         <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
-            <a href="product.html?id=${product._id || product.id}" class="block">
+            <a href="product?id=${product._id || product.id}" class="block">
                 <img src="${product.images?.[0]?.url || product.image}" alt="${product.name}" 
                      class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
             </a>
@@ -1350,7 +1350,7 @@ function renderSuggestedProducts(products) {
                 </div>
                 <div class="text-gold font-bold text-lg mb-3">₹${product.price.toLocaleString()}</div>
                 <button class="w-full bg-gold text-white py-2 px-4 rounded-lg font-semibold hover:bg-charcoal transition-colors" 
-                        onclick="window.location.href='product.html?id=${product._id || product.id}'">
+                        onclick="window.location.href='product?id=${product._id || product.id}'">
                     View Details
                 </button>
             </div>
@@ -1661,7 +1661,7 @@ function shareProduct() {
     }
     
     const productId = currentProduct._id || currentProduct.id;
-    const productUrl = `${window.location.origin}/product.html?id=${productId}`;
+    const productUrl = `${window.location.origin}/product?id=${productId}`;
     const productName = currentProduct.name || 'Amazing Product';
     const productDescription = currentProduct.description || 'Check out this amazing product from Laiq Bags!';
     
@@ -1938,7 +1938,7 @@ function updateOpenGraphTags(product) {
         'og:title': `${product.seoTitle || product.name} - Laiq Bags`,
         'og:description': product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality bags and accessories.`,
         'og:type': 'product',
-        'og:url': `${window.location.origin}/product.html?id=${product._id}`,
+        'og:url': `${window.location.origin}/product?id=${product._id}`,
         'og:image': product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
         'og:image:width': '1200',
         'og:image:height': '630',
@@ -2003,7 +2003,7 @@ function updateCanonicalURL(product) {
         canonical.rel = 'canonical';
         document.head.appendChild(canonical);
     }
-    canonical.href = `${window.location.origin}/product.html?id=${product._id}`;
+    canonical.href = `${window.location.origin}/product?id=${product._id}`;
     
     // Update hreflang URLs
     updateHreflangURLs(product);
@@ -2014,7 +2014,7 @@ function updateCanonicalURL(product) {
 
 // Update hreflang URLs
 function updateHreflangURLs(product) {
-    const productURL = `${window.location.origin}/product.html?id=${product._id}`;
+    const productURL = `${window.location.origin}/product?id=${product._id}`;
     
     // Update en hreflang
     let enHreflang = document.querySelector('link[hreflang="en"]');
@@ -2037,7 +2037,7 @@ function updateHreflangURLs(product) {
 
 // Update breadcrumb URLs
 function updateBreadcrumbURLs(product) {
-    const productURL = `${window.location.origin}/product.html?id=${product._id}`;
+    const productURL = `${window.location.origin}/product?id=${product._id}`;
     
     // Find and update breadcrumb structured data
     const breadcrumbScript = document.querySelector('script[type="application/ld+json"]');
@@ -2080,7 +2080,7 @@ function addProductStructuredData(product) {
         },
         "category": product.category,
         "image": product.images?.map(img => img.url) || [],
-        "url": `${window.location.origin}/product.html?id=${product._id}`,
+        "url": `${window.location.origin}/product?id=${product._id}`,
         "sku": product._id,
         "mpn": product._id,
         "gtin": product._id,
@@ -2364,7 +2364,7 @@ async function loadCategoryProducts(category) {
                                         <span class="text-lg font-bold text-charcoal">₹${product.price}</span>
                                     `}
                                 </div>
-                                <a href="/product.html?id=${product._id}" 
+                                <a href="/product?id=${product._id}" 
                                    class="bg-gold text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-charcoal transition-colors">
                                     View Details
                                 </a>

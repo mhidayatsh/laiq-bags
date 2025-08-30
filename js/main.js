@@ -2664,7 +2664,7 @@ function openQuickViewModal(product) {
                     <button class="add-to-cart-quick bg-gold text-white px-4 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors" data-id="${product._id || product.id}" data-name="${product.name}" data-price="${displayPrice}" data-image="${product.images?.[0]?.url || product.image}">
                         Add to Cart
                     </button>
-                    <a href="product.html?id=${product._id || product.id}" class="bg-charcoal/10 text-charcoal px-4 py-2 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors">
+                    <a href="product?id=${product._id || product.id}" class="bg-charcoal/10 text-charcoal px-4 py-2 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors">
                         View Details
                     </a>
                 </div>
@@ -2689,7 +2689,7 @@ function openQuickViewModal(product) {
                     showToast('Please select a color on the product page', 'error')
                     closeQuickViewModal()
                     setTimeout(() => {
-                        window.location.href = `/product.html?id=${product._id || product.id}`
+                        window.location.href = `/product?id=${product._id || product.id}`
                     }, 1500)
                     return
                 }

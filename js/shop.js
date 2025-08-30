@@ -717,7 +717,7 @@ function renderProducts() {
         return `
             <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div class="relative">
-                    <a href="product.html?id=${productId}" class="block">
+                    <a href="product?id=${productId}" class="block">
                         <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low"
                              onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -851,7 +851,7 @@ function handleAddToCart(e) {
         showToast('Please select a color on the product page', 'info');
         
         // Redirect to product detail page
-        window.location.href = `/product.html?id=${productId}`;
+        window.location.href = `/product?id=${productId}`;
         return;
     }
     

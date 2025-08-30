@@ -266,7 +266,7 @@ function renderFeaturedProducts() {
         return `
             <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div class="relative">
-                    <a href="product.html?id=${productId}" class="block">
+                    <a href="product?id=${productId}" class="block">
                         <img src="${imgSrc}" alt="${product.name}"
                              loading="lazy" decoding="async" fetchpriority="low"
                              onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
@@ -327,7 +327,7 @@ function renderFeaturedProducts() {
                                 data-id="${productId}" data-name="${product.name}" data-price="${displayPrice}" data-image="${product.images?.[0]?.url || product.image}">
                             <i class="fas fa-shopping-cart mr-2"></i>Add to Cart
                         </button>
-                        <a href="product.html?id=${productId}" 
+                        <a href="product?id=${productId}" 
                            class="bg-charcoal/10 text-charcoal py-2 px-3 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors">
                             <i class="fas fa-eye mr-1"></i>View
                         </a>
@@ -378,7 +378,7 @@ function handleAddToCart(e) {
         showToast('Please select a color on the product page', 'info');
         
         // Redirect to product detail page
-        window.location.href = `/product.html?id=${productId}`;
+        window.location.href = `/product?id=${productId}`;
         return;
     }
     
