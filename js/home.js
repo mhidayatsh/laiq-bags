@@ -303,13 +303,13 @@ function addCartEventListeners() {
 // Initialize testimonials carousel
 function initializeTestimonialCarousel() {
     try {
-        const wrapper = document.querySelector('.testimonials-carousel');
+        const wrapper = document.getElementById('testimonial-carousel');
         if (!wrapper) return;
         
-        const track = wrapper.querySelector('.testimonials-track');
-        const slides = wrapper.querySelectorAll('.testimonial-slide');
-        const nextBtn = wrapper.querySelector('.next-btn');
-        const prevBtn = wrapper.querySelector('.prev-btn');
+        const track = document.getElementById('testimonial-track');
+        const slides = track.querySelectorAll('div');
+        const nextBtn = document.getElementById('testimonial-next');
+        const prevBtn = document.getElementById('testimonial-prev');
         
         if (!track || slides.length === 0) return;
         
