@@ -740,7 +740,9 @@ app.get('/product.html', async (req, res) => {
     const productDescription = product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality ${product.category}.`;
     const productUrl = `https://www.laiq.shop/product.html?slug=${product.slug || product._id}`;
     const productImage = product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png';
-    console.log('🖼️ Product image URL:', productImage);
+    // Add cache-busting parameter to force social media refresh
+    const productImageWithCacheBust = productImage.includes('?') ? `${productImage}&v=${Date.now()}` : `${productImage}?v=${Date.now()}`;
+    console.log('🖼️ Product image URL:', productImageWithCacheBust);
     
     // Update title
     html = html.replace(/<title>.*?<\/title>/, `<title>${productTitle}</title>`);
@@ -755,12 +757,12 @@ app.get('/product.html', async (req, res) => {
     html = html.replace(/<meta property="og:title" content="[^"]*"/, `<meta property="og:title" content="${productTitle}"`);
     html = html.replace(/<meta property="og:description" content="[^"]*"/, `<meta property="og:description" content="${productDescription}"`);
     html = html.replace(/<meta property="og:url" content="[^"]*"/, `<meta property="og:url" content="${productUrl}"`);
-    html = html.replace(/<meta property="og:image" content="[^"]*"/, `<meta property="og:image" content="${productImage}"`);
+    html = html.replace(/<meta property="og:image" content="[^"]*"/, `<meta property="og:image" content="${productImageWithCacheBust}"`);
     
     // Update Twitter Card tags with more specific regex
     html = html.replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${productTitle}"`);
     html = html.replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${productDescription}"`);
-    html = html.replace(/<meta name="twitter:image" content="[^"]*"/, `<meta name="twitter:image" content="${productImage}"`);
+    html = html.replace(/<meta name="twitter:image" content="[^"]*"/, `<meta name="twitter:image" content="${productImageWithCacheBust}"`);
     
     // Add structured data for the product (better version)
     const structuredData = {
@@ -785,7 +787,14 @@ app.get('/product.html', async (req, res) => {
     // Insert structured data before closing head tag
     html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(structuredData)}</script></head>`);
     
-    res.set('Content-Type', 'text/html');
+    // Add cache-busting headers for social media
+    res.set({
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'X-Robots-Tag': 'noarchive'
+    });
     res.send(html);
     
   } catch (error) {
