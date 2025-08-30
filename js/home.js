@@ -123,27 +123,39 @@ async function loadFeaturedProducts() {
     }
 }
 
-// Enhanced image loading handler
-function handleImageLoad(img) {
-    const fallback = img.nextElementSibling;
-    if (fallback && fallback.tagName === 'DIV') {
-        fallback.style.display = 'none';
-    }
-    img.style.display = 'block';
+// Simplified image handling - using standard onerror fallback
 }
 
-// Enhanced image error handler
-function handleImageError(img) {
-    img.onerror = null;
-    img.src = 'assets/thumbnail.jpg';
-    img.style.display = 'block';
-    const fallback = img.nextElementSibling;
-    if (fallback && fallback.tagName === 'DIV') {
-        fallback.style.display = 'none';
-    }
+
+// Debug image loading
+function debugImageLoading() {
+    console.log('🔍 Debugging image loading...');
+    
+    // Check if images are loading
+    const images = document.querySelectorAll('#featured-products img');
+    console.log('📸 Found', images.length, 'images in featured products');
+    
+    images.forEach((img, index) => {
+        console.log(`Image ${index + 1}:`, {
+            src: img.src,
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight,
+            complete: img.complete,
+            currentSrc: img.currentSrc
+        });
+        
+        // Add event listeners to track loading
+        img.addEventListener('load', () => {
+            console.log(`✅ Image ${index + 1} loaded successfully:`, img.src);
+        });
+        
+        img.addEventListener('error', (e) => {
+            console.error(`❌ Image ${index + 1} failed to load:`, img.src, e);
+        });
+    });
 }
 
-// Update the renderFeaturedProducts function to use better image handling
+// Call debug function after products are rendered
 function renderFeaturedProducts() {
     const container = document.getElementById('featured-products');
     if (!container) return;
@@ -163,7 +175,16 @@ function renderFeaturedProducts() {
         const originalPrice = product.price;
         const productId = product._id || product.id;
         
+        // Use a reliable fallback chain
         const imgSrc = product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg';
+        
+        console.log('🖼️ Rendering product image:', {
+            productName: product.name,
+            imgSrc: imgSrc,
+            hasImage: !!product.images?.[0]?.url,
+            hasFallback: !!product.image
+        });
+        
         return `
             <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div class="relative">
@@ -171,14 +192,9 @@ function renderFeaturedProducts() {
                         <img src="${imgSrc}" alt="${product.name}"
                              loading="lazy" decoding="async" fetchpriority="low"
                              width="400" height="256"
-                             onload="handleImageLoad(this)"
-                             onerror="handleImageError(this)"
-                             style="display: none;"
+                             onerror="this.onerror=null; this.src='assets/thumbnail.jpg'; console.log('🔄 Fallback to thumbnail for:', this.alt);"
+                             onload="console.log('✅ Image loaded:', this.src);"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <!-- Fallback div that shows while image loads -->
-                        <div class="w-full h-64 bg-gray-200 flex items-center justify-center" style="display: block;">
-                            <div class="text-gray-400 text-sm">Loading...</div>
-                        </div>
                     </a>
                     
                     <!-- Discount Badge -->
@@ -247,6 +263,9 @@ function renderFeaturedProducts() {
     
     // Add event listeners for add to cart buttons
     addFeaturedProductEventListeners();
+    
+    // Debug image loading after rendering
+    setTimeout(debugImageLoading, 100);
 }
 
 // Add event listeners to featured product buttons
