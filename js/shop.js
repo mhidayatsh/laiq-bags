@@ -314,18 +314,27 @@ function handlePageNumberClick(e) {
     }
 }
 
+
 // Change page for filtered products
 function changePage(page) {
     if (page < 1 || page > totalPages || isLoading) return;
     
     currentPage = page;
-    renderCurrentPage();
-    updatePaginationUI();
     
-    // Scroll to top of products section
-    const productsSection = document.querySelector('#products-grid');
-    if (productsSection) {
-        productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Show skeleton loader before rendering to prevent layout shift
+    showSkeletonLoader();
+    
+    // Small delay to ensure skeleton is visible
+    setTimeout(() => {
+        renderCurrentPage();
+        updatePaginationUI();
+        
+        // Scroll to top of products section
+        const productsSection = document.querySelector('#products-grid');
+        if (productsSection) {
+            productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 100);
     }
 }
 
@@ -446,7 +455,7 @@ async function loadAllProductsForFiltering(filterValue, sortValue, searchValue) 
         // Show loading state
         const productsGrid = document.getElementById('products-grid');
         if (productsGrid) {
-            productsGrid.innerHTML = '<div class="col-span-full text-center py-12"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div><p class="text-charcoal/60">Loading products...</p></div>';
+            showSkeletonLoader();
         }
         
         // Load products with maximum allowed limit (20)
