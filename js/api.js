@@ -48,7 +48,13 @@ class ApiService {
 
     // Generic request method
     async request(endpoint, options = {}) {
-        const url = `${this.baseURL}${endpoint}`;
+        // Check if endpoint is already a full URL
+        let url;
+        if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+            url = endpoint; // Use endpoint as-is if it's already a full URL
+        } else {
+            url = `${this.baseURL}${endpoint}`; // Otherwise, prepend baseURL
+        }
         
         // Add cache-busting parameter to prevent CDN issues
         const separator = url.includes('?') ? '&' : '?';

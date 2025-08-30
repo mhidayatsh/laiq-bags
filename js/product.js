@@ -247,19 +247,17 @@ async function loadProductFromAPI(productIdentifier, identifierType = 'id') {
         }
         
         // Build API URL based on identifier type
-        let apiUrl;
+        console.log('🌐 Loading product with ID:', productIdentifier, 'Type:', identifierType);
+        
+        // Use the correct API call method - pass just the ID, not the full URL
+        let response;
         if (identifierType === 'slug') {
-            apiUrl = `${api.baseURL}/products?slug=${encodeURIComponent(productIdentifier)}`;
+            // For slugs, we need to use the products endpoint with slug parameter
+            response = await api.request(`/products?slug=${encodeURIComponent(productIdentifier)}`);
         } else {
-            apiUrl = `${api.baseURL}/products/${productIdentifier}`;
+            // For IDs, use the standard getProduct method
+            response = await api.getProduct(productIdentifier);
         }
-        
-        console.log('🌐 API URL:', apiUrl);
-        
-        // Add cache-busting parameter and use correct API URL
-        const separator = apiUrl.includes('?') ? '&' : '?';
-        const finalApiUrl = apiUrl + separator + '_t=' + Date.now();
-        const response = await api.getProduct(finalApiUrl);
         console.log('📦 API Response:', response);
         
         if (!response || !response.product) {
