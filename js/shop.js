@@ -1,4 +1,61 @@
+
+<style>
+/* Prevent layout shift for product images */
+.product-image-container {
+    aspect-ratio: 5/4;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* Skeleton animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
+
 // Shop Page JavaScript
+
+// Add skeleton loader to prevent layout shift
+function showSkeletonLoader() {
+    const productsGrid = document.getElementById('products-grid');
+    if (productsGrid) {
+        const skeletonHTML = Array(8).fill(0).map(() => `
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+                <div class="relative">
+                    <div class="w-full h-64 bg-gray-200"></div>
+                    <div class="absolute top-3 right-3 w-8 h-8 bg-gray-200 rounded-full"></div>
+                </div>
+                <div class="p-4">
+                    <div class="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        `).join('');
+        productsGrid.innerHTML = skeletonHTML;
+    }
+}
+
+// Show skeleton loader immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    showSkeletonLoader();
+});
+
 let products = [];
 let filteredProducts = [];
 let currentPage = 1;
@@ -29,10 +86,8 @@ let isLoading = false;
 
 // Show loader on the products grid (used for initial load and pagination)
 function showShopLoader() {
-    const productsGrid = document.getElementById('products-grid');
-    if (productsGrid) {
-        productsGrid.innerHTML = '<div id="products-loading-state" class="col-span-full text-center py-12"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div><p class="text-charcoal/60">Loading products...</p></div>';
-    }
+    showSkeletonLoader();
+}
 }
 
 // Hide the loader if it is present
@@ -718,7 +773,7 @@ function renderProducts() {
             <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div class="relative">
                     <a href="product?id=${productId}" class="block">
-                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low"
+                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="256"
                              onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
                              class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
