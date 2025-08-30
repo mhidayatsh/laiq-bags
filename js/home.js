@@ -115,7 +115,14 @@ async function loadFeaturedProducts() {
         featuredProducts = (response && response.products) ? response.products : [];
         console.log(`✅ Loaded ${featuredProducts.length} featured products from API`);
         
-        
+        // Render featured products
+        renderFeaturedProducts();
+    } catch (error) {
+        console.error('❌ Failed to load featured products from API:', error);
+        throw error;
+    }
+}
+
 // Enhanced image loading handler
 function handleImageLoad(img) {
     const fallback = img.nextElementSibling;
