@@ -10,11 +10,9 @@
         const currentSearch = window.location.search;
         const currentHash = window.location.hash;
         
-        // If we're not on www.laiq.shop, redirect
+        // If we're not on www.laiq.shop, don't redirect - let API handle it
         if (currentHost !== 'www.laiq.shop') {
-            const newUrl = `https://www.laiq.shop${currentPath}${currentSearch}${currentHash}`;
-            console.log('🔄 Redirecting to www version:', newUrl);
-            window.location.href = newUrl;
+            console.log('ℹ️ Non-www domain detected, API will handle domain resolution');
             return;
         }
         
