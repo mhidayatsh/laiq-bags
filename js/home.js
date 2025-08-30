@@ -1,7 +1,8 @@
 // Home Page JavaScript
 
-// Add skeleton loader to prevent layout shift
-function showHomeSkeletonLoader() {
+// Add skeleton loader to prevent layout shift - IMMEDIATE execution
+(function() {
+    // Show skeleton immediately, don't wait for DOMContentLoaded
     const container = document.getElementById('featured-products');
     if (container) {
         const skeletonHTML = Array(4).fill(0).map(() => `
@@ -19,6 +20,30 @@ function showHomeSkeletonLoader() {
             </div>
         `).join('');
         container.innerHTML = skeletonHTML;
+        console.log('🔄 Skeleton loader applied immediately');
+    }
+})();
+
+// Also show skeleton on DOMContentLoaded as backup
+function showHomeSkeletonLoader() {
+    const container = document.getElementById('featured-products');
+    if (container && container.children.length === 0) {
+        const skeletonHTML = Array(4).fill(0).map(() => `
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+                <div class="relative">
+                    <div class="w-full h-64 bg-gray-200"></div>
+                    <div class="absolute top-3 left-3 w-16 h-6 bg-gray-200 rounded-full"></div>
+                </div>
+                <div class="p-4">
+                    <div class="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        `).join('');
+        container.innerHTML = skeletonHTML;
+        console.log('🔄 Skeleton loader applied on DOMContentLoaded');
     }
 }
 

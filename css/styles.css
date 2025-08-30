@@ -235,3 +235,36 @@ html, body {
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Prevent layout shifts in featured products container */
+#featured-products {
+    min-height: 400px; /* Reserve space for skeleton loader */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+/* Ensure skeleton cards have proper dimensions */
+#featured-products .animate-pulse {
+    height: 400px;
+    width: 100%;
+}
+
+/* Responsive grid adjustments */
+@media (min-width: 640px) {
+    #featured-products {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    #featured-products {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    #featured-products {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
