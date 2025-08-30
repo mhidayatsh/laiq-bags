@@ -15,6 +15,10 @@ function resolveApiBaseUrl() {
 
       // For production/live websites, use the same origin
       if (!isLocalHost) {
+        // Ensure we use www.laiq.shop for API calls to avoid redirect issues
+        if (hostname === 'laiq.shop') {
+          return 'https://www.laiq.shop/api';
+        }
         return `${origin}/api`;
       }
 
