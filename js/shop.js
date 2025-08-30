@@ -1,32 +1,4 @@
 
-<style>
-/* Prevent layout shift for product images */
-.product-image-container {
-    aspect-ratio: 5/4;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-/* Skeleton animation */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-.animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-</style>
-
 // Shop Page JavaScript
 
 // Add skeleton loader to prevent layout shift
@@ -87,7 +59,6 @@ let isLoading = false;
 // Show loader on the products grid (used for initial load and pagination)
 function showShopLoader() {
     showSkeletonLoader();
-}
 }
 
 // Hide the loader if it is present
