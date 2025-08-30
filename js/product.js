@@ -2270,7 +2270,28 @@ async function loadCategoryProducts(category) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data = await response.json();
+        // Enhanced JSON parsing with error handling
+        const responseText = await response.text();
+        let data;
+        
+        try {
+            // Check if response is empty
+            if (!responseText || responseText.trim() === '') {
+                throw new Error('Empty response received from server');
+            }
+            
+            // Check if response looks like HTML
+            if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                console.error('❌ HTML Response Detected:', responseText.substring(0, 500));
+                throw new Error('Server returned HTML instead of JSON');
+            }
+            
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ JSON Parse Error in category products:', parseError);
+            console.error('📄 Response content:', responseText.substring(0, 1000));
+            throw new Error(`Failed to parse products data: ${parseError.message}`);
+        }
         const products = data.products || [];
         
         console.log(`📦 Found ${products.length} products for category: ${category}`);
@@ -2663,7 +2684,28 @@ async function loadProductReviews(productId) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data = await response.json();
+        // Enhanced JSON parsing with error handling
+        const responseText = await response.text();
+        let data;
+        
+        try {
+            // Check if response is empty
+            if (!responseText || responseText.trim() === '') {
+                throw new Error('Empty response received from server');
+            }
+            
+            // Check if response looks like HTML
+            if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                console.error('❌ HTML Response Detected:', responseText.substring(0, 500));
+                throw new Error('Server returned HTML instead of JSON');
+            }
+            
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ JSON Parse Error in reviews:', parseError);
+            console.error('📄 Response content:', responseText.substring(0, 1000));
+            throw new Error(`Failed to parse reviews data: ${parseError.message}`);
+        }
         const reviews = data.reviews || [];
         
         console.log('📝 Loaded reviews:', reviews);

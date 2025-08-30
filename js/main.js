@@ -2482,7 +2482,28 @@ function initializeContactForm() {
                 body: JSON.stringify(formData)
             })
             
-            const result = await response.json()
+            // Enhanced JSON parsing with error handling
+            const responseText = await response.text();
+            let result;
+            
+            try {
+                // Check if response is empty
+                if (!responseText || responseText.trim() === '') {
+                    throw new Error('Empty response received from server');
+                }
+                
+                // Check if response looks like HTML
+                if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                    console.error('❌ HTML Response Detected:', responseText.substring(0, 500));
+                    throw new Error('Server returned HTML instead of JSON');
+                }
+                
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ JSON Parse Error in contact form:', parseError);
+                console.error('📄 Response content:', responseText.substring(0, 1000));
+                throw new Error(`Failed to submit contact form: ${parseError.message}`);
+            }
             
             if (result.success) {
                 showToast(result.message, 'success')

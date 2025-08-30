@@ -198,13 +198,65 @@ class ApiService {
                 firstChars: responseText.substring(0, 100)
             });
             
-            // Try to parse as JSON
+            // Enhanced JSON parsing with better error handling
             try {
-                return JSON.parse(responseText);
+                // Check if response is empty
+                if (!responseText || responseText.trim() === '') {
+                    throw new Error('Empty response received from server');
+                }
+                
+                // Check if response looks like HTML (common error case)
+                if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                    console.error('❌ HTML Response Detected:', responseText.substring(0, 500));
+                    throw new Error('Server returned HTML instead of JSON - possible redirect or server error');
+                }
+                
+                // Try to parse as JSON
+                const jsonData = JSON.parse(responseText);
+                
+                // Validate JSON structure for common API responses
+                if (jsonData && typeof jsonData === 'object') {
+                    // Check for common API response patterns
+                    if (jsonData.success === false) {
+                        console.warn('⚠️ API returned success: false:', jsonData.message || 'Unknown error');
+                    }
+                    
+                    // Log successful parsing
+                    console.log('✅ JSON parsed successfully:', {
+                        hasData: !!jsonData,
+                        hasSuccess: 'success' in jsonData,
+                        hasMessage: 'message' in jsonData,
+                        dataType: typeof jsonData
+                    });
+                }
+                
+                return jsonData;
+                
             } catch (parseError) {
                 console.error('❌ JSON Parse Error:', parseError);
-                console.error('📄 Response content:', responseText);
-                throw new Error(`Invalid JSON response: ${parseError.message}`);
+                console.error('📄 Response content (first 1000 chars):', responseText.substring(0, 1000));
+                
+                // Provide more specific error messages
+                let errorMessage = 'Invalid JSON response';
+                
+                if (parseError.message.includes('Unexpected token')) {
+                    errorMessage = 'Server returned invalid JSON format';
+                } else if (parseError.message.includes('Empty response')) {
+                    errorMessage = 'Server returned empty response';
+                } else if (parseError.message.includes('HTML instead of JSON')) {
+                    errorMessage = 'Server returned HTML page instead of JSON data';
+                } else {
+                    errorMessage = `JSON parsing failed: ${parseError.message}`;
+                }
+                
+                // Create a more detailed error object
+                const enhancedError = new Error(errorMessage);
+                enhancedError.originalError = parseError;
+                enhancedError.responseText = responseText;
+                enhancedError.url = url;
+                enhancedError.status = response.status;
+                
+                throw enhancedError;
             }
         } catch (error) {
             console.error('API Request failed:', error);
