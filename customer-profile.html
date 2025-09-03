@@ -356,7 +356,7 @@
         startOrdersAutoRefresh();
       });
       
-      // Auto-refresh orders every 30 seconds
+      // Auto-refresh orders every 60 seconds when visible
       let ordersRefreshInterval = null;
       
       function startOrdersAutoRefresh() {
@@ -365,11 +365,14 @@
           clearInterval(ordersRefreshInterval);
         }
         
-        // Refresh orders every 30 seconds
+        // Refresh orders every 60 seconds only if orders tab is visible and page focused
         ordersRefreshInterval = setInterval(async () => {
+          if (document.hidden) return;
+          const ordersTab = document.getElementById('orders-tab');
+          if (!ordersTab || ordersTab.classList.contains('hidden')) return;
           console.log('🔄 Auto-refreshing orders...');
           await loadOrders();
-        }, 30000); // 30 seconds
+        }, 60000); // 60 seconds
         
         console.log('🔄 Orders auto-refresh started');
       }
@@ -735,7 +738,7 @@
                     <div class="space-y-2">
                       ${order.orderItems.map(item => `
                         <div class="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                          <img src="${item.image || 'assets/thumbnail.jpg'}" onerror="this.src='assets/thumbnail.jpg'" alt="${item.name}" class="w-12 h-12 rounded object-cover">
+                          <img src="${getThumbnailUrl(item.image, 80)}" onerror="this.src='assets/thumbnail.jpg'" alt="${item.name}" width="48" height="48" loading="lazy" decoding="async" class="w-12 h-12 rounded object-cover">
                           <div class="flex-1">
                             <p class="font-medium text-sm">${item.name}</p>
                             <p class="text-xs text-charcoal/60">Qty: ${item.quantity}</p>
@@ -839,7 +842,7 @@
                     <div class="space-y-2">
                       ${order.orderItems.map(item => `
                         <div class="flex items-center gap-3 p-3 bg-gray-50 rounded">
-                          <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded object-cover">
+                          <img src="${getThumbnailUrl(item.image, 160)}" alt="${item.name}" width="64" height="64" loading="lazy" decoding="async" class="w-16 h-16 rounded object-cover">
                           <div class="flex-1">
                             <p class="font-medium">${item.name}</p>
                             <p class="text-sm text-charcoal/60">Quantity: ${item.quantity}</p>
@@ -940,6 +943,18 @@
           return Math.round(product.price * (1 - product.discount / 100));
         }
         return product.price;
+      }
+      
+      // Helper to produce small thumbnails (Cloudinary-aware)
+      function getThumbnailUrl(url, size) {
+        if (!url) return 'assets/thumbnail.jpg';
+        try {
+          if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+            const s = size || 64;
+            return url.replace('/upload/', `/upload/w_${s},h_${s},c_fill,q_auto,f_auto,dpr_auto/`);
+          }
+        } catch (e) {}
+        return url;
       }
 
       // Load cart with proper loading state and fallback
