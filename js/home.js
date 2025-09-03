@@ -492,9 +492,6 @@ function initializeTestimonialCarousel() {
     }
 }
 
-// Ensure the function runs after the DOM is fully loaded.
-document.addEventListener('DOMContentLoaded', initializeTestimonialCarousel);
-
 // Initialize newsletter form
 function initializeNewsletter() {
     const form = document.getElementById('newsletter-form');
