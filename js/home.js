@@ -346,10 +346,11 @@ function initializeTestimonialCarousel() {
             console.log(`🔄 Going to slide ${currentIndex}, mobile: ${isMobile}`);
 
             if (isMobile) {
-                // On mobile, use a class-based show/hide system. It's cleaner and respects CSS.
+                // On mobile, explicitly control visibility with inline styles to avoid CSS conflicts.
                 slides.forEach((slide, i) => {
                     const shouldBeActive = i === currentIndex;
                     slide.classList.toggle('is-active', shouldBeActive);
+                    slide.style.display = shouldBeActive ? 'flex' : 'none';
                     console.log(`📱 Slide ${i}: ${shouldBeActive ? 'active' : 'hidden'}`);
                 });
                 // No complex animation, so we can unlock immediately.
@@ -385,11 +386,14 @@ function initializeTestimonialCarousel() {
                     slide.style.minWidth = '';
                     slide.style.maxWidth = '';
                     slide.classList.remove('is-active');
+                    // Ensure non-active slides are hidden on mobile
+                    slide.style.display = 'none';
                 });
                 
                 // Ensure the current slide is visible on mobile
                 if (slides[currentIndex]) {
                     slides[currentIndex].classList.add('is-active');
+                    slides[currentIndex].style.display = 'flex';
                 }
                 
                 console.log('✅ Mobile styles applied, current slide:', currentIndex);
