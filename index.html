@@ -997,7 +997,12 @@
                 margin: 0 !important;
                 padding: 0 1rem !important;
                 box-sizing: border-box !important;
-                /* Let JavaScript control display property */
+                /* Initial state - let JavaScript control display */
+                display: none !important;
+              }
+              /* Show first testimonial by default on mobile */
+              #testimonial-track > div:first-child {
+                display: flex !important;
               }
             }
             

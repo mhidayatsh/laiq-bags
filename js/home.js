@@ -486,9 +486,24 @@ function initializeTestimonialCarousel() {
             }
         });
         
-        // Initial position
-        applySizes();
-        goTo(0);
+        // Initial position - ensure proper initialization
+        const initializeCarousel = () => {
+            applySizes();
+            if (isMobile) {
+                // Force mobile initialization
+                slides.forEach((slide, index) => {
+                    slide.style.display = index === 0 ? 'flex' : 'none';
+                });
+                console.log('Mobile carousel initialized - showing first testimonial');
+            }
+            goTo(0);
+        };
+        
+        // Initialize immediately
+        initializeCarousel();
+        
+        // Also initialize after a short delay to ensure DOM is ready
+        setTimeout(initializeCarousel, 100);
     } catch (e) {
         console.warn('Testimonials carousel init failed:', e);
     }
