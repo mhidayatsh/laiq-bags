@@ -794,7 +794,7 @@ function renderProducts() {
                     
                     <p class="text-charcoal/70 text-sm mb-3 line-clamp-2">${description}</p>
                     
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center justify-between mb-1">
                         <div class="flex items-center space-x-2">
                             ${hasDiscount ? `
                                 <div class="flex flex-col">
@@ -806,6 +806,9 @@ function renderProducts() {
                             `}
                         </div>
                         <div class="text-charcoal/60 text-sm">${material}</div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Free Delivery</span>
                     </div>
                     
                     <!-- Enhanced Countdown Timer -->
