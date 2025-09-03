@@ -336,30 +336,53 @@ function initializeTestimonialCarousel() {
          * This is the main function that handles all navigation logic.
          */
         const goTo = (index) => {
-            if (isAnimating) return;
+            // Resolve the requested index within bounds first
+            const targetIndex = (index + slides.length) % slides.length;
 
-            // Loop the index: if it goes past the end, start from 0, and vice-versa.
-            currentIndex = (index + slides.length) % slides.length;
+            // If we're already animating or not moving, do nothing (but ensure mobile visibility is correct)
+            if (isAnimating || targetIndex === currentIndex) {
+                if (isMobile) {
+                    slides.forEach((slide, i) => {
+                        slide.classList.toggle('is-active', i === currentIndex);
+                    });
+                }
+                return;
+            }
 
-            isAnimating = true;
+            const previousIndex = currentIndex;
+            currentIndex = targetIndex;
 
             console.log(`🔄 Going to slide ${currentIndex}, mobile: ${isMobile}`);
 
             if (isMobile) {
-                // On mobile, explicitly control visibility with inline styles to avoid CSS conflicts.
+                // Class-based show/hide on mobile
                 slides.forEach((slide, i) => {
                     const shouldBeActive = i === currentIndex;
                     slide.classList.toggle('is-active', shouldBeActive);
-                    slide.style.display = shouldBeActive ? 'flex' : 'none';
-                    console.log(`📱 Slide ${i}: ${shouldBeActive ? 'active' : 'hidden'}`);
                 });
-                // No complex animation, so we can unlock immediately.
+                // Immediately allow further navigation on mobile
                 isAnimating = false;
             } else {
-                // On desktop, use a smooth sliding animation with CSS transforms.
+                // Desktop: animate via CSS transform
                 const slideWidth = wrapper.clientWidth;
-                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-                console.log(`🖥️ Desktop transform: translateX(-${currentIndex * slideWidth}px)`);
+
+                // Ensure a transition is present
+                if (!track.style.transition) {
+                    track.style.transition = 'transform 0.5s ease';
+                }
+
+                const newTransform = `translateX(-${currentIndex * slideWidth}px)`;
+                const prevTransform = track.style.transform;
+
+                // If transform won't change, don't lock the UI
+                if (newTransform === prevTransform) {
+                    isAnimating = false;
+                    return;
+                }
+
+                isAnimating = true;
+                track.style.transform = newTransform;
+                console.log(`🖥️ Desktop transform: ${newTransform}`);
             }
         };
         
@@ -386,14 +409,11 @@ function initializeTestimonialCarousel() {
                     slide.style.minWidth = '';
                     slide.style.maxWidth = '';
                     slide.classList.remove('is-active');
-                    // Ensure non-active slides are hidden on mobile
-                    slide.style.display = 'none';
                 });
                 
                 // Ensure the current slide is visible on mobile
                 if (slides[currentIndex]) {
                     slides[currentIndex].classList.add('is-active');
-                    slides[currentIndex].style.display = 'flex';
                 }
                 
                 console.log('✅ Mobile styles applied, current slide:', currentIndex);

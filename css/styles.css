@@ -46,11 +46,14 @@ html, body {
     padding: 0 1rem !important;
     box-sizing: border-box !important;
   }
-  
+
   /* Show only the active slide */
   #testimonial-track > div.is-active {
     display: flex !important;
+    /* Fade-in animation for mobile when slide becomes active */
+    animation: testimonial-fade-in 350ms ease-in-out;
   }
+  
   
   /* Testimonial text */
   #testimonial-track p { 
@@ -71,6 +74,18 @@ html, body {
   #testimonial-track span {
     text-align: center !important;
     width: 100% !important;
+  }
+}
+
+/* Simple fade-in keyframes for testimonials */
+@keyframes testimonial-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
