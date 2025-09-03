@@ -322,21 +322,26 @@ function initializeTestimonialCarousel() {
         const applySizes = () => {
             const slideWidth = wrapper.clientWidth;
             
-            // Use same logic for both mobile and desktop - simple and reliable
-            slides.forEach(slide => {
-                slide.style.display = 'flex';
-                slide.style.boxSizing = 'border-box';
-                slide.style.flex = `0 0 ${slideWidth}px`;
-                slide.style.minWidth = slideWidth + 'px';
-                slide.style.maxWidth = slideWidth + 'px';
-                slide.style.flexDirection = 'column';
-                slide.style.alignItems = 'center';
-                slide.style.justifyContent = 'center';
-                slide.style.textAlign = 'center';
-            });
-            
-            // Track width adjusts naturally from children; keep transform in sync
-            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            if (isMobile) {
+                // Mobile: Simple show/hide, no transforms
+                slides.forEach((slide, index) => {
+                    slide.style.display = index === 0 ? 'flex' : 'none';
+                });
+                
+                // Ensure track has no transform on mobile
+                track.style.transform = 'none';
+            } else {
+                // Desktop: Full sliding carousel
+                slides.forEach(slide => {
+                    slide.style.display = 'flex';
+                    slide.style.flex = `0 0 ${slideWidth}px`;
+                    slide.style.minWidth = slideWidth + 'px';
+                    slide.style.maxWidth = slideWidth + 'px';
+                });
+                
+                // Set initial transform for desktop
+                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            }
         };
         
         const goTo = (index) => {
@@ -347,11 +352,18 @@ function initializeTestimonialCarousel() {
             const safeIndex = (index + slides.length) % slides.length;
             currentIndex = safeIndex;
             
-            // Use same sliding logic for both mobile and desktop
-            const slideWidth = wrapper.clientWidth;
-            track.style.transform = `translateX(-${safeIndex * slideWidth}px)`;
-            
-            console.log(`Showing testimonial ${safeIndex + 1} of ${slides.length}`);
+            if (isMobile) {
+                // Mobile: Simple show/hide navigation
+                slides.forEach((slide, i) => {
+                    slide.style.display = i === safeIndex ? 'flex' : 'none';
+                });
+                console.log(`Mobile: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
+            } else {
+                // Desktop: Use sliding logic
+                const slideWidth = wrapper.clientWidth;
+                track.style.transform = `translateX(-${safeIndex * slideWidth}px)`;
+                console.log(`Desktop: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
+            }
             
             // Unlock after CSS transition
             setTimeout(() => { isAnimating = false; }, 520);
