@@ -957,25 +957,22 @@
 
     <!-- Testimonials Section Start -->
     <section class="w-full max-w-4xl mx-auto px-4 py-10 md:py-20">
+
       <h2 class="text-2xl md:text-3xl font-bold font-montserrat text-center mb-6">What Our Customers Say</h2>
+    
       <div class="relative w-full">
+    
         <div id="testimonial-carousel" class="overflow-hidden w-full">
+    
           <style>
-            /* Clean, conflict-free CSS for both platforms */
-            #testimonial-carousel {
-              overflow: hidden;
-              width: 100%;
-              position: relative;
-            }
-            
+            /* Base styles for the carousel track and individual slides */
             #testimonial-track {
-              display: flex;
-              width: 100%;
+              display: flex; /* Aligns all slides in a single row */
             }
-            
+    
             #testimonial-track > div {
-              flex-shrink: 0;
-              width: 100%;
+              flex-shrink: 0; /* Prevents slides from shrinking to fit the container */
+              width: 100%; /* Each slide takes the full width of the carousel */
               padding: 0 1rem;
               box-sizing: border-box;
               display: flex;
@@ -985,39 +982,23 @@
               text-align: center;
             }
             
-            /* Mobile: Simple show/hide approach */
+            /* Mobile-specific styles (screens 768px or less) */
             @media (max-width: 768px) {
-              #testimonial-carousel {
-                max-width: 100vw;
-                margin: 0 auto;
-              }
-              
               #testimonial-track > div {
-                width: 100vw;
-                min-width: 100vw;
-                max-width: 100vw;
-                flex: 0 0 100vw;
-                padding: 0 1.5rem;
-                /* CRITICAL: Hide all testimonials by default on mobile */
-                display: none !important;
+                /* Hides all slides by default on mobile. Visibility is controlled by JS. */
+                display: none;
               }
               
-              /* Show only the first testimonial by default */
-              #testimonial-track > div:first-child {
-                display: flex !important;
-              }
-    
-              /* --- FIX HERE: Ensure paragraph text is centered on mobile --- */
-              #testimonial-track p {
-                max-width: 90%; /* Let the text fill more of the screen */
-                margin: 0 auto; /* Center the block itself */
-                text-align: center;
+              #testimonial-track > div.is-active {
+                /* This class is added by JavaScript to show only the current slide. */
+                display: flex;
               }
             }
             
-            /* Desktop: Sliding approach */
+            /* Desktop-specific styles (screens 769px or more) */
             @media (min-width: 769px) {
               #testimonial-track {
+                /* Enables a smooth sliding animation when the 'transform' property changes. */
                 transition: transform 0.5s ease;
               }
               
@@ -1026,59 +1007,58 @@
               }
             }
             
-            /* Navigation buttons */
+            /* Navigation button styles */
             #testimonial-prev,
             #testimonial-next {
-              position: relative;
-              z-index: 10;
-              pointer-events: auto;
-              touch-action: manipulation;
+              z-index: 10; /* Ensures buttons are clickable and appear above other content if overlap occurs */
             }
           </style>
+    
           <div class="flex w-full" id="testimonial-track">
-            <div class="px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/AyazKhan.jpg" alt="Customer 2" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
-              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed mx-auto text-center">"The LAIQ sling bag is perfect – compact yet spacious, stylish, and super comfortable to carry. Great quality and goes with any outfit!"</p>
-              <span class="font-semibold text-gold text-center">Ayaz Khan, Mumbai</span>
+    
+            <div class="px-3 md:px-4">
+              <img src="https://i.pravatar.cc/150?u=ayaz" alt="Photo of Ayaz Khan" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
+              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-2xl mx-auto">
+                "The LAIQ sling bag is perfect – compact yet spacious, stylish, and super comfortable to carry. Great quality and goes with any outfit!"
+              </p>
+              <span class="font-semibold text-gold">Ayaz Khan, Mumbai</span>
             </div>
     
-            <div class="px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/Faiyaz.jpeg" alt="Customer 2" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
-              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed mx-auto text-center">"The LAIQ sling bag is perfect – compact yet spacious, stylish, and super comfortable to carry. Great quality and goes with any outfit!"</p>
-              <span class="font-semibold text-gold text-center">Faiyaz Ahmed, Patna</span>
+            <div class="px-3 md:px-4">
+              <img src="https://i.pravatar.cc/150?u=faiyaz" alt="Photo of Faiyaz Ahmed" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
+              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-2xl mx-auto">
+                "Elegant designs and super lightweight. Laiq Bags never disappoints!"
+              </p>
+              <span class="font-semibold text-gold">Faiyaz Ahmed, Patna</span>
             </div>
-            <div class="px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/placeholder-avatar-3.jpg" alt="Customer 3" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
-              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed mx-auto text-center">"Elegant designs and super lightweight. Laiq Bags never disappoints!"</p>
-              <span class="font-semibold text-gold text-center">Kaif, Bangalore</span>
+    
+            <div class="px-3 md:px-4">
+              <img src="https://i.pravatar.cc/150?u=neha" alt="Photo of Neha Kapoor" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
+              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-2xl mx-auto">
+                "Lightweight, stylish, and durable – my go-to sling bag every day!"
+              </p>
+              <span class="font-semibold text-gold">Neha Kapoor, Chandigarh</span>
             </div>
-            <div class="px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/placeholder-avatar-3.jpg" alt="Customer 3" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
-              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed mx-auto text-center">"Lightweight, stylish, and durable – my go-to sling bag every day!"</p>
-              <span class="font-semibold text-gold text-center">Neha Kapoor, Chandigarh</span>
+            
+            <div class="px-3 md:px-4">
+              <img src="https://i.pravatar.cc/150?u=karan" alt="Photo of Karan Joshi" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
+              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-2xl mx-auto">
+                "Perfect size, premium feel, and super comfortable to carry. Love it!"
+              </p>
+              <span class="font-semibold text-gold">Karan Joshi, Pune</span>
             </div>
-            <div class="px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/placeholder-avatar-3.jpg" alt="Customer 3" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
-              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed mx-auto text-center">"Perfect size, premium feel, and super comfortable to carry. Love it!"</p>
-              <span class="font-semibold text-gold text-center">Karan Joshi, Pune</span>
-            </div>
-            <div class="px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/placeholder-avatar-3.jpg" alt="Customer 3" class="w-14 h-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
-              <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed mx-auto text-center">"The design is sleek, the quality is excellent, and it matches every outfit"</p>
-              <span class="font-semibold text-gold text-center">Sana Sheikh, Hyderabad</span>
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-center gap-4 mt-5">
-          <button id="testimonial-prev" class="w-10 h-10 flex items-center justify-center rounded-full border border-gold text-gold hover:bg-gold hover:text-white transition-colors">
+    
+          </div> </div> <div class="flex justify-center gap-4 mt-5">
+          <button id="testimonial-prev" class="w-10 h-10 flex items-center justify-center rounded-full border border-gold text-gold hover:bg-gold hover:text-white transition-colors" aria-label="Previous testimonial">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
           </button>
-          <button id="testimonial-next" class="w-10 h-10 flex items-center justify-center rounded-full border border-gold text-gold hover:bg-gold hover:text-white transition-colors">
+          <button id="testimonial-next" class="w-10 h-10 flex items-center justify-center rounded-full border border-gold text-gold hover:bg-gold hover:text-white transition-colors" aria-label="Next testimonial">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
-      </div>
-    </section>
+    
+      </div> </section>
+    
     <!-- Testimonials Section End -->
 
     <!-- Newsletter Section Start -->

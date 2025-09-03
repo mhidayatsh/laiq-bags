@@ -301,202 +301,182 @@ function addCartEventListeners() {
 }
 
 // Initialize testimonials carousel
+/**
+ * home.js
+ * Logic for the testimonial carousel.
+ */
+
 function initializeTestimonialCarousel() {
+    // Use a try-catch block to prevent a single error from breaking the entire site.
     try {
         const wrapper = document.getElementById('testimonial-carousel');
+        // If the carousel doesn't exist on the page, stop the function.
         if (!wrapper) return;
-        
+
         const track = document.getElementById('testimonial-track');
-        const slides = track.querySelectorAll('div');
+        const slides = Array.from(track.children); // Convert to Array for easier use
         const nextBtn = document.getElementById('testimonial-next');
         const prevBtn = document.getElementById('testimonial-prev');
-        
-        if (!track || slides.length === 0) return;
-        
+
+        // Exit if essential elements are missing.
+        if (!track || !nextBtn || !prevBtn || slides.length === 0) {
+            console.warn('Testimonial carousel is missing required elements.');
+            return;
+        }
+
         let currentIndex = 0;
         let isAnimating = false;
         let autoTimer = null;
-        
         let isMobile = window.innerWidth <= 768;
-        
-        const applySizes = () => {
-            const slideWidth = wrapper.clientWidth;
-            
+
+        // --- Core Functions ---
+
+        /**
+         * Moves the carousel to a specific slide.
+         * This is the main function that handles all navigation logic.
+         */
+        const goTo = (index) => {
+            if (isAnimating) return;
+
+            // Loop the index: if it goes past the end, start from 0, and vice-versa.
+            currentIndex = (index + slides.length) % slides.length;
+
+            isAnimating = true;
+
             if (isMobile) {
-                // Mobile: Simple show/hide, no transforms
-                slides.forEach((slide, index) => {
-                    slide.style.display = index === 0 ? 'flex' : 'none';
+                // On mobile, use a class-based show/hide system. It's cleaner and respects CSS.
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('is-active', i === currentIndex);
                 });
-                
-                // Ensure track has no transform on mobile
-                track.style.transform = 'none';
+                // No complex animation, so we can unlock immediately.
+                isAnimating = false;
             } else {
-                // Desktop: Full sliding carousel
-                slides.forEach(slide => {
-                    slide.style.display = 'flex';
-                    slide.style.flex = `0 0 ${slideWidth}px`;
-                    slide.style.minWidth = slideWidth + 'px';
-                    slide.style.maxWidth = slideWidth + 'px';
-                });
-                
-                // Set initial transform for desktop
+                // On desktop, use a smooth sliding animation with CSS transforms.
+                const slideWidth = wrapper.clientWidth;
                 track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
             }
         };
         
-        const goTo = (index) => {
-            if (isAnimating) return;
-            isAnimating = true;
-            
-            // Ensure index is within bounds
-            const safeIndex = (index + slides.length) % slides.length;
-            currentIndex = safeIndex;
-            
+        // This event listener makes the animation handling robust. It waits for the CSS
+        // transition to actually finish before allowing another animation to start.
+        track.addEventListener('transitionend', () => {
+            isAnimating = false;
+        });
+
+        /**
+         * Sets the correct sizes and styles for slides based on screen size.
+         */
+        const applySizesAndStyles = () => {
+            isMobile = window.innerWidth <= 768;
+            const slideWidth = wrapper.clientWidth;
+
             if (isMobile) {
-                // Mobile: Simple show/hide navigation
-                slides.forEach((slide, i) => {
-                    slide.style.display = i === safeIndex ? 'flex' : 'none';
+                // On mobile, reset any desktop-specific inline styles.
+                // The visibility is now handled by the 'is-active' class in CSS.
+                track.style.transform = '';
+                slides.forEach(slide => {
+                    slide.style.flex = '';
+                    slide.style.minWidth = '';
                 });
-                console.log(`Mobile: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
             } else {
-                // Desktop: Use sliding logic
-                const slideWidth = wrapper.clientWidth;
-                track.style.transform = `translateX(-${safeIndex * slideWidth}px)`;
-                console.log(`Desktop: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
+                // On desktop, ensure all slides are visible and set their width for the sliding effect.
+                track.style.transition = 'transform 0.5s ease'; // Ensure transition is set
+                slides.forEach(slide => {
+                    slide.classList.remove('is-active'); // Remove mobile class
+                    slide.style.flex = `0 0 ${slideWidth}px`;
+                    slide.style.minWidth = `${slideWidth}px`;
+                });
+                // Instantly update position to match current slide after resize
+                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
             }
-            
-            // Unlock after CSS transition
-            setTimeout(() => { isAnimating = false; }, 520);
         };
-        
-        const next = () => goTo(currentIndex + 1);
-        const prev = () => goTo(currentIndex - 1);
-        
-        const onManual = (fn) => {
-            stopAuto();
-            fn();
-            startAuto(); // Auto-rotate on all devices including phones
-        };
-        
-        nextBtn && nextBtn.addEventListener('click', () => {
-            console.log('Next button clicked, currentIndex:', currentIndex);
-            onManual(next);
-        });
-        prevBtn && prevBtn.addEventListener('click', () => {
-            console.log('Prev button clicked, currentIndex:', currentIndex);
-            onManual(prev);
-        });
-        
-        // Auto-rotate every 6s on all devices
+
+
+        // --- Autoplay Functions ---
+
         const startAuto = () => {
-            stopAuto();
-            autoTimer = setInterval(next, 6000);
+            stopAuto(); // Clear any existing timer before starting a new one.
+            autoTimer = setInterval(() => goTo(currentIndex + 1), 5000); // 5-second interval
         };
+
         const stopAuto = () => {
-            if (autoTimer) clearInterval(autoTimer);
-            autoTimer = null;
+            clearInterval(autoTimer);
         };
-        startAuto();
         
-        // Pause on hover (desktop only)
-        if (!isMobile) {
-            wrapper.addEventListener('mouseenter', stopAuto);
-            wrapper.addEventListener('mouseleave', startAuto);
-        }
+        /**
+         * A helper function to wrap manual actions (clicks, swipes)
+         * to correctly pause and resume autoplay.
+         */
+        const handleManualInteraction = (action) => {
+            stopAuto();
+            action();
+            startAuto();
+        };
+
+
+        // --- Event Listeners ---
+
+        nextBtn.addEventListener('click', () => handleManualInteraction(() => goTo(currentIndex + 1)));
+        prevBtn.addEventListener('click', () => handleManualInteraction(() => goTo(currentIndex - 1)));
         
-        // Touch swipe (mobile)
+        // Pause autoplay on hover for desktop users.
+        wrapper.addEventListener('mouseenter', stopAuto);
+        wrapper.addEventListener('mouseleave', startAuto);
+
+        // Touch swipe listeners for mobile users.
         let touchStartX = 0;
         let touchDeltaX = 0;
-        let touchStartY = 0;
-        
-        // Touch swipe (mobile) - improved for better mobile detection
-        let isTouching = false;
-        
-        // Add touch event listeners to the entire testimonial section
-        const testimonialSection = wrapper.closest('section');
-        
-        testimonialSection.addEventListener('touchstart', (e) => {
-            isTouching = true;
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            touchDeltaX = 0;
-            console.log('Touch started at:', touchStartX, touchStartY);
-            
-            // Pause auto-rotation when touching on any device
+        wrapper.addEventListener('touchstart', (e) => {
             stopAuto();
+            touchStartX = e.touches[0].clientX;
+            touchDeltaX = 0; // Reset delta on new touch
         }, { passive: true });
-        
-        testimonialSection.addEventListener('touchmove', (e) => {
-            if (!isTouching) return;
-            
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            
-            // Calculate horizontal and vertical movement
-            touchDeltaX = currentX - touchStartX;
-            const touchDeltaY = Math.abs(currentY - touchStartY);
-            
-            // Prevent default only for horizontal swipes
-            if (Math.abs(touchDeltaX) > Math.abs(touchDeltaY) && Math.abs(touchDeltaX) > 10) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        testimonialSection.addEventListener('touchend', () => {
-            if (!isTouching) return;
-            isTouching = false;
-            
-            // Minimum swipe distance for navigation
-            const minSwipeDistance = 30; // Reduced for better mobile response
-            
-            console.log('Touch ended, deltaX:', touchDeltaX, 'minDistance:', minSwipeDistance);
-            
-            if (Math.abs(touchDeltaX) > minSwipeDistance) {
+
+        wrapper.addEventListener('touchmove', (e) => {
+            touchDeltaX = e.touches[0].clientX - touchStartX;
+        }, { passive: true });
+
+        wrapper.addEventListener('touchend', () => {
+            // Check if the swipe was significant enough to trigger navigation.
+            if (Math.abs(touchDeltaX) > 50) {
                 if (touchDeltaX < 0) {
-                    // Swipe left - go to next
-                    console.log('Swipe left detected - going to next');
-                    next();
+                    // Swiped left
+                    goTo(currentIndex + 1);
                 } else {
-                    // Swipe right - go to previous
-                    console.log('Swipe right detected - going to previous');
-                    prev();
+                    // Swiped right
+                    goTo(currentIndex - 1);
                 }
             }
-            
-            startAuto(); // Auto-rotate on all devices including phones
+            startAuto();
         });
         
-        // Recalculate sizes on resize and keep position
+        // Smart resize handler
         window.addEventListener('resize', () => {
-            // Recalculate mobile state on resize
             const wasMobile = isMobile;
-            isMobile = window.innerWidth <= 768;
-            
-            // If mobile state changed, reinitialize
-            if (wasMobile !== isMobile) {
-                applySizes();
+            applySizesAndStyles();
+            // If we switched between mobile and desktop view, reset to the first slide for consistency.
+            if (wasMobile !== (window.innerWidth <= 768)) {
                 goTo(0);
-            } else {
-                applySizes();
             }
         });
+
+        // --- Initialization ---
         
-        // Initial position - ensure proper initialization
-        const initializeCarousel = () => {
-            applySizes();
-            goTo(0);
-            console.log('Carousel initialized - showing first testimonial');
+        const initialize = () => {
+            applySizesAndStyles();
+            goTo(0); // Start at the first slide
+            startAuto();
         };
-        
-        // Initialize immediately
-        initializeCarousel();
-        
-        // Also initialize after a short delay to ensure DOM is ready
-        setTimeout(initializeCarousel, 100);
-    } catch (e) {
-        console.warn('Testimonials carousel init failed:', e);
+
+        initialize(); // Run the setup
+
+    } catch (error) {
+        console.error('Testimonials carousel initialization failed:', error);
     }
 }
+
+// Ensure the function runs after the DOM is fully loaded.
+document.addEventListener('DOMContentLoaded', initializeTestimonialCarousel);
 
 // Initialize newsletter form
 function initializeNewsletter() {
