@@ -962,15 +962,17 @@
         <!-- Carousel Wrapper -->
         <div id="testimonial-carousel" class="overflow-hidden w-full">
           <style>
-            /* Simple, clean CSS that works for both mobile and desktop */
+            /* Responsive CSS that works perfectly on all devices */
             #testimonial-carousel {
               overflow: hidden;
               width: 100%;
+              position: relative;
             }
             
             #testimonial-track {
               display: flex;
               transition: transform 0.5s ease;
+              width: 100%;
             }
             
             #testimonial-track > div {
@@ -978,6 +980,42 @@
               width: 100%;
               padding: 0 1rem;
               box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+            }
+            
+            /* Mobile-specific optimizations */
+            @media (max-width: 768px) {
+              #testimonial-carousel {
+                max-width: 100vw;
+                margin: 0 auto;
+              }
+              
+              #testimonial-track > div {
+                min-width: 100%;
+                max-width: 100%;
+                padding: 0 1.5rem;
+              }
+              
+              /* Ensure proper centering on mobile */
+              #testimonial-track > div img {
+                margin: 0 auto;
+              }
+              
+              #testimonial-track > div p {
+                max-width: 90%;
+                margin: 0 auto;
+              }
+            }
+            
+            /* Desktop optimizations */
+            @media (min-width: 769px) {
+              #testimonial-track > div {
+                padding: 0 2rem;
+              }
             }
             
             /* Ensure navigation buttons are clickable */
