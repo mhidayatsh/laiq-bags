@@ -1166,6 +1166,10 @@ async function fillProductForm(productId) {
     form.querySelector('input[name="featured"]').checked = product.featured || false;
     form.querySelector('input[name="bestSeller"]').checked = product.bestSeller || false;
     form.querySelector('input[name="newArrival"]').checked = product.newArrival || false;
+    const freeDeliveryField = form.querySelector('input[name="freeDelivery"]');
+    if (freeDeliveryField) {
+        freeDeliveryField.checked = (product.freeDelivery === undefined) ? true : !!product.freeDelivery;
+    }
     
     // Fill images
     fillProductImages(product.images || []);
@@ -1544,7 +1548,8 @@ async function saveProduct() {
             specifications: specifications,
             featured: formData.get('featured') === 'on',
             bestSeller: formData.get('bestSeller') === 'on',
-            newArrival: formData.get('newArrival') === 'on'
+            newArrival: formData.get('newArrival') === 'on',
+            freeDelivery: formData.get('freeDelivery') === 'on'
         };
         
         // Validate required fields
@@ -1633,6 +1638,7 @@ async function saveProduct() {
             featured: productData.featured || false,
             bestSeller: productData.bestSeller || false,
             newArrival: productData.newArrival || false,
+            freeDelivery: productData.freeDelivery !== false,
             discount: productData.discount || 0,
             discountType: productData.discountType || 'percentage',
             discountAmount: productData.discountAmount || 0,
