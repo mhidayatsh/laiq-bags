@@ -207,6 +207,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Shipping flags
+  freeDelivery: {
+    type: Boolean,
+    default: true
+  },
   // Enhanced discount system
   discount: {
     type: Number,
@@ -303,6 +308,7 @@ productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ featured: 1 });
 productSchema.index({ 'colorVariants.isAvailable': 1 });
+productSchema.index({ freeDelivery: 1 });
 
 // Additional indexes for better performance
 productSchema.index({ slug: 1 }); // For slug lookups

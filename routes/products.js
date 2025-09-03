@@ -225,6 +225,7 @@ router.get('/', productLimiter, async (req, res) => {
       {
         $project: {
           name: 1,
+          freeDelivery: 1,
           price: 1,
           category: 1,
           type: 1,
@@ -352,7 +353,8 @@ router.get('/', productLimiter, async (req, res) => {
         // Keep only one image field for cards
         image: decompressIfNeeded(product.image),
         images: undefined,
-        discountInfo
+        discountInfo,
+        freeDelivery: product.freeDelivery === undefined ? true : product.freeDelivery
       };
     });
 
@@ -449,6 +451,7 @@ router.get('/:id', productLimiter, async (req, res) => {
           seoKeywords: 1,
           specifications: 1,
           price: 1,
+          freeDelivery: 1,
           stock: 1,
           category: 1,
           type: 1,
@@ -563,7 +566,7 @@ router.get('/:id', productLimiter, async (req, res) => {
           "@type": "OfferShippingDetails",
           "shippingRate": {
             "@type": "MonetaryAmount",
-            "value": "0",
+            "value": productObj.freeDelivery === false ? "Calculated" : "0",
             "currency": "INR"
           },
           "deliveryTime": {

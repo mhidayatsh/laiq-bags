@@ -164,7 +164,7 @@ router.get('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
         console.log('📊 Pagination params:', { page, limit, skip });
 
         const baseQuery = Product.find({}, {
-            name: 1, price: 1, category: 1, type: 1, material: 1, size: 1, description: 1,
+            name: 1, price: 1, freeDelivery: 1, category: 1, type: 1, material: 1, size: 1, description: 1,
             stock: 1, images: { $slice: 1 }, // send only first image
             colorVariants: 1, specifications: 1,
             featured: 1, bestSeller: 1, newArrival: 1, createdAt: 1,

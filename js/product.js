@@ -590,7 +590,13 @@ function fillProductInfo(product) {
         // Add Free Delivery badge next to price (non-intrusive)
         try {
             const priceContainer = productPrice.parentElement;
-            if (priceContainer && !priceContainer.querySelector('.free-delivery-badge')) {
+            const shouldShowFree = (product && (product.freeDelivery === undefined || product.freeDelivery === true));
+            // Remove if exists to avoid duplicates or if disabled
+            const existing = priceContainer ? priceContainer.querySelector('.free-delivery-badge') : null;
+            if (existing && !shouldShowFree) {
+                existing.remove();
+            }
+            if (priceContainer && shouldShowFree && !priceContainer.querySelector('.free-delivery-badge')) {
                 const badge = document.createElement('span');
                 badge.className = 'free-delivery-badge bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold';
                 badge.style.marginLeft = '8px';

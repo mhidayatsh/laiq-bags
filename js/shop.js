@@ -807,9 +807,11 @@ function renderProducts() {
                         </div>
                         <div class="text-charcoal/60 text-sm">${material}</div>
                     </div>
+                    ${(product.freeDelivery === undefined || product.freeDelivery === true) ? `
                     <div class="mb-3">
                         <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Free Delivery</span>
                     </div>
+                    ` : ''}
                     
                     <!-- Enhanced Countdown Timer -->
                     ${hasDiscount && product.discountInfo.timeRemaining ? `
