@@ -967,12 +967,15 @@
           <style>
             /* Base styles for the carousel track and individual slides */
             #testimonial-track {
-              display: flex; /* Aligns all slides in a single row */
+              display: flex;
+              width: 100%;
+              align-items: center;
+              justify-content: center;
             }
     
             #testimonial-track > div {
-              flex-shrink: 0; /* Prevents slides from shrinking to fit the container */
-              width: 100%; /* Each slide takes the full width of the carousel */
+              flex-shrink: 0;
+              width: 100%;
               padding: 0 1rem;
               box-sizing: border-box;
               display: flex;
@@ -984,16 +987,30 @@
             
             /* Mobile-specific styles (screens 768px or less) */
             @media (max-width: 768px) {
+              #testimonial-carousel {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                overflow: hidden;
+              }
+              
+              #testimonial-track {
+                width: 100% !important;
+                max-width: 100% !important;
+                justify-content: center !important;
+                align-items: center !important;
+                flex-direction: column;
+              }
+              
               #testimonial-track > div {
-                /* Hides all slides by default on mobile. Visibility is controlled by JS. */
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 1rem !important;
+                margin: 0 auto !important;
                 display: none;
-                width: 100%;
-                max-width: 100%;
-                padding: 0 1rem;
               }
               
               #testimonial-track > div.is-active {
-                /* This class is added by JavaScript to show only the current slide. */
                 display: flex !important;
                 width: 100% !important;
                 max-width: 100% !important;
@@ -1002,37 +1019,52 @@
                 text-align: center !important;
               }
               
-              /* Ensure proper mobile centering */
-              #testimonial-carousel {
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 !important;
+              /* Ensure content is centered */
+              #testimonial-track > div.is-active img {
+                margin: 0 auto !important;
+                display: block !important;
               }
               
-              #testimonial-track {
-                width: 100% !important;
-                max-width: 100% !important;
-                justify-content: center !important;
-                align-items: center !important;
+              #testimonial-track > div.is-active p {
+                margin: 0 auto !important;
+                text-align: center !important;
+                max-width: 90% !important;
+              }
+              
+              #testimonial-track > div.is-active span {
+                margin: 0 auto !important;
+                text-align: center !important;
               }
             }
             
             /* Desktop-specific styles (screens 769px or more) */
             @media (min-width: 769px) {
               #testimonial-track {
-                /* Enables a smooth sliding animation when the 'transform' property changes. */
                 transition: transform 0.5s ease;
+                flex-direction: row;
               }
               
               #testimonial-track > div {
                 padding: 0 2rem;
+                display: flex;
               }
             }
             
             /* Navigation button styles */
             #testimonial-prev,
             #testimonial-next {
-              z-index: 10; /* Ensures buttons are clickable and appear above other content if overlap occurs */
+              z-index: 10;
+              cursor: pointer;
+            }
+            
+            /* Ensure buttons are clickable on mobile */
+            @media (max-width: 768px) {
+              #testimonial-prev,
+              #testimonial-next {
+                min-width: 44px;
+                min-height: 44px;
+                touch-action: manipulation;
+              }
             }
           </style>
     

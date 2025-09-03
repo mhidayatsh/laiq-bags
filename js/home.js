@@ -301,26 +301,21 @@ function addCartEventListeners() {
 }
 
 // Initialize testimonials carousel
-/**
- * home.js
- * Logic for the testimonial carousel.
- */
-
 function initializeTestimonialCarousel() {
-    // Use a try-catch block to prevent a single error from breaking the entire site.
     try {
         const wrapper = document.getElementById('testimonial-carousel');
-        // If the carousel doesn't exist on the page, stop the function.
-        if (!wrapper) return;
+        if (!wrapper) {
+            console.log('❌ Testimonials carousel not found');
+            return;
+        }
 
         const track = document.getElementById('testimonial-track');
-        const slides = Array.from(track.children); // Convert to Array for easier use
+        const slides = Array.from(track.children);
         const nextBtn = document.getElementById('testimonial-next');
         const prevBtn = document.getElementById('testimonial-prev');
 
-        // Exit if essential elements are missing.
         if (!track || !nextBtn || !prevBtn || slides.length === 0) {
-            console.warn('Testimonial carousel is missing required elements.');
+            console.warn('❌ Testimonial carousel missing required elements');
             return;
         }
 
@@ -329,171 +324,203 @@ function initializeTestimonialCarousel() {
         let autoTimer = null;
         let isMobile = window.innerWidth <= 768;
 
-        // --- Core Functions ---
+        console.log('🚀 Initializing testimonials carousel:', {
+            slides: slides.length,
+            isMobile: isMobile,
+            viewportWidth: window.innerWidth
+        });
 
-        /**
-         * Moves the carousel to a specific slide.
-         * This is the main function that handles all navigation logic.
-         */
+        // Core navigation function
         const goTo = (index) => {
-            if (isAnimating) return;
+            if (isAnimating) {
+                console.log('⏳ Animation in progress, skipping navigation');
+                return;
+            }
 
-            // Loop the index: if it goes past the end, start from 0, and vice-versa.
+            // Calculate new index with loop
             currentIndex = (index + slides.length) % slides.length;
-
             isAnimating = true;
 
-            console.log(`🔄 Going to slide ${currentIndex}, mobile: ${isMobile}`);
+            console.log(`🔄 Navigating to slide ${currentIndex}`);
 
             if (isMobile) {
-                // On mobile, use a class-based show/hide system. It's cleaner and respects CSS.
+                // Mobile: show/hide slides with class
                 slides.forEach((slide, i) => {
-                    const shouldBeActive = i === currentIndex;
-                    slide.classList.toggle('is-active', shouldBeActive);
-                    console.log(`📱 Slide ${i}: ${shouldBeActive ? 'active' : 'hidden'}`);
+                    if (i === currentIndex) {
+                        slide.classList.add('is-active');
+                        slide.style.display = 'flex';
+                        console.log(`✅ Slide ${i} activated`);
+                    } else {
+                        slide.classList.remove('is-active');
+                        slide.style.display = 'none';
+                        console.log(`❌ Slide ${i} hidden`);
+                    }
                 });
-                // No complex animation, so we can unlock immediately.
                 isAnimating = false;
             } else {
-                // On desktop, use a smooth sliding animation with CSS transforms.
+                // Desktop: transform animation
                 const slideWidth = wrapper.clientWidth;
                 track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
                 console.log(`🖥️ Desktop transform: translateX(-${currentIndex * slideWidth}px)`);
             }
         };
-        
-        // This event listener makes the animation handling robust. It waits for the CSS
-        // transition to actually finish before allowing another animation to start.
-        track.addEventListener('transitionend', () => {
-            isAnimating = false;
-        });
 
-        /**
-         * Sets the correct sizes and styles for slides based on screen size.
-         */
-        const applySizesAndStyles = () => {
+        // Apply responsive styles
+        const applyResponsiveStyles = () => {
             isMobile = window.innerWidth <= 768;
-            const slideWidth = wrapper.clientWidth;
+            console.log(`🔄 Responsive update: ${isMobile ? 'Mobile' : 'Desktop'}`);
 
             if (isMobile) {
-                // On mobile, reset any desktop-specific inline styles.
-                // The visibility is now handled by the 'is-active' class in CSS.
+                // Mobile styles
                 track.style.transform = '';
                 track.style.transition = '';
-                slides.forEach(slide => {
+                track.style.display = 'flex';
+                track.style.justifyContent = 'center';
+                track.style.alignItems = 'center';
+                track.style.width = '100%';
+
+                slides.forEach((slide, i) => {
                     slide.style.flex = '';
                     slide.style.minWidth = '';
                     slide.style.maxWidth = '';
-                    slide.classList.remove('is-active');
+                    slide.style.width = '100%';
+                    slide.style.display = i === currentIndex ? 'flex' : 'none';
+                    slide.classList.toggle('is-active', i === currentIndex);
                 });
-                
-                // Ensure the current slide is visible on mobile
-                if (slides[currentIndex]) {
-                    slides[currentIndex].classList.add('is-active');
-                }
-                
-                console.log('✅ Mobile styles applied, current slide:', currentIndex);
+
+                console.log('✅ Mobile styles applied');
             } else {
-                // On desktop, ensure all slides are visible and set their width for the sliding effect.
-                track.style.transition = 'transform 0.5s ease'; // Ensure transition is set
-                slides.forEach(slide => {
-                    slide.classList.remove('is-active'); // Remove mobile class
+                // Desktop styles
+                track.style.transition = 'transform 0.5s ease';
+                track.style.display = 'flex';
+                track.style.width = `${slides.length * 100}%`;
+
+                const slideWidth = wrapper.clientWidth;
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('is-active');
+                    slide.style.display = 'flex';
                     slide.style.flex = `0 0 ${slideWidth}px`;
                     slide.style.minWidth = `${slideWidth}px`;
-                    slide.style.display = 'flex'; // Ensure visibility on desktop
+                    slide.style.width = `${slideWidth}px`;
                 });
-                // Instantly update position to match current slide after resize
+
                 track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-                console.log('✅ Desktop styles applied, slide width:', slideWidth);
+                console.log('✅ Desktop styles applied');
             }
         };
 
-
-        // --- Autoplay Functions ---
-
+        // Autoplay functions
         const startAuto = () => {
-            stopAuto(); // Clear any existing timer before starting a new one.
-            autoTimer = setInterval(() => goTo(currentIndex + 1), 5000); // 5-second interval
+            stopAuto();
+            autoTimer = setInterval(() => {
+                goTo(currentIndex + 1);
+            }, 5000);
+            console.log('🔄 Autoplay started');
         };
 
         const stopAuto = () => {
-            clearInterval(autoTimer);
+            if (autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+                console.log('⏸️ Autoplay stopped');
+            }
         };
-        
-        /**
-         * A helper function to wrap manual actions (clicks, swipes)
-         * to correctly pause and resume autoplay.
-         */
-        const handleManualInteraction = (action) => {
+
+        // Manual navigation handlers
+        const handleNext = () => {
+            console.log('👉 Next button clicked');
             stopAuto();
-            action();
+            goTo(currentIndex + 1);
             startAuto();
         };
 
+        const handlePrev = () => {
+            console.log('👈 Previous button clicked');
+            stopAuto();
+            goTo(currentIndex - 1);
+            startAuto();
+        };
 
-        // --- Event Listeners ---
-
-        nextBtn.addEventListener('click', () => handleManualInteraction(() => goTo(currentIndex + 1)));
-        prevBtn.addEventListener('click', () => handleManualInteraction(() => goTo(currentIndex - 1)));
-        
-        // Pause autoplay on hover for desktop users.
-        wrapper.addEventListener('mouseenter', stopAuto);
-        wrapper.addEventListener('mouseleave', startAuto);
-
-        // Touch swipe listeners for mobile users.
+        // Touch/swipe handling
         let touchStartX = 0;
-        let touchDeltaX = 0;
-        wrapper.addEventListener('touchstart', (e) => {
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        const handleTouchStart = (e) => {
             stopAuto();
             touchStartX = e.touches[0].clientX;
-            touchDeltaX = 0; // Reset delta on new touch
-        }, { passive: true });
+            touchStartY = e.touches[0].clientY;
+            console.log('👆 Touch started:', { x: touchStartX, y: touchStartY });
+        };
 
-        wrapper.addEventListener('touchmove', (e) => {
-            touchDeltaX = e.touches[0].clientX - touchStartX;
-        }, { passive: true });
+        const handleTouchMove = (e) => {
+            touchEndX = e.touches[0].clientX;
+            touchEndY = e.touches[0].clientY;
+        };
 
-        wrapper.addEventListener('touchend', () => {
-            // Check if the swipe was significant enough to trigger navigation.
-            if (Math.abs(touchDeltaX) > 50) {
-                if (touchDeltaX < 0) {
-                    // Swiped left
+        const handleTouchEnd = () => {
+            const deltaX = touchStartX - touchEndX;
+            const deltaY = touchStartY - touchEndY;
+            const minSwipeDistance = 50;
+
+            console.log('👆 Touch ended:', { deltaX, deltaY });
+
+            // Check if swipe is horizontal and significant enough
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                if (deltaX > 0) {
+                    // Swiped left - next slide
+                    console.log('👈 Swiped left - going to next slide');
                     goTo(currentIndex + 1);
                 } else {
-                    // Swiped right
+                    // Swiped right - previous slide
+                    console.log('👉 Swiped right - going to previous slide');
                     goTo(currentIndex - 1);
                 }
             }
+
             startAuto();
-        });
-        
-        // Smart resize handler
+        };
+
+        // Event listeners
+        nextBtn.addEventListener('click', handleNext);
+        prevBtn.addEventListener('click', handlePrev);
+
+        // Touch events
+        wrapper.addEventListener('touchstart', handleTouchStart, { passive: true });
+        wrapper.addEventListener('touchmove', handleTouchMove, { passive: true });
+        wrapper.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+        // Mouse events for desktop
+        wrapper.addEventListener('mouseenter', stopAuto);
+        wrapper.addEventListener('mouseleave', startAuto);
+
+        // Resize handler
         window.addEventListener('resize', () => {
             const wasMobile = isMobile;
-            applySizesAndStyles();
-            // If we switched between mobile and desktop view, reset to the first slide for consistency.
-            if (wasMobile !== (window.innerWidth <= 768)) {
+            applyResponsiveStyles();
+            
+            // Reset to first slide if switching between mobile/desktop
+            if (wasMobile !== isMobile) {
+                currentIndex = 0;
                 goTo(0);
             }
         });
 
-        // --- Initialization ---
-        
+        // Initialize
         const initialize = () => {
-            applySizesAndStyles();
-            goTo(0); // Start at the first slide
+            applyResponsiveStyles();
+            goTo(0);
             startAuto();
+            console.log('✅ Testimonials carousel initialized successfully');
         };
 
-        initialize(); // Run the setup
+        initialize();
 
     } catch (error) {
-        console.error('Testimonials carousel initialization failed:', error);
+        console.error('❌ Testimonials carousel initialization failed:', error);
     }
 }
-
-// Ensure the function runs after the DOM is fully loaded.
-document.addEventListener('DOMContentLoaded', initializeTestimonialCarousel);
 
 // Initialize newsletter form
 function initializeNewsletter() {
