@@ -141,7 +141,7 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
       console.log('✅ COD order validated for authenticated user');
     }
 
-    // Validate stock availability before creating order
+    // Validate stock availability before creating order (variant-aware)
     try {
       console.log('📦 Validating stock availability...');
       for (const item of safeOrderItems) {
@@ -154,16 +154,45 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
               message: `Product not found: ${item.name}`
             });
           }
-          
-          if (product.stock < item.quantity) {
-            console.error(`❌ Insufficient stock for product ${item.product}: requested ${item.quantity}, available ${product.stock}`);
-            return res.status(400).json({
-              success: false,
-              message: `Insufficient stock for ${item.name}. Available: ${product.stock}, Requested: ${item.quantity}`
-            });
+
+          const hasVariants = Array.isArray(product.colorVariants) && product.colorVariants.length > 0;
+          const colorName = item && item.color && item.color.name ? String(item.color.name).trim() : null;
+
+          if (hasVariants) {
+            if (!colorName || colorName.toLowerCase() === 'n/a') {
+              console.error(`❌ Color selection required for product with variants: ${product._id}`);
+              return res.status(400).json({
+                success: false,
+                message: `Please select a valid color for ${item.name}`
+              });
+            }
+
+            const variant = product.colorVariants.find(v => (v && v.name ? v.name.toLowerCase() : '') === colorName.toLowerCase());
+            if (!variant) {
+              console.error(`❌ Selected color not found for product ${product._id}: ${colorName}`);
+              return res.status(400).json({
+                success: false,
+                message: `Selected color "${colorName}" is not available for ${item.name}`
+              });
+            }
+            if ((parseInt(variant.stock) || 0) < item.quantity) {
+              console.error(`❌ Insufficient stock for ${item.name} [${colorName}] - requested ${item.quantity}, available ${variant.stock}`);
+              return res.status(400).json({
+                success: false,
+                message: `Insufficient stock for ${item.name} (${colorName}). Available: ${variant.stock}, Requested: ${item.quantity}`
+              });
+            }
+            console.log(`✅ Stock validated for ${item.name} [${colorName}]: ${variant.stock} available, ${item.quantity} requested`);
+          } else {
+            if ((parseInt(product.stock) || 0) < item.quantity) {
+              console.error(`❌ Insufficient stock for product ${item.product}: requested ${item.quantity}, available ${product.stock}`);
+              return res.status(400).json({
+                success: false,
+                message: `Insufficient stock for ${item.name}. Available: ${product.stock}, Requested: ${item.quantity}`
+              });
+            }
+            console.log(`✅ Stock validated for ${item.name}: ${product.stock} available, ${item.quantity} requested`);
           }
-          
-          console.log(`✅ Stock validated for ${item.name}: ${product.stock} available, ${item.quantity} requested`);
         }
       }
       console.log('✅ All products have sufficient stock');
@@ -195,8 +224,9 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
       for (const item of safeOrderItems) {
         if (item.product && item.quantity) {
           try {
-            await updateStock(item.product, item.quantity);
-            console.log(`✅ Stock updated for product ${item.product}: -${item.quantity}`);
+            await updateStock(item.product, item.quantity, (item && item.color && item.color.name) ? item.color.name : null);
+            const colorLog = (item && item.color && item.color.name) ? ` [${item.color.name}]` : '';
+            console.log(`✅ Stock updated for product ${item.product}${colorLog}: -${item.quantity}`);
           } catch (itemStockError) {
             console.error(`❌ Failed to update stock for product ${item.product}:`, itemStockError);
             stockUpdateSuccess = false;
@@ -617,13 +647,14 @@ router.post('/:id/cancel', isAuthenticatedUser, async (req, res) => {
     
     await order.save();
     
-    // Restore product stock quantities
+    // Restore product stock quantities (variant-aware)
     try {
       console.log('📦 Restoring product stock quantities...');
       for (const item of order.orderItems) {
         if (item.product && item.quantity) {
-          await restoreStock(item.product, item.quantity);
-          console.log(`✅ Stock restored for product ${item.product}: +${item.quantity}`);
+          await restoreStock(item.product, item.quantity, (item && item.color && item.color.name) ? item.color.name : null);
+          const colorLog = (item && item.color && item.color.name) ? ` [${item.color.name}]` : '';
+          console.log(`✅ Stock restored for product ${item.product}${colorLog}: +${item.quantity}`);
         }
       }
       console.log('✅ All product stock quantities restored successfully');
@@ -694,13 +725,14 @@ router.post('/admin/:id/cancel', isAuthenticatedUser, authorizeRoles('admin'), a
     
     await order.save();
     
-    // Restore product stock quantities
+    // Restore product stock quantities (variant-aware)
     try {
       console.log('📦 Restoring product stock quantities...');
       for (const item of order.orderItems) {
         if (item.product && item.quantity) {
-          await restoreStock(item.product, item.quantity);
-          console.log(`✅ Stock restored for product ${item.product}: +${item.quantity}`);
+          await restoreStock(item.product, item.quantity, (item && item.color && item.color.name) ? item.color.name : null);
+          const colorLog = (item && item.color && item.color.name) ? ` [${item.color.name}]` : '';
+          console.log(`✅ Stock restored for product ${item.product}${colorLog}: +${item.quantity}`);
         }
       }
       console.log('✅ All product stock quantities restored successfully');
@@ -869,9 +901,9 @@ router.post('/:id/notes', isAuthenticatedUser, async (req, res) => {
   }
 });
 
-async function updateStock(id, quantity) {
+async function updateStock(id, quantity, colorName = null) {
   try {
-    console.log(`🔄 Updating stock for product ${id} by -${quantity}`);
+    console.log(`🔄 Updating stock for product ${id} by -${quantity}${colorName ? ` (color: ${colorName})` : ''}`);
     
     const product = await Product.findById(id);
     
@@ -879,17 +911,38 @@ async function updateStock(id, quantity) {
       throw new Error(`Product not found with ID: ${id}`);
     }
     
-    const oldStock = product.stock;
-    const newStock = oldStock - quantity;
-    
-    if (newStock < 0) {
-      throw new Error(`Stock would become negative: ${oldStock} - ${quantity} = ${newStock}`);
+    const hasVariants = Array.isArray(product.colorVariants) && product.colorVariants.length > 0;
+
+    if (hasVariants) {
+      if (!colorName || String(colorName).toLowerCase() === 'n/a') {
+        throw new Error('Color name required for variant product');
+      }
+      const idx = product.colorVariants.findIndex(v => (v && v.name ? v.name.toLowerCase() : '') === String(colorName).toLowerCase());
+      if (idx === -1) {
+        throw new Error(`Color variant not found: ${colorName}`);
+      }
+      const variant = product.colorVariants[idx];
+      const oldVariantStock = parseInt(variant.stock) || 0;
+      const newVariantStock = oldVariantStock - quantity;
+      if (newVariantStock < 0) {
+        throw new Error(`Variant stock would become negative for ${colorName}: ${oldVariantStock} - ${quantity} = ${newVariantStock}`);
+      }
+      product.colorVariants[idx].stock = newVariantStock;
+      if (newVariantStock === 0) {
+        product.colorVariants[idx].isAvailable = false;
+      }
+      await product.save({ validateBeforeSave: false });
+      console.log(`✅ Variant stock updated successfully for ${colorName}: ${oldVariantStock} → ${newVariantStock} (-${quantity})`);
+    } else {
+      const oldStock = parseInt(product.stock) || 0;
+      const newStock = oldStock - quantity;
+      if (newStock < 0) {
+        throw new Error(`Stock would become negative: ${oldStock} - ${quantity} = ${newStock}`);
+      }
+      product.stock = newStock;
+      await product.save({ validateBeforeSave: false });
+      console.log(`✅ Stock updated successfully: ${oldStock} → ${newStock} (-${quantity})`);
     }
-    
-    product.stock = newStock;
-    await product.save({ validateBeforeSave: false });
-    
-    console.log(`✅ Stock updated successfully: ${oldStock} → ${newStock} (-${quantity})`);
     return true;
   } catch (error) {
     console.error(`❌ Stock update failed for product ${id}:`, error.message);
@@ -897,9 +950,9 @@ async function updateStock(id, quantity) {
   }
 }
 
-async function restoreStock(id, quantity) {
+async function restoreStock(id, quantity, colorName = null) {
   try {
-    console.log(`🔄 Restoring stock for product ${id} by +${quantity}`);
+    console.log(`🔄 Restoring stock for product ${id} by +${quantity}${colorName ? ` (color: ${colorName})` : ''}`);
     
     const product = await Product.findById(id);
     
@@ -907,13 +960,50 @@ async function restoreStock(id, quantity) {
       throw new Error(`Product not found with ID: ${id}`);
     }
     
-    const oldStock = product.stock;
-    const newStock = oldStock + quantity;
-    
-    product.stock = newStock;
-    await product.save({ validateBeforeSave: false });
-    
-    console.log(`✅ Stock restored successfully: ${oldStock} → ${newStock} (+${quantity})`);
+    const hasVariants = Array.isArray(product.colorVariants) && product.colorVariants.length > 0;
+
+    if (hasVariants) {
+      if (!colorName || String(colorName).toLowerCase() === 'n/a') {
+        // If color is unknown for a variant-based product, restore to the first variant to keep totals consistent
+        const idx = 0;
+        const oldVariantStock = parseInt(product.colorVariants[idx].stock) || 0;
+        const newVariantStock = oldVariantStock + quantity;
+        product.colorVariants[idx].stock = newVariantStock;
+        if (newVariantStock > 0) {
+          product.colorVariants[idx].isAvailable = true;
+        }
+        await product.save({ validateBeforeSave: false });
+        console.log(`✅ Variant stock restored to first variant (${product.colorVariants[idx].name}): ${oldVariantStock} → ${newVariantStock} (+${quantity})`);
+      } else {
+        const idx = product.colorVariants.findIndex(v => (v && v.name ? v.name.toLowerCase() : '') === String(colorName).toLowerCase());
+        if (idx === -1) {
+          // If specified color not found, restore to first variant as fallback
+          const oldVariantStock = parseInt(product.colorVariants[0].stock) || 0;
+          const newVariantStock = oldVariantStock + quantity;
+          product.colorVariants[0].stock = newVariantStock;
+          if (newVariantStock > 0) {
+            product.colorVariants[0].isAvailable = true;
+          }
+          await product.save({ validateBeforeSave: false });
+          console.warn(`⚠️ Color variant not found (${colorName}). Restored stock to first variant (${product.colorVariants[0].name}).`);
+        } else {
+          const oldVariantStock = parseInt(product.colorVariants[idx].stock) || 0;
+          const newVariantStock = oldVariantStock + quantity;
+          product.colorVariants[idx].stock = newVariantStock;
+          if (newVariantStock > 0) {
+            product.colorVariants[idx].isAvailable = true;
+          }
+          await product.save({ validateBeforeSave: false });
+          console.log(`✅ Variant stock restored successfully for ${product.colorVariants[idx].name}: ${oldVariantStock} → ${newVariantStock} (+${quantity})`);
+        }
+      }
+    } else {
+      const oldStock = parseInt(product.stock) || 0;
+      const newStock = oldStock + quantity;
+      product.stock = newStock;
+      await product.save({ validateBeforeSave: false });
+      console.log(`✅ Stock restored successfully: ${oldStock} → ${newStock} (+${quantity})`);
+    }
     return true;
   } catch (error) {
     console.error(`❌ Stock restoration failed for product ${id}:`, error.message);
