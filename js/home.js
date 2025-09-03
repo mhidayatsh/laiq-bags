@@ -343,10 +343,14 @@ function initializeTestimonialCarousel() {
 
             isAnimating = true;
 
+            console.log(`🔄 Going to slide ${currentIndex}, mobile: ${isMobile}`);
+
             if (isMobile) {
                 // On mobile, use a class-based show/hide system. It's cleaner and respects CSS.
                 slides.forEach((slide, i) => {
-                    slide.classList.toggle('is-active', i === currentIndex);
+                    const shouldBeActive = i === currentIndex;
+                    slide.classList.toggle('is-active', shouldBeActive);
+                    console.log(`📱 Slide ${i}: ${shouldBeActive ? 'active' : 'hidden'}`);
                 });
                 // No complex animation, so we can unlock immediately.
                 isAnimating = false;
@@ -354,6 +358,7 @@ function initializeTestimonialCarousel() {
                 // On desktop, use a smooth sliding animation with CSS transforms.
                 const slideWidth = wrapper.clientWidth;
                 track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+                console.log(`🖥️ Desktop transform: translateX(-${currentIndex * slideWidth}px)`);
             }
         };
         
@@ -374,10 +379,20 @@ function initializeTestimonialCarousel() {
                 // On mobile, reset any desktop-specific inline styles.
                 // The visibility is now handled by the 'is-active' class in CSS.
                 track.style.transform = '';
+                track.style.transition = '';
                 slides.forEach(slide => {
                     slide.style.flex = '';
                     slide.style.minWidth = '';
+                    slide.style.maxWidth = '';
+                    slide.classList.remove('is-active');
                 });
+                
+                // Ensure the current slide is visible on mobile
+                if (slides[currentIndex]) {
+                    slides[currentIndex].classList.add('is-active');
+                }
+                
+                console.log('✅ Mobile styles applied, current slide:', currentIndex);
             } else {
                 // On desktop, ensure all slides are visible and set their width for the sliding effect.
                 track.style.transition = 'transform 0.5s ease'; // Ensure transition is set
@@ -385,9 +400,11 @@ function initializeTestimonialCarousel() {
                     slide.classList.remove('is-active'); // Remove mobile class
                     slide.style.flex = `0 0 ${slideWidth}px`;
                     slide.style.minWidth = `${slideWidth}px`;
+                    slide.style.display = 'flex'; // Ensure visibility on desktop
                 });
                 // Instantly update position to match current slide after resize
                 track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+                console.log('✅ Desktop styles applied, slide width:', slideWidth);
             }
         };
 

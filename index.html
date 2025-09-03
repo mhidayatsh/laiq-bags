@@ -987,11 +987,33 @@
               #testimonial-track > div {
                 /* Hides all slides by default on mobile. Visibility is controlled by JS. */
                 display: none;
+                width: 100%;
+                max-width: 100%;
+                padding: 0 1rem;
               }
               
               #testimonial-track > div.is-active {
                 /* This class is added by JavaScript to show only the current slide. */
-                display: flex;
+                display: flex !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+              }
+              
+              /* Ensure proper mobile centering */
+              #testimonial-carousel {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+              }
+              
+              #testimonial-track {
+                width: 100% !important;
+                max-width: 100% !important;
+                justify-content: center !important;
+                align-items: center !important;
               }
             }
             
