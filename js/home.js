@@ -322,50 +322,63 @@ function initializeTestimonialCarousel() {
         const applySizes = () => {
             const slideWidth = wrapper.clientWidth;
             
-            // Set each slide to exactly the wrapper width
-            slides.forEach(slide => {
-                slide.style.boxSizing = 'border-box';
-                slide.style.display = 'flex';
-                slide.style.flexDirection = 'column';
-                slide.style.alignItems = 'center';
-                slide.style.justifyContent = 'center';
-                slide.style.textAlign = 'center';
-                
-                if (isMobile) {
-                    // Mobile: full width with proper centering
-                    slide.style.flex = '0 0 100%';
+            if (isMobile) {
+                // Mobile: Show only first testimonial, hide others
+                slides.forEach((slide, index) => {
+                    slide.style.display = index === 0 ? 'flex' : 'none';
+                    slide.style.boxSizing = 'border-box';
+                    slide.style.flexDirection = 'column';
+                    slide.style.alignItems = 'center';
+                    slide.style.justifyContent = 'center';
+                    slide.style.textAlign = 'center';
                     slide.style.width = '100%';
                     slide.style.minWidth = '100%';
                     slide.style.maxWidth = '100%';
                     slide.style.padding = '0 1rem';
-                } else {
-                    // Desktop: exact pixel width
+                });
+                
+                // Reset track transform for mobile
+                track.style.transform = 'none';
+                track.style.width = '100%';
+                track.style.display = 'flex';
+                track.style.justifyContent = 'center';
+                track.style.alignItems = 'center';
+            } else {
+                // Desktop: Carousel functionality
+                slides.forEach(slide => {
+                    slide.style.display = 'flex';
+                    slide.style.boxSizing = 'border-box';
                     slide.style.flex = `0 0 ${slideWidth}px`;
                     slide.style.minWidth = slideWidth + 'px';
                     slide.style.maxWidth = slideWidth + 'px';
-                }
-            });
-            
-            // Track width adjusts naturally from children; keep transform in sync
-            // Keep current slide in view after resize
-            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-            
-            // Ensure track is properly centered on mobile
-            if (isMobile) {
-                track.style.width = '100%';
-                track.style.maxWidth = '100%';
-                track.style.display = 'flex';
-                track.style.justifyContent = 'flex-start';
-                track.style.alignItems = 'center';
+                    slide.style.flexDirection = 'column';
+                    slide.style.alignItems = 'center';
+                    slide.style.justifyContent = 'center';
+                    slide.style.textAlign = 'center';
+                });
+                
+                // Track width adjusts naturally from children; keep transform in sync
+                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
             }
         };
         
         const goTo = (index) => {
             if (isAnimating) return;
             isAnimating = true;
-            const slideWidth = wrapper.clientWidth;
-            currentIndex = (index + slides.length) % slides.length;
-            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            
+            if (isMobile) {
+                // Mobile: Simple show/hide navigation
+                slides.forEach((slide, i) => {
+                    slide.style.display = i === index ? 'flex' : 'none';
+                });
+                currentIndex = (index + slides.length) % slides.length;
+            } else {
+                // Desktop: Carousel transform
+                const slideWidth = wrapper.clientWidth;
+                currentIndex = (index + slides.length) % slides.length;
+                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+            }
+            
             // Unlock after CSS transition
             setTimeout(() => { isAnimating = false; }, 520);
         };
@@ -376,16 +389,18 @@ function initializeTestimonialCarousel() {
         const onManual = (fn) => {
             stopAuto();
             fn();
-            startAuto();
+            if (!isMobile) startAuto(); // Only auto-rotate on desktop
         };
         
         nextBtn && nextBtn.addEventListener('click', () => onManual(next));
         prevBtn && prevBtn.addEventListener('click', () => onManual(prev));
         
-        // Auto-rotate every 6s
+        // Auto-rotate every 6s (desktop only)
         const startAuto = () => {
-            stopAuto();
-            autoTimer = setInterval(next, 6000);
+            if (!isMobile) {
+                stopAuto();
+                autoTimer = setInterval(next, 6000);
+            }
         };
         const stopAuto = () => {
             if (autoTimer) clearInterval(autoTimer);
@@ -393,17 +408,24 @@ function initializeTestimonialCarousel() {
         };
         startAuto();
         
-        // Pause on hover (desktop)
-        wrapper.addEventListener('mouseenter', stopAuto);
-        wrapper.addEventListener('mouseleave', startAuto);
+        // Pause on hover (desktop only)
+        if (!isMobile) {
+            wrapper.addEventListener('mouseenter', stopAuto);
+            wrapper.addEventListener('mouseleave', startAuto);
+        }
         
         // Touch swipe (mobile)
         let touchStartX = 0;
         let touchDeltaX = 0;
         wrapper.addEventListener('touchstart', (e) => {
-            stopAuto();
-            touchStartX = e.touches[0].clientX;
-            touchDeltaX = 0;
+            if (isMobile) {
+                touchStartX = e.touches[0].clientX;
+                touchDeltaX = 0;
+            } else {
+                stopAuto();
+                touchStartX = e.touches[0].clientX;
+                touchDeltaX = 0;
+            }
         }, { passive: true });
         wrapper.addEventListener('touchmove', (e) => {
             touchDeltaX = e.touches[0].clientX - touchStartX;
@@ -412,11 +434,23 @@ function initializeTestimonialCarousel() {
             if (Math.abs(touchDeltaX) > 40) {
                 if (touchDeltaX < 0) next(); else prev();
             }
-            startAuto();
+            if (!isMobile) startAuto();
         });
         
         // Recalculate sizes on resize and keep position
-        window.addEventListener('resize', applySizes);
+        window.addEventListener('resize', () => {
+            // Recalculate mobile state on resize
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= 768;
+            
+            // If mobile state changed, reinitialize
+            if (wasMobile !== isMobile) {
+                applySizes();
+                goTo(0);
+            } else {
+                applySizes();
+            }
+        });
         
         // Initial position
         applySizes();

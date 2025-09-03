@@ -962,29 +962,65 @@
         <!-- Carousel Wrapper -->
         <div id="testimonial-carousel" class="overflow-hidden w-full">
           <style>
+            /* Extra small devices (phones, 480px and down) */
+            @media (max-width: 480px) {
+              #testimonial-track > div {
+                padding: 0 0.5rem !important;
+              }
+            }
+            
+            /* Small devices (landscape phones, 481px and up) */
+            @media (min-width: 481px) and (max-width: 768px) {
+              #testimonial-track > div {
+                padding: 0 1rem !important;
+              }
+            }
+            
+            /* Mobile devices (768px and down) */
             @media (max-width: 768px) {
               #testimonial-carousel {
-                display: flex;
-                justify-content: center;
+                display: block !important;
+                width: 100% !important;
+                overflow: hidden !important;
               }
               #testimonial-track {
-                width: 100%;
-                justify-content: flex-start;
+                width: 100% !important;
+                display: flex !important;
+                transform: none !important;
+                transition: none !important;
               }
               #testimonial-track > div {
-                width: 100% !important;
-                min-width: 100% !important;
-                max-width: 100% !important;
-                flex: 0 0 100% !important;
+                width: 100vw !important;
+                min-width: 100vw !important;
+                max-width: 100vw !important;
+                flex: 0 0 100vw !important;
+                margin: 0 !important;
+                padding: 0 1rem !important;
+                box-sizing: border-box !important;
+              }
+              /* Hide all testimonials except the first one on mobile */
+              #testimonial-track > div:not(:first-child) {
+                display: none !important;
+              }
+              /* Show only the first testimonial on mobile */
+              #testimonial-track > div:first-child {
+                display: flex !important;
+              }
+            }
+            
+            /* Medium devices (tablets, 769px and up) */
+            @media (min-width: 769px) {
+              #testimonial-carousel {
+                display: block !important;
               }
             }
           </style>
           <div class="flex transition-transform duration-500 w-full" style="transform: translateX(0px)" id="testimonial-track">
             <!-- Testimonial 1 -->
             <div class="w-full shrink-0 px-3 md:px-4 flex flex-col items-center justify-center text-center">
-              <img src="/assets/Faiyaz.jpeg" alt="Customer 2" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
+              <img src="/assets/AyazKhan.jpg" alt="Customer 2" class="w-14 h-14 md:w-16 md:h-16 rounded-full mb-3 md:mb-4 border-4 border-gold object-cover mx-auto" />
               <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-sm mx-auto text-center">"The LAIQ sling bag is perfect – compact yet spacious, stylish, and super comfortable to carry. Great quality and goes with any outfit!"</p>
-              <span class="font-semibold text-gold text-center">Faiyaz Ahmed, Patna</span>
+              <span class="font-semibold text-gold text-center">Ayaz Khan, Mumbai</span>
             </div>
 
             <!-- Testimonial 2 -->
