@@ -735,7 +735,7 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
         const totalOrders = await Order.countDocuments(filterQuery);
         
         // Get orders with pagination, filters, and limited population
-        const orders = await Order.find(filterQuery)
+        let orders = await Order.find(filterQuery)
             .populate('user', 'name email')
             .populate({
                 path: 'orderItems.product',
@@ -757,6 +757,24 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
             .lean()
             .select('orderItems totalAmount status createdAt user shippingInfo paymentInfo paymentMethod')
             .maxTimeMS(15000); // 15 second timeout for admin order queries
+
+        // Normalize COD delivered payment status to Completed in the response
+        orders = Array.isArray(orders) ? orders.map(o => {
+            try {
+                if (o && o.paymentMethod === 'cod' && o.status === 'delivered') {
+                    if (!o.paymentInfo) {
+                        o.paymentInfo = { id: 'COD', status: 'Completed' };
+                    } else {
+                        o.paymentInfo.id = o.paymentInfo.id || 'COD';
+                        o.paymentInfo.status = 'Completed';
+                    }
+                    if (!o.paidAt) {
+                        o.paidAt = new Date();
+                    }
+                }
+            } catch (_) {}
+            return o;
+        }) : orders;
         
         const response = {
             success: true,
@@ -853,6 +871,21 @@ router.put('/orders/:id/status', isAuthenticatedUser, adminOnly, catchAsyncError
             order.deliveredAt = Date.now();
             order.trackingInfo.deliveredAt = Date.now();
             console.log('✅ Order delivered at:', new Date(order.deliveredAt));
+
+            // If this is a COD order, mark payment as completed on delivery
+            if (order.paymentMethod === 'cod') {
+                if (!order.paymentInfo) {
+                    order.paymentInfo = { id: 'COD', status: 'Completed' };
+                } else {
+                    order.paymentInfo.id = order.paymentInfo.id || 'COD';
+                    order.paymentInfo.status = 'Completed';
+                }
+                // Set paidAt if not already set
+                if (!order.paidAt) {
+                    order.paidAt = Date.now();
+                }
+                console.log('💰 COD payment marked as Completed on delivery');
+            }
         }
         
         console.log('💾 Saving order with new status:', status);

@@ -283,8 +283,8 @@ function renderTransactions() {
                             <h3 class="font-semibold text-charcoal">Order #${transaction._id.slice(-8)}</h3>
                             <p class="text-sm text-gray-600">${new Date(transaction.createdAt).toLocaleDateString('en-IN')}</p>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium payment-status status-${transaction.paymentInfo?.status?.toLowerCase() || 'pending'}">
-                            ${transaction.paymentInfo?.status?.toUpperCase() || 'PENDING'}
+                        <span class="px-3 py-1 rounded-full text-xs font-medium payment-status status-${(transaction.paymentInfo?.status || 'pending').toString().toLowerCase()}">
+                            ${(transaction.paymentInfo?.status || 'PENDING').toString().toUpperCase()}
                         </span>
                     </div>
                     
@@ -446,8 +446,8 @@ function renderTransactionModal(transaction) {
                     </div>
                     <div>
                         <p class="text-gray-600">Payment Status</p>
-                        <span class="px-2 py-1 rounded-full text-xs font-medium payment-status status-${transaction.paymentInfo?.status?.toLowerCase() || 'pending'}">
-                            ${transaction.paymentInfo?.status?.toUpperCase() || 'PENDING'}
+                        <span class="px-2 py-1 rounded-full text-xs font-medium payment-status status-${(transaction.paymentInfo?.status || 'pending').toString().toLowerCase()}">
+                            ${(transaction.paymentInfo?.status || 'PENDING').toString().toUpperCase()}
                         </span>
                     </div>
                     <div>

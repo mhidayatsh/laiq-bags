@@ -375,7 +375,7 @@ function renderOrders() {
                     <div class="mb-4">
                         <p class="text-sm text-gray-600">Payment Method</p>
                         <p class="font-medium text-charcoal">${formatPaymentMethod(order.paymentMethod)}</p>
-                        <p class="text-xs text-gray-500">${order.paymentInfo?.status || 'N/A'}</p>
+                        <p class="text-xs text-gray-500">${(order.paymentInfo?.status || 'N/A').toString()}</p>
                     </div>
                     
                     ${order.trackingInfo?.trackingNumber ? `

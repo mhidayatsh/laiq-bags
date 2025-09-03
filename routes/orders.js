@@ -528,6 +528,22 @@ router.put('/admin/:id/status', isAuthenticatedUser, authorizeRoles('admin'), as
       order.deliveredAt = Date.now();
       order.trackingInfo.deliveredAt = Date.now();
       console.log('✅ Order delivered at:', new Date(order.deliveredAt));
+
+      // If COD, mark payment as completed on delivery
+      try {
+        if (order.paymentMethod === 'cod') {
+          if (!order.paymentInfo) {
+            order.paymentInfo = { id: 'COD', status: 'Completed' };
+          } else {
+            order.paymentInfo.id = order.paymentInfo.id || 'COD';
+            order.paymentInfo.status = 'Completed';
+          }
+          if (!order.paidAt) {
+            order.paidAt = Date.now();
+          }
+          console.log('💰 COD payment marked as Completed on delivery (orders route)');
+        }
+      } catch (_) {}
     }
 
     console.log('💾 Saving order with new status:', status);
