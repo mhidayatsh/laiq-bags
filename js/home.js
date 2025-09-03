@@ -366,17 +366,20 @@ function initializeTestimonialCarousel() {
             if (isAnimating) return;
             isAnimating = true;
             
+            // Ensure index is within bounds
+            const safeIndex = (index + slides.length) % slides.length;
+            currentIndex = safeIndex;
+            
             if (isMobile) {
                 // Mobile: Simple show/hide navigation
                 slides.forEach((slide, i) => {
-                    slide.style.display = i === index ? 'flex' : 'none';
+                    slide.style.display = i === safeIndex ? 'flex' : 'none';
                 });
-                currentIndex = (index + slides.length) % slides.length;
+                console.log(`Mobile: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
             } else {
                 // Desktop: Carousel transform
                 const slideWidth = wrapper.clientWidth;
-                currentIndex = (index + slides.length) % slides.length;
-                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+                track.style.transform = `translateX(-${safeIndex * slideWidth}px)`;
             }
             
             // Unlock after CSS transition
@@ -392,8 +395,14 @@ function initializeTestimonialCarousel() {
             if (!isMobile) startAuto(); // Only auto-rotate on desktop
         };
         
-        nextBtn && nextBtn.addEventListener('click', () => onManual(next));
-        prevBtn && prevBtn.addEventListener('click', () => onManual(prev));
+        nextBtn && nextBtn.addEventListener('click', () => {
+            console.log('Next button clicked, currentIndex:', currentIndex);
+            onManual(next);
+        });
+        prevBtn && prevBtn.addEventListener('click', () => {
+            console.log('Prev button clicked, currentIndex:', currentIndex);
+            onManual(prev);
+        });
         
         // Auto-rotate every 6s (desktop only)
         const startAuto = () => {
@@ -417,24 +426,49 @@ function initializeTestimonialCarousel() {
         // Touch swipe (mobile)
         let touchStartX = 0;
         let touchDeltaX = 0;
+        let touchStartY = 0;
+        
         wrapper.addEventListener('touchstart', (e) => {
-            if (isMobile) {
-                touchStartX = e.touches[0].clientX;
-                touchDeltaX = 0;
-            } else {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchDeltaX = 0;
+            
+            if (!isMobile) {
                 stopAuto();
-                touchStartX = e.touches[0].clientX;
-                touchDeltaX = 0;
             }
         }, { passive: true });
+        
         wrapper.addEventListener('touchmove', (e) => {
-            touchDeltaX = e.touches[0].clientX - touchStartX;
-        }, { passive: true });
-        wrapper.addEventListener('touchend', () => {
-            if (Math.abs(touchDeltaX) > 40) {
-                if (touchDeltaX < 0) next(); else prev();
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            
+            // Calculate horizontal and vertical movement
+            touchDeltaX = currentX - touchStartX;
+            const touchDeltaY = Math.abs(currentY - touchStartY);
+            
+            // Only allow horizontal swipe if vertical movement is minimal
+            if (touchDeltaY < 50) {
+                e.preventDefault();
             }
-            if (!isMobile) startAuto();
+        }, { passive: false });
+        
+        wrapper.addEventListener('touchend', () => {
+            // Minimum swipe distance for navigation
+            const minSwipeDistance = 50;
+            
+            if (Math.abs(touchDeltaX) > minSwipeDistance) {
+                if (touchDeltaX < 0) {
+                    // Swipe left - go to next
+                    next();
+                } else {
+                    // Swipe right - go to previous
+                    prev();
+                }
+            }
+            
+            if (!isMobile) {
+                startAuto();
+            }
         });
         
         // Recalculate sizes on resize and keep position
