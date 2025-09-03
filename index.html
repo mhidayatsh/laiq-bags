@@ -997,7 +997,20 @@
                 margin: 0 !important;
                 padding: 0 1rem !important;
                 box-sizing: border-box !important;
-                /* Let JavaScript control ALL display properties */
+              }
+              
+              /* CSS classes for JavaScript to control visibility */
+              .active-testimonial {
+                display: flex !important;
+              }
+              
+              .hidden-testimonial {
+                display: none !important;
+              }
+              
+              /* Show only the first testimonial by default */
+              #testimonial-track > div:first-child {
+                display: flex !important;
               }
             }
             

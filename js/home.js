@@ -323,9 +323,8 @@ function initializeTestimonialCarousel() {
             const slideWidth = wrapper.clientWidth;
             
             if (isMobile) {
-                // Mobile: Show only first testimonial, hide others
+                // Mobile: CSS handles display, JavaScript handles positioning
                 slides.forEach((slide, index) => {
-                    slide.style.display = index === 0 ? 'flex' : 'none';
                     slide.style.boxSizing = 'border-box';
                     slide.style.flexDirection = 'column';
                     slide.style.alignItems = 'center';
@@ -371,20 +370,17 @@ function initializeTestimonialCarousel() {
             currentIndex = safeIndex;
             
             if (isMobile) {
-                // Mobile: Simple show/hide navigation
+                // Mobile: Use CSS classes for show/hide
                 slides.forEach((slide, i) => {
-                    const newDisplay = i === safeIndex ? 'flex' : 'none';
-                    slide.style.display = newDisplay;
-                    console.log(`Slide ${i + 1}: display set to '${newDisplay}'`);
+                    if (i === safeIndex) {
+                        slide.classList.add('active-testimonial');
+                        slide.classList.remove('hidden-testimonial');
+                    } else {
+                        slide.classList.remove('active-testimonial');
+                        slide.classList.add('hidden-testimonial');
+                    }
                 });
                 console.log(`Mobile: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
-                
-                // Verify the change took effect
-                setTimeout(() => {
-                    const visibleSlide = slides[safeIndex];
-                    const computedDisplay = window.getComputedStyle(visibleSlide).display;
-                    console.log(`Verification: Slide ${safeIndex + 1} computed display = '${computedDisplay}'`);
-                }, 100);
             } else {
                 // Desktop: Carousel transform
                 const slideWidth = wrapper.clientWidth;
@@ -516,9 +512,15 @@ function initializeTestimonialCarousel() {
         const initializeCarousel = () => {
             applySizes();
             if (isMobile) {
-                // Force mobile initialization
+                // Force mobile initialization using CSS classes
                 slides.forEach((slide, index) => {
-                    slide.style.display = index === 0 ? 'flex' : 'none';
+                    if (index === 0) {
+                        slide.classList.add('active-testimonial');
+                        slide.classList.remove('hidden-testimonial');
+                    } else {
+                        slide.classList.remove('active-testimonial');
+                        slide.classList.add('hidden-testimonial');
+                    }
                 });
                 console.log('Mobile carousel initialized - showing first testimonial');
             }
