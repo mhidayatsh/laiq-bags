@@ -967,15 +967,12 @@
           <style>
             /* Base styles for the carousel track and individual slides */
             #testimonial-track {
-              display: flex;
-              width: 100%;
-              align-items: center;
-              justify-content: center;
+              display: flex; /* Aligns all slides in a single row */
             }
     
             #testimonial-track > div {
-              flex-shrink: 0;
-              width: 100%;
+              flex-shrink: 0; /* Prevents slides from shrinking to fit the container */
+              width: 100%; /* Each slide takes the full width of the carousel */
               padding: 0 1rem;
               box-sizing: border-box;
               display: flex;
@@ -987,6 +984,12 @@
             
             /* Mobile-specific styles (screens 768px or less) */
             @media (max-width: 768px) {
+              .max-w-4xl {
+                max-width: 100% !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+              }
+              
               #testimonial-carousel {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -999,79 +1002,76 @@
                 max-width: 100% !important;
                 justify-content: center !important;
                 align-items: center !important;
-                flex-direction: column;
               }
               
               #testimonial-track > div {
+                /* Hides all slides by default on mobile. Visibility is controlled by JS. */
+                display: none;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-width: 100% !important;
                 padding: 0 1rem !important;
                 margin: 0 auto !important;
-                display: none;
               }
               
               #testimonial-track > div.is-active {
+                /* This class is added by JavaScript to show only the current slide. */
                 display: flex !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                min-width: 100% !important;
                 align-items: center !important;
                 justify-content: center !important;
                 text-align: center !important;
+                padding: 0 1rem !important;
+                box-sizing: border-box !important;
               }
               
-              /* Ensure content is centered */
+              /* Ensure content is properly centered on mobile */
               #testimonial-track > div.is-active img {
-                margin: 0 auto !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
                 display: block !important;
               }
               
               #testimonial-track > div.is-active p {
-                margin: 0 auto !important;
-                text-align: center !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
                 max-width: 90% !important;
+                text-align: center !important;
+                width: 100% !important;
               }
               
               #testimonial-track > div.is-active span {
-                margin: 0 auto !important;
                 text-align: center !important;
+                width: 100% !important;
+                margin: 0 auto !important;
               }
             }
             
             /* Desktop-specific styles (screens 769px or more) */
             @media (min-width: 769px) {
               #testimonial-track {
+                /* Enables a smooth sliding animation when the 'transform' property changes. */
                 transition: transform 0.5s ease;
-                flex-direction: row;
               }
               
               #testimonial-track > div {
                 padding: 0 2rem;
-                display: flex;
               }
             }
             
             /* Navigation button styles */
             #testimonial-prev,
             #testimonial-next {
-              z-index: 10;
-              cursor: pointer;
-            }
-            
-            /* Ensure buttons are clickable on mobile */
-            @media (max-width: 768px) {
-              #testimonial-prev,
-              #testimonial-next {
-                min-width: 44px;
-                min-height: 44px;
-                touch-action: manipulation;
-              }
+              z-index: 10; /* Ensures buttons are clickable and appear above other content if overlap occurs */
             }
           </style>
     
           <div class="flex w-full" id="testimonial-track">
     
             <div class="px-3 md:px-4">
-              <img src="https://res.cloudinary.com/dmfw0s5ht/image/upload/v1756911727/AyazKhan_eg1ykl.jpg" alt="Photo of Ayaz Khan" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
+              <img src="https://i.pravatar.cc/150?u=ayaz" alt="Photo of Ayaz Khan" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
               <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-2xl mx-auto">
                 "The LAIQ sling bag is perfect – compact yet spacious, stylish, and super comfortable to carry. Great quality and goes with any outfit!"
               </p>
@@ -1079,7 +1079,7 @@
             </div>
     
             <div class="px-3 md:px-4">
-              <img src="https://res.cloudinary.com/dmfw0s5ht/image/upload/v1756911725/Faiyaz_dsgvjj.jpg" alt="Photo of Faiyaz Ahmed" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
+              <img src="https://i.pravatar.cc/150?u=faiyaz" alt="Photo of Faiyaz Ahmed" class="w-16 h-16 rounded-full mb-4 border-4 border-gold object-cover mx-auto" />
               <p class="text-base md:text-lg text-charcoal/80 font-poppins mb-2 leading-relaxed max-w-2xl mx-auto">
                 "Elegant designs and super lightweight. Laiq Bags never disappoints!"
               </p>
