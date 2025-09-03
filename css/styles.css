@@ -38,13 +38,18 @@ html, body {
     max-width: 100% !important;
     min-width: 100% !important;
     flex: 0 0 100% !important;
-    display: flex !important;
+    display: none !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
     padding: 0 1rem !important;
     box-sizing: border-box !important;
+  }
+  
+  /* Show only the active slide */
+  #testimonial-track > div.is-active {
+    display: flex !important;
   }
   
   /* Testimonial text */
