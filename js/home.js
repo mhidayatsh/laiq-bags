@@ -428,17 +428,27 @@ function initializeTestimonialCarousel() {
         let touchDeltaX = 0;
         let touchStartY = 0;
         
-        wrapper.addEventListener('touchstart', (e) => {
+        // Touch swipe (mobile) - improved for better mobile detection
+        let isTouching = false;
+        
+        // Add touch event listeners to the entire testimonial section
+        const testimonialSection = wrapper.closest('section');
+        
+        testimonialSection.addEventListener('touchstart', (e) => {
+            isTouching = true;
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             touchDeltaX = 0;
+            console.log('Touch started at:', touchStartX, touchStartY);
             
             if (!isMobile) {
                 stopAuto();
             }
         }, { passive: true });
         
-        wrapper.addEventListener('touchmove', (e) => {
+        testimonialSection.addEventListener('touchmove', (e) => {
+            if (!isTouching) return;
+            
             const currentX = e.touches[0].clientX;
             const currentY = e.touches[0].clientY;
             
@@ -446,22 +456,29 @@ function initializeTestimonialCarousel() {
             touchDeltaX = currentX - touchStartX;
             const touchDeltaY = Math.abs(currentY - touchStartY);
             
-            // Only allow horizontal swipe if vertical movement is minimal
-            if (touchDeltaY < 50) {
+            // Prevent default only for horizontal swipes
+            if (Math.abs(touchDeltaX) > Math.abs(touchDeltaY) && Math.abs(touchDeltaX) > 10) {
                 e.preventDefault();
             }
         }, { passive: false });
         
-        wrapper.addEventListener('touchend', () => {
+        testimonialSection.addEventListener('touchend', () => {
+            if (!isTouching) return;
+            isTouching = false;
+            
             // Minimum swipe distance for navigation
-            const minSwipeDistance = 50;
+            const minSwipeDistance = 30; // Reduced for better mobile response
+            
+            console.log('Touch ended, deltaX:', touchDeltaX, 'minDistance:', minSwipeDistance);
             
             if (Math.abs(touchDeltaX) > minSwipeDistance) {
                 if (touchDeltaX < 0) {
                     // Swipe left - go to next
+                    console.log('Swipe left detected - going to next');
                     next();
                 } else {
                     // Swipe right - go to previous
+                    console.log('Swipe right detected - going to previous');
                     prev();
                 }
             }

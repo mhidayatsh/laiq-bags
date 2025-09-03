@@ -1012,6 +1012,17 @@
                 display: block !important;
               }
             }
+            
+            /* Ensure navigation buttons are clickable on mobile */
+            @media (max-width: 768px) {
+              #testimonial-prev,
+              #testimonial-next {
+                position: relative !important;
+                z-index: 10 !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+              }
+            }
           </style>
           <div class="flex transition-transform duration-500 w-full" style="transform: translateX(0px)" id="testimonial-track">
             <!-- Testimonial 1 -->
