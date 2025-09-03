@@ -5,6 +5,17 @@ html, body {
   position: relative;
 }
 
+/* CLS: Reserve space for testimonial carousel before JS initializes */
+#testimonial-carousel {
+  min-height: 220px; /* prevents page jump when slides mount */
+}
+
+@media (min-width: 768px) {
+  #testimonial-carousel {
+    min-height: 200px;
+  }
+}
+
 /* Mobile fine-tuning for testimonials */
 @media (max-width: 640px) {
   /* Container centering */

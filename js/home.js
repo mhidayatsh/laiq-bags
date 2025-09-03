@@ -84,6 +84,9 @@ function renderFeaturedProducts() {
         return;
     }
     
+    // Clear skeletons (if present) before injecting real items
+    container.innerHTML = '';
+    
     container.innerHTML = featuredProducts.map(product => {
         const hasDiscount = product.discountInfo && product.discountInfo.status === 'active';
         const displayPrice = getDisplayPrice(product);
@@ -96,6 +99,7 @@ function renderFeaturedProducts() {
                     <a href="product?id=${productId}" class="block">
                         <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" 
                              alt="${product.name}" 
+                             width="640" height="256"
                              loading="lazy" 
                              decoding="async" 
                              fetchpriority="low"
