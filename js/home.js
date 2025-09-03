@@ -317,7 +317,7 @@ function initializeTestimonialCarousel() {
         let isAnimating = false;
         let autoTimer = null;
         
-        const isMobile = window.innerWidth <= 768;
+        let isMobile = window.innerWidth <= 768;
         
         const applySizes = () => {
             const slideWidth = wrapper.clientWidth;
