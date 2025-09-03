@@ -735,7 +735,7 @@
                     <div class="space-y-2">
                       ${order.orderItems.map(item => `
                         <div class="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                          <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded object-cover">
+                          <img src="${item.image || 'assets/thumbnail.jpg'}" onerror="this.src='assets/thumbnail.jpg'" alt="${item.name}" class="w-12 h-12 rounded object-cover">
                           <div class="flex-1">
                             <p class="font-medium text-sm">${item.name}</p>
                             <p class="text-xs text-charcoal/60">Qty: ${item.quantity}</p>
@@ -760,7 +760,7 @@
                   
                   <div class="mt-3 flex justify-between items-center">
                     <div class="text-sm text-charcoal/60">
-                      Payment: ${order.paymentInfo?.id || 'N/A'}
+                      Payment: ${order.paymentMethod ? order.paymentMethod.toUpperCase() : (order.paymentInfo?.id || 'N/A')}
                     </div>
                     <div class="flex gap-2">
                       <button onclick="viewOrderDetails('${order._id}')" class="bg-gold text-white px-4 py-2 rounded text-sm hover:bg-charcoal transition-colors">

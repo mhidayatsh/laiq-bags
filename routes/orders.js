@@ -336,7 +336,7 @@ router.get('/me', isAuthenticatedUser, async (req, res) => {
       Order.countDocuments({ user: req.user._id }),
       Order.find({ user: req.user._id })
         .sort({ createdAt: -1 })
-        .select('orderItems.name orderItems.quantity orderItems.price totalAmount status createdAt paymentMethod')
+        .select('orderItems.name orderItems.quantity orderItems.price orderItems.image totalAmount status createdAt paymentMethod shippingInfo.street shippingInfo.city shippingInfo.state shippingInfo.pincode shippingInfo.country paymentInfo.id paymentInfo.status')
         .skip(skip)
         .limit(limit)
         .maxTimeMS(QUERY_TIMEOUT_MS)
@@ -349,7 +349,8 @@ router.get('/me', isAuthenticatedUser, async (req, res) => {
         ? o.orderItems.slice(0, 5).map(it => ({
             name: it.name,
             quantity: it.quantity,
-            price: it.price
+            price: it.price,
+            image: it.image
           }))
         : []
     }));
