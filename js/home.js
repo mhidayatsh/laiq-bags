@@ -373,9 +373,18 @@ function initializeTestimonialCarousel() {
             if (isMobile) {
                 // Mobile: Simple show/hide navigation
                 slides.forEach((slide, i) => {
-                    slide.style.display = i === safeIndex ? 'flex' : 'none';
+                    const newDisplay = i === safeIndex ? 'flex' : 'none';
+                    slide.style.display = newDisplay;
+                    console.log(`Slide ${i + 1}: display set to '${newDisplay}'`);
                 });
                 console.log(`Mobile: Showing testimonial ${safeIndex + 1} of ${slides.length}`);
+                
+                // Verify the change took effect
+                setTimeout(() => {
+                    const visibleSlide = slides[safeIndex];
+                    const computedDisplay = window.getComputedStyle(visibleSlide).display;
+                    console.log(`Verification: Slide ${safeIndex + 1} computed display = '${computedDisplay}'`);
+                }, 100);
             } else {
                 // Desktop: Carousel transform
                 const slideWidth = wrapper.clientWidth;
