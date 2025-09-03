@@ -1527,13 +1527,14 @@ async function handleAddToCart(e) {
             finalPrice: finalPrice
         });
         
-        // Add to cart with color information (optimistic UI)
+        // Add to cart with color information and selected quantity (optimistic UI)
         await addToCart(
             currentProduct._id || currentProduct.id,
             currentProduct.name,
             finalPrice,
             productImage,
-            colorObject
+            colorObject,
+            quantity
         );
         // Ensure counts and drawer reflect changes instantly
         updateCartCount();

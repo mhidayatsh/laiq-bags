@@ -1861,12 +1861,12 @@ function addWishlistDrawerEventListeners() {
 }
 
 // Cart functions with optimized performance
-async function addToCart(productId, name, price, image, color = null) {
-    console.log('🛒 Adding to cart:', { productId, name, price, color })
+async function addToCart(productId, name, price, image, color = null, quantity = 1) {
+    console.log('🛒 Adding to cart:', { productId, name, price, color, quantity })
     
     if (isCustomerLoggedIn()) {
         try {
-            const response = await api.addToCart(productId, 1, color)
+            const response = await api.addToCart(productId, quantity, color)
             if (response.success) {
                 // Optimize: Update local cart directly instead of full backend reload
                 if (response.cart && response.cart.items) {
@@ -1893,7 +1893,7 @@ async function addToCart(productId, name, price, image, color = null) {
                         name: name,
                         price: parseFloat(price) || 0,
                         image: image || 'assets/thumbnail.jpg',
-                        qty: 1,
+                        qty: quantity,
                         color: color || { name: 'Default', code: '#000000' }
                     }
                     cart.push(newItem)
@@ -1921,7 +1921,7 @@ async function addToCart(productId, name, price, image, color = null) {
         });
 
         if (existingItem) {
-            existingItem.qty += 1
+            existingItem.qty += quantity
             console.log('🔄 Updated existing guest cart item quantity:', existingItem.qty)
         } else {
             const newCartItem = {
@@ -1930,7 +1930,7 @@ async function addToCart(productId, name, price, image, color = null) {
                 name: name,
                 price: parseFloat(price) || 0,
                 image: image || 'assets/thumbnail.jpg',
-                qty: 1,
+                qty: quantity,
                 color: color || { name: 'Default', code: '#000000' },
             }
             guestCart.push(newCartItem)
