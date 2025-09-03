@@ -363,7 +363,7 @@ function initializeTestimonialCarousel() {
         const onManual = (fn) => {
             stopAuto();
             fn();
-            if (!isMobile) startAuto(); // Only auto-rotate on desktop
+            startAuto(); // Auto-rotate on all devices including phones
         };
         
         nextBtn && nextBtn.addEventListener('click', () => {
@@ -375,12 +375,10 @@ function initializeTestimonialCarousel() {
             onManual(prev);
         });
         
-        // Auto-rotate every 6s (desktop only)
+        // Auto-rotate every 6s on all devices
         const startAuto = () => {
-            if (!isMobile) {
-                stopAuto();
-                autoTimer = setInterval(next, 6000);
-            }
+            stopAuto();
+            autoTimer = setInterval(next, 6000);
         };
         const stopAuto = () => {
             if (autoTimer) clearInterval(autoTimer);
@@ -412,9 +410,8 @@ function initializeTestimonialCarousel() {
             touchDeltaX = 0;
             console.log('Touch started at:', touchStartX, touchStartY);
             
-            if (!isMobile) {
-                stopAuto();
-            }
+            // Pause auto-rotation when touching on any device
+            stopAuto();
         }, { passive: true });
         
         testimonialSection.addEventListener('touchmove', (e) => {
@@ -454,9 +451,7 @@ function initializeTestimonialCarousel() {
                 }
             }
             
-            if (!isMobile) {
-                startAuto();
-            }
+            startAuto(); // Auto-rotate on all devices including phones
         });
         
         // Recalculate sizes on resize and keep position
