@@ -965,10 +965,15 @@ class ApiService {
         });
     }
 
-    async processRefund(orderId, refundMethod, refundAmount) {
+    async processRefund(orderId, refundDataOrMethod, maybeAmount) {
+        // Support both legacy signature (orderId, refundMethod, refundAmount)
+        // and new signature (orderId, { refundMethod, refundAmount, ... })
+        const payload = (refundDataOrMethod && typeof refundDataOrMethod === 'object')
+            ? refundDataOrMethod
+            : { refundMethod: refundDataOrMethod, refundAmount: maybeAmount };
         return await this.request(`/orders/admin/${orderId}/refund`, {
             method: 'POST',
-            body: JSON.stringify({ refundMethod, refundAmount })
+            body: JSON.stringify(payload)
         });
     }
 
