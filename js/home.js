@@ -325,20 +325,24 @@ function initializeTestimonialCarousel() {
             // Set each slide to exactly the wrapper width
             slides.forEach(slide => {
                 slide.style.boxSizing = 'border-box';
-                slide.style.flex = `0 0 ${slideWidth}px`;
-                slide.style.minWidth = slideWidth + 'px';
-                slide.style.maxWidth = slideWidth + 'px';
                 slide.style.display = 'flex';
                 slide.style.flexDirection = 'column';
                 slide.style.alignItems = 'center';
                 slide.style.justifyContent = 'center';
                 slide.style.textAlign = 'center';
                 
-                // Mobile-specific adjustments
                 if (isMobile) {
+                    // Mobile: full width with proper centering
+                    slide.style.flex = '0 0 100%';
                     slide.style.width = '100%';
+                    slide.style.minWidth = '100%';
                     slide.style.maxWidth = '100%';
                     slide.style.padding = '0 1rem';
+                } else {
+                    // Desktop: exact pixel width
+                    slide.style.flex = `0 0 ${slideWidth}px`;
+                    slide.style.minWidth = slideWidth + 'px';
+                    slide.style.maxWidth = slideWidth + 'px';
                 }
             });
             
@@ -351,7 +355,7 @@ function initializeTestimonialCarousel() {
                 track.style.width = '100%';
                 track.style.maxWidth = '100%';
                 track.style.display = 'flex';
-                track.style.justifyContent = 'center';
+                track.style.justifyContent = 'flex-start';
                 track.style.alignItems = 'center';
             }
         };
