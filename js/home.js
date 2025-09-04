@@ -282,17 +282,38 @@ function addCartEventListeners() {
     const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
     
     addToCartButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        // Prevent multiple bindings on re-render
+        if (button.dataset.cartBound === 'true') return;
+        button.dataset.cartBound = 'true';
+
+        let isBusy = false;
+        button.addEventListener('click', async function() {
+            if (isBusy) return; // debounce rapid clicks
+            isBusy = true;
+            const originalHTML = this.innerHTML;
+            this.disabled = true;
+            this.classList.add('opacity-70');
+
             const productId = this.getAttribute('data-id');
             const productName = this.getAttribute('data-name');
             const productPrice = parseFloat(this.getAttribute('data-price'));
             const productImage = this.getAttribute('data-image');
             
-            // Add to cart using the main.js cart functions
-            if (typeof addToCart === 'function') {
-                addToCart(productId, productName, productPrice, productImage, null, 1);
-            } else {
-                console.error('Cart functionality not available - main.js may not be loaded');
+            try {
+                if (typeof addToCart === 'function') {
+                    await addToCart(productId, productName, productPrice, productImage, null, 1);
+                } else {
+                    console.error('Cart functionality not available - main.js may not be loaded');
+                }
+            } finally {
+                // brief visual feedback without relying solely on toast
+                this.innerHTML = '<i class="fas fa-check mr-2"></i>Added';
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.disabled = false;
+                    this.classList.remove('opacity-70');
+                    isBusy = false;
+                }, 700);
             }
         });
     });

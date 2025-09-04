@@ -4,6 +4,14 @@ let wishlist = []
 let guestCart = []
 let guestWishlist = []
 let settings = {}
+// Lightweight suppression for accidental double-adds (same product+color within a short window)
+let lastAddToCartKey = null
+let lastAddToCartTime = 0
+
+function getCartItemKey(productId, color) {
+    const colorName = color ? (color.name || color) : 'default'
+    return `${productId}:${colorName}`
+}
 
 // Auto-clear caches on page load if needed
 document.addEventListener('DOMContentLoaded', function() {
@@ -1863,6 +1871,19 @@ function addWishlistDrawerEventListeners() {
 // Cart functions with optimized performance
 async function addToCart(productId, name, price, image, color = null, quantity = 1) {
     console.log('🛒 Adding to cart:', { productId, name, price, color, quantity })
+    // Suppress duplicate rapid calls for the same product+color
+    try {
+        const key = getCartItemKey(productId, color)
+        const now = Date.now()
+        if (lastAddToCartKey === key && (now - lastAddToCartTime) < 700) {
+            console.warn('⏱️ Rapid duplicate add suppressed for', key)
+            return
+        }
+        lastAddToCartKey = key
+        lastAddToCartTime = now
+    } catch (e) {
+        console.warn('⚠️ Could not apply add-to-cart throttle:', e)
+    }
     
     if (isCustomerLoggedIn()) {
         try {
@@ -1939,7 +1960,11 @@ async function addToCart(productId, name, price, image, color = null, quantity =
 
         saveGuestCart()
         updateCartCount()
+        renderCartDrawer()
         debugGuestData('ADD_TO_CART', { productId, name, price, image, color })
+        // Provide user feedback in guest mode as well
+        showToast(`${name} added to cart!`, 'success')
+        openCartDrawer()
     }
 }
 
