@@ -143,8 +143,8 @@ RAZORPAY_KEY_SECRET=xzg73Bh1a3QPPePk1Dr
 # Email Configuration
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_USER=hida7149@gmail.com
-EMAIL_PASS=xmgr afzj tcef vmdv
+EMAIL_USER=laiqbags.shop@gmail.com
+EMAIL_PASS=tlph yvvh uxrg wszb
 
 # JWT Configuration
 JWT_SECRET=6741df7bc1e5d0aa28ca314d7f86954d2eb3870ecea64cd533a7490ba7954126
