@@ -142,6 +142,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'user'
   },
+  // OAuth fields
+  provider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  },
+  providerId: {
+    type: String,
+    default: ''
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
   wishlist: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product'

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signing you in…</title>
+    <link href="/css/styles.css" rel="stylesheet">
+  </head>
+  <body class="bg-beige min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full p-8 bg-white rounded-2xl shadow-lg text-center">
+      <h1 class="text-2xl font-bold mb-2">Signing you in…</h1>
+      <p class="text-gray-600">Please wait while we complete your login.</p>
+    </div>
+    <script>
+      (function() {
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+        try {
+          const token = getCookie('oauth_token');
+          const userStr = getCookie('oauth_user');
+          if (!token || !userStr) {
+            window.location.replace('/customer-login.html?oauth=missing');
+            return;
+          }
+          const user = JSON.parse(decodeURIComponent(userStr));
+          // Store using existing keys expected by frontend
+          localStorage.setItem('customerToken', token);
+          localStorage.setItem('customerUser', JSON.stringify(user));
+          // Clear cookies
+          document.cookie = 'oauth_token=; Max-Age=0; path=/';
+          document.cookie = 'oauth_user=; Max-Age=0; path=/';
+          // Redirect back to profile or previous page
+          const next = sessionStorage.getItem('postLoginRedirect') || '/customer-profile.html';
+          sessionStorage.removeItem('postLoginRedirect');
+          window.location.replace(next);
+        } catch (e) {
+          console.error('OAuth callback error', e);
+          window.location.replace('/customer-login.html?oauth=error');
+        }
+      })();
+    </script>
+  </body>
+  </html>
+
+

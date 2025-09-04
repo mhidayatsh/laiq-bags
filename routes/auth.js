@@ -12,6 +12,180 @@ const jwt = require('jsonwebtoken');
 const { encrypt, decrypt } = require('../utils/encryption');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+// OAuth (Google) - OpenID Connect
+const { Issuer, generators } = require('openid-client');
+
+// Helper to parse cookies without cookie-parser
+function parseCookies(req) {
+  const list = {};
+  const rc = req.headers.cookie;
+  if (!rc) return list;
+  rc.split(';').forEach(function(cookie) {
+    const parts = cookie.split('=');
+    const key = parts.shift().trim();
+    const value = decodeURIComponent(parts.join('='));
+    list[key] = value;
+  });
+  return list;
+}
+
+// Lazy Google client initialization and caching
+const googleClientCache = new Map();
+async function getGoogleClient(redirectUri) {
+  const cacheKey = redirectUri;
+  if (googleClientCache.has(cacheKey)) return googleClientCache.get(cacheKey);
+  const googleIssuer = await Issuer.discover('https://accounts.google.com');
+  const client = new googleIssuer.Client({
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    redirect_uris: [redirectUri],
+    response_types: ['code']
+  });
+  googleClientCache.set(cacheKey, client);
+  return client;
+}
+
+// Start Google OAuth
+router.get('/oauth/google/start', async (req, res) => {
+  try {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.status(500).json({ success: false, message: 'Google OAuth is not configured' });
+    }
+
+    const redirectUri = process.env.OAUTH_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/oauth/google/callback`;
+    const client = await getGoogleClient(redirectUri);
+
+    const state = generators.state();
+    const nonce = generators.nonce();
+    const codeVerifier = generators.codeVerifier();
+    const codeChallenge = generators.codeChallenge(codeVerifier);
+
+    // Store checks in cookies (httpOnly since server will read them back)
+    res.cookie('g_state', state, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/' });
+    res.cookie('g_nonce', nonce, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/' });
+    res.cookie('g_cv', codeVerifier, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/' });
+
+    const authorizationUrl = client.authorizationUrl({
+      scope: 'openid email profile',
+      state,
+      nonce,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+      redirect_uri: redirectUri,
+      prompt: 'consent',
+      access_type: 'offline'
+    });
+
+    return res.redirect(authorizationUrl);
+  } catch (error) {
+    console.error('❌ Google OAuth start error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to start Google OAuth' });
+  }
+});
+
+// Google OAuth callback
+router.get('/oauth/google/callback', async (req, res) => {
+  try {
+    const cookies = parseCookies(req);
+    const stateCookie = cookies['g_state'];
+    const nonceCookie = cookies['g_nonce'];
+    const codeVerifier = cookies['g_cv'];
+
+    if (!stateCookie || !nonceCookie || !codeVerifier) {
+      return res.redirect('/customer-login.html?oauth=error');
+    }
+
+    const redirectUri = process.env.OAUTH_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/oauth/google/callback`;
+    const client = await getGoogleClient(redirectUri);
+    const params = client.callbackParams(req);
+
+    const tokenSet = await client.callback(redirectUri, params, {
+      state: stateCookie,
+      nonce: nonceCookie,
+      code_verifier: codeVerifier
+    });
+
+    const claims = tokenSet.claims();
+    const email = claims.email;
+    const emailVerified = !!claims.email_verified;
+    const sub = claims.sub;
+    const name = claims.name || (email ? email.split('@')[0] : 'Customer');
+    const picture = claims.picture;
+
+    // Find or create/link user (customers only)
+    let user = await User.findOne({ provider: 'google', providerId: sub });
+    if (!user && email) {
+      const existing = await User.findOne({ email });
+      if (existing) {
+        if (existing.role === 'admin') {
+          // Do not allow admin via OAuth
+          return res.redirect('/customer-login.html?oauth=forbidden');
+        }
+        existing.provider = 'google';
+        existing.providerId = sub;
+        existing.emailVerified = emailVerified;
+        // If name not set or default, update
+        if (!existing.name || existing.name === 'Customer') {
+          existing.name = name;
+        }
+        // Optionally set avatar URL if empty
+        if (!existing.avatar || !existing.avatar.url) {
+          existing.avatar = existing.avatar || {};
+          existing.avatar.url = picture || existing.avatar.url || 'https://via.placeholder.com/150?text=User';
+        }
+        user = await existing.save({ validateBeforeSave: false });
+      }
+    }
+
+    if (!user) {
+      // Create new customer user with strong random password and placeholder phone
+      const randomPassword = `GglOAuth!${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      user = await User.create({
+        name,
+        email: email || `user_${sub}@google-oauth.local`,
+        password: randomPassword,
+        phone: '0000000000',
+        role: 'user',
+        provider: 'google',
+        providerId: sub,
+        emailVerified: emailVerified,
+        avatar: picture ? { public_id: 'google_avatar', url: picture } : undefined
+      });
+    }
+
+    // Prevent admin login via this route just in case
+    if (user.role !== 'user') {
+      return res.redirect('/customer-login.html?oauth=forbidden');
+    }
+
+    // Generate JWT compatible with existing frontend
+    const token = typeof user.getJwtToken === 'function' ? user.getJwtToken() : jwt.sign({ id: user._id, role: user.role, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
+
+    // Prepare small user payload
+    const userPayload = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      createdAt: user.createdAt
+    };
+
+    // Set short-lived cookies readable by JS, then redirect to callback page
+    res.cookie('oauth_token', token, { httpOnly: false, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 2 * 60 * 1000, path: '/' });
+    res.cookie('oauth_user', encodeURIComponent(JSON.stringify(userPayload)), { httpOnly: false, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 2 * 60 * 1000, path: '/' });
+
+    // Clear verification cookies
+    res.cookie('g_state', '', { maxAge: 0, path: '/' });
+    res.cookie('g_nonce', '', { maxAge: 0, path: '/' });
+    res.cookie('g_cv', '', { maxAge: 0, path: '/' });
+
+    return res.redirect('/oauth-callback.html');
+  } catch (error) {
+    console.error('❌ Google OAuth callback error:', error);
+    return res.redirect('/customer-login.html?oauth=error');
+  }
+});
 
 // Register user => /api/auth/register
 router.post('/register', [

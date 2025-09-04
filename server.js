@@ -104,7 +104,7 @@ app.use(helmet({
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:", "https://images.unsplash.com", "https://randomuser.me", "https://via.placeholder.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "https://images.unsplash.com", "https://randomuser.me", "https://via.placeholder.com", "https://lh3.googleusercontent.com", "https://*.googleusercontent.com"],
       frameSrc: [
         "'self'",
         "https://checkout.razorpay.com",
@@ -121,7 +121,9 @@ app.use(helmet({
         "https://localhost:3443",
         "https://127.0.0.1:3443",
         "https://api.razorpay.com",
-        "https://lumberjack.razorpay.com"
+        "https://lumberjack.razorpay.com",
+        "https://accounts.google.com",
+        "https://oauth2.googleapis.com"
       ],
       formAction: [
         "'self'",
