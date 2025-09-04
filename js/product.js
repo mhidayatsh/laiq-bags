@@ -2032,7 +2032,9 @@ function updateCanonicalURL(product) {
 
 // Update hreflang URLs
 function updateHreflangURLs(product) {
-    const productURL = `${window.location.origin}/product?id=${product._id}`;
+    const productURL = product?.slug
+        ? `${window.location.origin}/product.html?slug=${product.slug}`
+        : `${window.location.origin}/product?id=${product._id}`;
     
     // Update en hreflang
     let enHreflang = document.querySelector('link[hreflang="en"]');
@@ -2055,7 +2057,9 @@ function updateHreflangURLs(product) {
 
 // Update breadcrumb URLs
 function updateBreadcrumbURLs(product) {
-    const productURL = `${window.location.origin}/product?id=${product._id}`;
+    const productURL = product?.slug
+        ? `${window.location.origin}/product.html?slug=${product.slug}`
+        : `${window.location.origin}/product?id=${product._id}`;
     
     // Find and update breadcrumb structured data
     const breadcrumbScript = document.querySelector('script[type="application/ld+json"]');
@@ -2098,10 +2102,11 @@ function addProductStructuredData(product) {
         },
         "category": product.category,
         "image": product.images?.map(img => img.url) || [],
-        "url": `${window.location.origin}/product?id=${product._id}`,
+        "url": (product?.slug
+            ? `${window.location.origin}/product.html?slug=${product.slug}`
+            : `${window.location.origin}/product?id=${product._id}`),
         "sku": product._id,
         "mpn": product._id,
-        "gtin": product._id,
         "offers": {
             "@type": "Offer",
             "price": product.price,
@@ -2113,28 +2118,29 @@ function addProductStructuredData(product) {
                 "name": "Laiq Bags",
                 "url": "https://www.laiq.shop"
             },
-            "deliveryLeadTime": {
-                "@type": "QuantitativeValue",
-                "value": "3",
-                "unitCode": "DAY"
-            },
             "shippingDetails": {
                 "@type": "OfferShippingDetails",
                 "shippingRate": {
                     "@type": "MonetaryAmount",
-                    "value": "0",
+                    "value": 0,
                     "currency": "INR"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "IN"
                 },
                 "deliveryTime": {
                     "@type": "ShippingDeliveryTime",
                     "handlingTime": {
                         "@type": "QuantitativeValue",
-                        "value": "1",
+                        "minValue": 1,
+                        "maxValue": 2,
                         "unitCode": "DAY"
                     },
                     "transitTime": {
                         "@type": "QuantitativeValue",
-                        "value": "2",
+                        "minValue": 3,
+                        "maxValue": 7,
                         "unitCode": "DAY"
                     }
                 }

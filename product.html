@@ -237,37 +237,8 @@
       }
     </style>
   
-    <!-- Product Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": "Premium Bag Collection",
-      "description": "Premium bags and accessories for every occasion",
-      "brand": {
-        "@type": "Brand",
-        "name": "Laiq Bags"
-      },
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": "INR",
-        "availability": "https://schema.org/InStock",
-        "shippingDetails": {
-          "@type": "OfferShippingDetails",
-          "shippingRate": {
-            "@type": "MonetaryAmount",
-            "value": "0",
-            "currency": "INR"
-          }
-        }
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.5",
-        "reviewCount": "50"
-      }
-    }
-    </script>
+    <!-- Note: Product JSON-LD is injected dynamically by js/product.js per product.
+         Static placeholder schema removed to avoid Merchant Listing validation conflicts. -->
     
     <!-- Robots Meta Tag -->
     <meta name="robots" content="index, follow">
