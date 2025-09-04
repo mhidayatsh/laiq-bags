@@ -12,8 +12,21 @@ const jwt = require('jsonwebtoken');
 const { encrypt, decrypt } = require('../utils/encryption');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
-// OAuth (Google) - OpenID Connect
-const { Issuer, generators } = require('openid-client');
+// OAuth (Google) - OpenID Connect (ESM/CJS compatibility loader)
+let openidModulePromise;
+async function getOpenIdModule() {
+  if (!openidModulePromise) {
+    try {
+      // Prefer require if available (older versions)
+      const m = require('openid-client');
+      openidModulePromise = Promise.resolve(m);
+    } catch (e) {
+      // Fallback to dynamic import for ESM-only versions (v6+)
+      openidModulePromise = import('openid-client');
+    }
+  }
+  return openidModulePromise;
+}
 
 // Helper to parse cookies without cookie-parser
 function parseCookies(req) {
@@ -34,6 +47,7 @@ const googleClientCache = new Map();
 async function getGoogleClient(redirectUri) {
   const cacheKey = redirectUri;
   if (googleClientCache.has(cacheKey)) return googleClientCache.get(cacheKey);
+  const { Issuer } = await getOpenIdModule();
   const googleIssuer = await Issuer.discover('https://accounts.google.com');
   const client = new googleIssuer.Client({
     client_id: process.env.GOOGLE_CLIENT_ID,
@@ -55,6 +69,7 @@ router.get('/oauth/google/start', async (req, res) => {
     const redirectUri = process.env.OAUTH_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/oauth/google/callback`;
     const client = await getGoogleClient(redirectUri);
 
+    const { generators } = await getOpenIdModule();
     const state = generators.state();
     const nonce = generators.nonce();
     const codeVerifier = generators.codeVerifier();
