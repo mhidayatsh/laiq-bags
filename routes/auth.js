@@ -13,19 +13,25 @@ const { encrypt, decrypt } = require('../utils/encryption');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 // OAuth (Google) - OpenID Connect (ESM/CJS compatibility loader)
-let openidModulePromise;
+let openidModuleCache;
 async function getOpenIdModule() {
-  if (!openidModulePromise) {
-    try {
-      // Prefer require if available (older versions)
-      const m = require('openid-client');
-      openidModulePromise = Promise.resolve(m);
-    } catch (e) {
-      // Fallback to dynamic import for ESM-only versions (v6+)
-      openidModulePromise = import('openid-client');
-    }
+  if (openidModuleCache) return openidModuleCache;
+  let mod;
+  try {
+    // Try CommonJS require first
+    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
+    mod = require('openid-client');
+  } catch (err) {
+    // Fallback to ESM dynamic import
+    // eslint-disable-next-line no-eval
+    mod = await import('openid-client');
   }
-  return openidModulePromise;
+  // Normalize: some builds expose exports on default
+  if (mod && mod.default && (!mod.Issuer || !mod.generators)) {
+    mod = mod.default;
+  }
+  openidModuleCache = mod;
+  return openidModuleCache;
 }
 
 // Helper to parse cookies without cookie-parser
