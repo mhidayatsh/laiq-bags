@@ -179,7 +179,7 @@ function renderFeaturedProducts() {
     });
     
     // Add event listeners for add to cart buttons
-    addCartEventListeners();
+    addHomeCartEventListeners();
 }
 
 // Get display price (with discount if applicable)
@@ -278,7 +278,7 @@ function getCountdownTimerHTML(productId, timeRemaining) {
 }
 
 // Add cart event listeners
-function addCartEventListeners() {
+function addHomeCartEventListeners() {
     const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
     
     addToCartButtons.forEach(button => {
