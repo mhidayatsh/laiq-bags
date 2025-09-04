@@ -1,5 +1,9 @@
 const nodemailer = require('nodemailer');
 
+// Helper to build absolute asset URLs for emails
+const getBaseUrl = () => process.env.FRONTEND_URL || 'https://www.laiq.shop';
+const getLogoUrl = () => `${getBaseUrl()}/assets/laiq-logo-512x512.png`;
+
 // Create email transporter with fallback
 const createTransporter = () => {
   try {
@@ -84,9 +88,7 @@ const sendPasswordResetEmail = async (email, resetUrl) => {
       <!-- Header with Logo -->
       <div style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); padding: 30px; text-align: center;">
         <div style="display: inline-block; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <h1 style="margin: 0; font-size: 28px; font-weight: 900; color: #36454f; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;">
-            <span style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;">LAIQ</span> BAGS
-          </h1>
+          <img src="${getLogoUrl()}" alt="Laiq Bags" style="height: 48px; width: auto; display: block;" />
         </div>
       </div>
       
@@ -130,9 +132,7 @@ const sendNewsletterEmail = async (email, newsletterData) => {
       <!-- Header with Logo -->
       <div style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); padding: 30px; text-align: center;">
         <div style="display: inline-block; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <h1 style="margin: 0; font-size: 28px; font-weight: 900; color: #36454f; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;">
-            <span style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;">LAIQ</span> BAGS
-          </h1>
+          <img src="${getLogoUrl()}" alt="Laiq Bags" style="height: 48px; width: auto; display: block;" />
         </div>
       </div>
       
@@ -171,9 +171,7 @@ const sendOrderConfirmationEmail = async (email, orderDetails) => {
       <!-- Header with Logo -->
       <div style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); padding: 30px; text-align: center;">
         <div style="display: inline-block; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <h1 style="margin: 0; font-size: 28px; font-weight: 900; color: #36454f; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;">
-            <span style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;">LAIQ</span> BAGS
-          </h1>
+          <img src="${getLogoUrl()}" alt="Laiq Bags" style="height: 48px; width: auto; display: block;" />
         </div>
       </div>
       
