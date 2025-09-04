@@ -1076,6 +1076,17 @@ class ApiService {
             body: JSON.stringify({ guestWishlist }),
         });
     }
+
+    // Merge Guest Cart with User Cart
+    async mergeGuestCart(payload, options = {}) {
+        // payload expected: { guestCart: [...] }
+        const body = Array.isArray(payload) ? { guestCart: payload } : payload;
+        return this.request('/cart/merge', {
+            method: 'POST',
+            body: JSON.stringify(body),
+            ...options
+        });
+    }
 }
 
 // Create global API instance

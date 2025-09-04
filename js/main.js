@@ -638,10 +638,11 @@ function saveGuestWishlist() {
 // Merge guest data with user data on login
 async function mergeGuestDataWithUser(userId) {
     console.log('🔄 Checking for guest data to merge...');
-    const guestData = getGuestData();
-
-    const guestCart = guestData.cart || [];
-    const guestWishlist = guestData.wishlist || [];
+    // Read fresh snapshot to avoid stale references
+    const freshGuestCartRaw = localStorage.getItem('guestCart')
+    const freshGuestWishlistRaw = localStorage.getItem('guestWishlist')
+    const guestCart = freshGuestCartRaw ? JSON.parse(freshGuestCartRaw) : []
+    const guestWishlist = freshGuestWishlistRaw ? JSON.parse(freshGuestWishlistRaw) : []
     
     console.log('📦 Fresh guest cart from localStorage:', guestCart.length, 'items', guestCart)
     console.log('❤️ Fresh guest wishlist from localStorage:', guestWishlist.length, 'items', guestWishlist)
@@ -690,7 +691,7 @@ async function mergeGuestDataWithUser(userId) {
                 }
             }
 
-            // Refresh local cart view from backend after merge
+            // Refresh local cart view from backend after merge and then clear guest cart (only after successful add attempts)
             try {
                 await loadCartFromBackend();
                 console.log('✅ Guest cart merged with backend and local cart refreshed');
@@ -792,12 +793,15 @@ async function mergeGuestDataWithUser(userId) {
             }
         }
         
-        // Clear guest data after successful merge
-        if (guestCart.length > 0 || guestWishlist.length > 0) {
+        // Clear guest data after successful merge attempt (do not clear on empty)
+        if (guestCart.length > 0) {
             localStorage.removeItem('guestCart');
+        }
+        if (guestWishlist.length > 0) {
             localStorage.removeItem('guestWishlist');
+        }
+        if (guestCart.length > 0 || guestWishlist.length > 0) {
             console.log('🧹 Guest data cleared from localStorage after merge');
-            // Update counts post-clear
             updateAllCounts();
         }
     } finally {
@@ -2820,7 +2824,19 @@ async function initializeCustomerAuth() {
             
             // Perform data merging and loading in the background
             try {
-                await mergeGuestDataWithUser(customerId);
+                // Try robust merge with retry once if the first attempt fails
+                const attemptMerge = async () => {
+                    try {
+                        await mergeGuestDataWithUser(customerId);
+                        return true;
+                    } catch (e) {
+                        console.warn('⚠️ First guest-data merge attempt failed, retrying shortly...', e.message || e);
+                        await new Promise(r => setTimeout(r, 500));
+                        await mergeGuestDataWithUser(customerId);
+                        return true;
+                    }
+                };
+                await attemptMerge();
                 // After merging, load fresh data from the backend
                 await Promise.all([
                     loadWishlistFromBackend(),
