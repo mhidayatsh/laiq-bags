@@ -146,7 +146,11 @@ router.get('/oauth/google/callback', async (req, res) => {
     const codeVerifier = cookies['g_cv'];
 
     if (!stateCookie || !nonceCookie || !codeVerifier) {
-      return res.redirect('/customer-login.html?oauth=error');
+      let reason = 'missing';
+      if (!codeVerifier) reason = 'missing_cv';
+      else if (!stateCookie) reason = 'missing_state';
+      else if (!nonceCookie) reason = 'missing_nonce';
+      return res.redirect(`/customer-login.html?oauth=${reason}`);
     }
 
     const redirectUri = process.env.OAUTH_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/oauth/google/callback`;
@@ -269,7 +273,8 @@ router.get('/oauth/google/callback', async (req, res) => {
     return res.redirect('/oauth-callback.html');
   } catch (error) {
     console.error('❌ Google OAuth callback error:', error);
-    return res.redirect('/customer-login.html?oauth=error');
+    const msg = (error && error.message) ? encodeURIComponent(error.message.substring(0, 80)) : 'callback_error';
+    return res.redirect(`/customer-login.html?oauth=callback_failed&msg=${msg}`);
   }
 });
 
