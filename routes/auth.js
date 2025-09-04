@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const sendToken = require('../utils/jwtToken');
 const sendEmail = require('../utils/sendEmail');
+const axios = require('axios');
 const crypto = require('crypto');
 const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -48,6 +49,28 @@ function parseCookies(req) {
   return list;
 }
 
+// Helper utilities for PKCE and JWT decoding (fallback path)
+function base64UrlEncode(buffer) {
+  return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function generatePkcePair() {
+  const codeVerifier = base64UrlEncode(crypto.randomBytes(32));
+  const codeChallenge = base64UrlEncode(crypto.createHash('sha256').update(codeVerifier).digest());
+  return { codeVerifier, codeChallenge };
+}
+
+function decodeJwtClaims(idToken) {
+  try {
+    const parts = idToken.split('.');
+    if (parts.length !== 3) return null;
+    const payload = Buffer.from(parts[1], 'base64').toString('utf8');
+    return JSON.parse(payload);
+  } catch (e) {
+    return null;
+  }
+}
+
 // Lazy Google client initialization and caching
 const googleClientCache = new Map();
 async function getGoogleClient(redirectUri) {
@@ -73,31 +96,41 @@ router.get('/oauth/google/start', async (req, res) => {
     }
 
     const redirectUri = process.env.OAUTH_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/oauth/google/callback`;
-    const client = await getGoogleClient(redirectUri);
+    // Generate state, nonce and PKCE values locally to avoid discovery issues
+    const state = base64UrlEncode(crypto.randomBytes(16));
+    const nonce = base64UrlEncode(crypto.randomBytes(16));
+    const { codeVerifier, codeChallenge } = generatePkcePair();
 
-    const { generators } = await getOpenIdModule();
-    const state = generators.state();
-    const nonce = generators.nonce();
-    const codeVerifier = generators.codeVerifier();
-    const codeChallenge = generators.codeChallenge(codeVerifier);
+    // Store checks in cookies (httpOnly since server will read them back). Use apex domain in prod to avoid www/non-www mismatch
+    const cookieBase = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60 * 1000,
+      path: '/'
+    };
+    const host = req.get('host') || '';
+    const cookieDomain = host.includes('laiq.shop') ? '.laiq.shop' : undefined;
+    const cookieOpts = cookieDomain ? { ...cookieBase, domain: cookieDomain } : cookieBase;
+    res.cookie('g_state', state, cookieOpts);
+    res.cookie('g_nonce', nonce, cookieOpts);
+    res.cookie('g_cv', codeVerifier, cookieOpts);
 
-    // Store checks in cookies (httpOnly since server will read them back)
-    res.cookie('g_state', state, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/' });
-    res.cookie('g_nonce', nonce, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/' });
-    res.cookie('g_cv', codeVerifier, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 10 * 60 * 1000, path: '/' });
+    // Build Google OAuth URL manually
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'openid email profile');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('nonce', nonce);
+    authUrl.searchParams.set('code_challenge', codeChallenge);
+    authUrl.searchParams.set('code_challenge_method', 'S256');
+    authUrl.searchParams.set('prompt', 'consent');
+    authUrl.searchParams.set('access_type', 'offline');
+    authUrl.searchParams.set('include_granted_scopes', 'true');
 
-    const authorizationUrl = client.authorizationUrl({
-      scope: 'openid email profile',
-      state,
-      nonce,
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-      redirect_uri: redirectUri,
-      prompt: 'consent',
-      access_type: 'offline'
-    });
-
-    return res.redirect(authorizationUrl);
+    return res.redirect(authUrl.toString());
   } catch (error) {
     console.error('❌ Google OAuth start error:', error);
     return res.status(500).json({ success: false, message: 'Failed to start Google OAuth' });
@@ -117,16 +150,44 @@ router.get('/oauth/google/callback', async (req, res) => {
     }
 
     const redirectUri = process.env.OAUTH_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/auth/oauth/google/callback`;
-    const client = await getGoogleClient(redirectUri);
-    const params = client.callbackParams(req);
+    // Try OIDC client first, then fallback to manual token exchange
+    let claims;
+    try {
+      const client = await getGoogleClient(redirectUri);
+      const params = client.callbackParams(req);
+      const tokenSet = await client.callback(redirectUri, params, {
+        state: stateCookie,
+        nonce: nonceCookie,
+        code_verifier: codeVerifier
+      });
+      claims = tokenSet.claims();
+    } catch (oidcError) {
+      console.error('⚠️  OIDC callback failed, attempting manual token exchange:', oidcError.message);
+      const code = req.query.code;
+      if (!code) {
+        throw new Error('Missing authorization code');
+      }
+      const tokenRes = await axios.post('https://oauth2.googleapis.com/token', new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri,
+        code_verifier: codeVerifier
+      }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+      const idToken = tokenRes.data && tokenRes.data.id_token;
+      if (!idToken) {
+        throw new Error('Token response missing id_token');
+      }
+      claims = decodeJwtClaims(idToken);
+      if (!claims) {
+        throw new Error('Failed to decode id_token');
+      }
+      if (claims.nonce && nonceCookie && claims.nonce !== nonceCookie) {
+        throw new Error('Nonce mismatch');
+      }
+    }
 
-    const tokenSet = await client.callback(redirectUri, params, {
-      state: stateCookie,
-      nonce: nonceCookie,
-      code_verifier: codeVerifier
-    });
-
-    const claims = tokenSet.claims();
     const email = claims.email;
     const emailVerified = !!claims.email_verified;
     const sub = claims.sub;
@@ -197,9 +258,13 @@ router.get('/oauth/google/callback', async (req, res) => {
     res.cookie('oauth_user', encodeURIComponent(JSON.stringify(userPayload)), { httpOnly: false, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 2 * 60 * 1000, path: '/' });
 
     // Clear verification cookies
-    res.cookie('g_state', '', { maxAge: 0, path: '/' });
-    res.cookie('g_nonce', '', { maxAge: 0, path: '/' });
-    res.cookie('g_cv', '', { maxAge: 0, path: '/' });
+    const clearOpts = { maxAge: 0, path: '/' };
+    const host2 = req.get('host') || '';
+    const cookieDomain2 = host2.includes('laiq.shop') ? '.laiq.shop' : undefined;
+    const clearWithDomain = cookieDomain2 ? { ...clearOpts, domain: cookieDomain2 } : clearOpts;
+    res.cookie('g_state', '', clearWithDomain);
+    res.cookie('g_nonce', '', clearWithDomain);
+    res.cookie('g_cv', '', clearWithDomain);
 
     return res.redirect('/oauth-callback.html');
   } catch (error) {
