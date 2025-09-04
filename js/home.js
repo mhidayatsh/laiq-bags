@@ -288,17 +288,11 @@ function addCartEventListeners() {
             const productPrice = parseFloat(this.getAttribute('data-price'));
             const productImage = this.getAttribute('data-image');
             
-            // Add to cart using the shared cart module
-            if (window.cartModule && window.cartModule.addToCart) {
-                window.cartModule.addToCart({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    image: productImage,
-                    quantity: 1
-                });
+            // Add to cart using the main.js cart functions
+            if (typeof addToCart === 'function') {
+                addToCart(productId, productName, productPrice, productImage, null, 1);
             } else {
-                console.error('Cart module not available');
+                console.error('Cart functionality not available - main.js may not be loaded');
             }
         });
     });
