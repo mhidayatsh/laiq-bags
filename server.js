@@ -485,6 +485,11 @@ app.get('/', async (req, res) => {
     
     if (fs.existsSync(indexPath)) {
       let html = fs.readFileSync(indexPath, 'utf8');
+      // Remove homepage schemas that can cause Product snippet misclassification
+      // 1) Local Business Schema with hasOfferCatalog (used only as marketing content)
+      html = html.replace(/<!-- Local Business Schema -->[\s\S]*?<\/script>/s, '');
+      // 2) Product Collection Schema at homepage level (keep ItemList below instead)
+      html = html.replace(/<!-- Product Collection Schema -->[\s\S]*?<\/script>/s, '');
       
       // Fetch latest products for dynamic schema
       const products = await Product.find({}).limit(6).sort({ createdAt: -1 });
@@ -505,7 +510,9 @@ app.get('/', async (req, res) => {
               "@type": "Product",
               "name": product.name,
               "description": product.description,
-              "url": `https://www.laiq.shop/product?id=${product._id}`,
+              "url": product.slug
+                ? `https://www.laiq.shop/product.html?slug=${product.slug}`
+                : `https://www.laiq.shop/product?id=${product._id}`,
               "image": product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png',
               "brand": {
                 "@type": "Brand",
@@ -530,6 +537,9 @@ app.get('/', async (req, res) => {
         // Replace static schema with dynamic schema
         const dynamicSchemaScript = `<script type="application/ld+json">${JSON.stringify(productCatalogSchema, null, 2)}</script>`;
         html = html.replace(/<!-- Product Catalog Schema - All 6 Products -->[\s\S]*?<\/script>/s, `<!-- Product Catalog Schema - Dynamic -->\n    ${dynamicSchemaScript}`);
+
+        // Also ensure we strip any remaining static homepage ItemList blocks to avoid duplicates
+        html = html.replace(/<script type=\"application\/ld\+json\">[\s\S]*?ItemList[\s\S]*?<\/script>/s, dynamicSchemaScript);
         
         console.log(`✅ Dynamic schema generated with ${products.length} products`);
       } else {
