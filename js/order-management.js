@@ -170,6 +170,17 @@ function renderOrderDetails() {
             </div>
         ` : ''}
     `;
+
+    // After-sales section visibility
+    try {
+        const afterSalesSection = document.getElementById('after-sales-section');
+        const status = currentOrder?.status;
+        if (afterSalesSection) {
+            // Only show for delivered orders and when no cancellation is applied
+            afterSalesSection.style.display = status === 'delivered' ? 'block' : 'none';
+        }
+        updateAfterSalesStatusUI();
+    } catch (_) {}
 }
 
 // Render order history
@@ -303,6 +314,30 @@ function updateActionButtons() {
     }
 }
 
+// Update after-sales UI status
+function updateAfterSalesStatusUI() {
+    const statusDiv = document.getElementById('after-sales-status');
+    if (!statusDiv) return;
+    const afterSales = currentOrder?.afterSales;
+    if (!afterSales || !afterSales.requested) {
+        statusDiv.innerHTML = '<span class="text-gray-600">No return/replacement request submitted.</span>';
+        return;
+    }
+    const badgeMap = {
+        pending: 'bg-yellow-100 text-yellow-800',
+        approved: 'bg-blue-100 text-blue-800',
+        rejected: 'bg-red-100 text-red-800',
+        completed: 'bg-green-100 text-green-800'
+    };
+    statusDiv.innerHTML = `
+        <div class="mt-2 p-3 border rounded">
+            <div class="text-sm"><span class="font-medium">Type:</span> ${afterSales.type}</div>
+            <div class="text-sm"><span class="font-medium">Reason:</span> ${afterSales.reason || 'N/A'}</div>
+            <div class="text-sm"><span class="font-medium">Status:</span> <span class="px-2 py-1 rounded ${badgeMap[afterSales.status] || 'bg-gray-100 text-gray-800'}">${afterSales.status || 'N/A'}</span></div>
+        </div>
+    `;
+}
+
 // Initialize event listeners
 function initializeEventListeners() {
     // Cancel order button
@@ -316,6 +351,12 @@ function initializeEventListeners() {
     if (addNotesBtn) {
         addNotesBtn.addEventListener('click', handleAddNotes);
     }
+
+    // After-sales events
+    const checkBtn = document.getElementById('after-sales-check');
+    const submitBtn = document.getElementById('after-sales-submit');
+    if (checkBtn) checkBtn.addEventListener('click', handleAfterSalesCheck);
+    if (submitBtn) submitBtn.addEventListener('click', handleAfterSalesSubmit);
 }
 
 // Handle cancel order
@@ -380,6 +421,51 @@ async function handleAddNotes() {
     } catch (error) {
         console.error('❌ Error adding notes:', error);
         showToast('Error adding notes: ' + error.message, 'error');
+    }
+}
+
+// Handle after-sales eligibility check
+async function handleAfterSalesCheck() {
+    if (!currentOrder) return;
+    const info = document.getElementById('eligibility-info');
+    try {
+        info.textContent = 'Checking eligibility...';
+        const res = await api.getAfterSalesEligibility(currentOrder._id);
+        if (!res.success) throw new Error(res.message || 'Failed');
+        const e = res.eligibility || {};
+        info.innerHTML = `
+            <div class="p-3 bg-gray-50 rounded border text-sm">
+                <div><span class="font-medium">Eligible for Return:</span> ${e.eligibleForReturn ? 'Yes' : 'No'}</div>
+                <div><span class="font-medium">Eligible for Replacement:</span> ${e.eligibleForReplacement ? 'Yes' : 'No'}</div>
+                <div><span class="font-medium">Days Since Delivery:</span> ${e.daysSinceDelivery ?? 'N/A'}</div>
+                <div><span class="font-medium">Return Window:</span> ${e.windowDaysReturn ?? 'N/A'} days (Remaining: ${e.remainingDaysReturn ?? 'N/A'})</div>
+                <div><span class="font-medium">Replacement Window:</span> ${e.windowDaysReplacement ?? 'N/A'} days (Remaining: ${e.remainingDaysReplacement ?? 'N/A'})</div>
+            </div>
+        `;
+    } catch (error) {
+        info.textContent = 'Error checking eligibility: ' + error.message;
+    }
+}
+
+// Handle after-sales submit (return/replacement)
+async function handleAfterSalesSubmit() {
+    if (!currentOrder) return;
+    const type = document.getElementById('after-sales-type').value;
+    const reason = document.getElementById('after-sales-reason').value.trim();
+    if (!reason) {
+        showToast('Please provide a reason', 'error');
+        return;
+    }
+    try {
+        const res = await api.requestAfterSales(currentOrder._id, { type, reason });
+        if (res.success) {
+            showToast('Request submitted successfully', 'success');
+            await loadOrderDetails(currentOrder._id);
+        } else {
+            showToast(res.message || 'Failed to submit request', 'error');
+        }
+    } catch (error) {
+        showToast('Error submitting request: ' + error.message, 'error');
     }
 }
 

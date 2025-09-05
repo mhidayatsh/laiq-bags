@@ -420,6 +420,12 @@ function renderOrders() {
                             <i class="fas fa-times mr-2"></i>Cancel
                         </button>
                     ` : ''}
+                    ${order.status === 'delivered' ? `
+                        <button onclick="openAfterSalesPrompt('${order._id}')" 
+                                class="w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm">
+                            <i class="fas fa-undo mr-2"></i>After-Sales
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -786,6 +792,42 @@ async function cancelOrder(orderId) {
     } catch (error) {
         console.error('❌ Error cancelling order:', error);
         showToast('Failed to cancel order', 'error');
+    }
+}
+
+// Quick admin after-sales actions via prompt
+async function openAfterSalesPrompt(orderId) {
+    try {
+        const elig = await api.getAfterSalesEligibility(orderId);
+        if (!elig.success) throw new Error(elig.message || 'Eligibility check failed');
+        const e = elig.eligibility || {};
+        alert(`Eligibility\nReturn: ${e.eligibleForReturn ? 'Yes' : 'No'} (rem: ${e.remainingDaysReturn})\nReplacement: ${e.eligibleForReplacement ? 'Yes' : 'No'} (rem: ${e.remainingDaysReplacement})`);
+        const action = prompt('Type: approve | reject | complete | exit');
+        if (!action || action === 'exit') return;
+        if (action === 'approve') {
+            const notes = prompt('Approval notes (optional):') || '';
+            const res = await api.approveAfterSales(orderId, notes);
+            if (res.success) showToast('Request approved', 'success');
+        } else if (action === 'reject') {
+            const notes = prompt('Rejection reason:') || '';
+            const res = await api.rejectAfterSales(orderId, notes);
+            if (res.success) showToast('Request rejected', 'success');
+        } else if (action === 'complete') {
+            const kind = prompt('Complete type: return | replacement');
+            if (kind === 'return') {
+                const amt = prompt('Refund amount (blank for full):');
+                const amount = amt ? parseFloat(amt) : undefined;
+                const res = await api.completeAfterSales(orderId, { refund: { method: 'original_payment', amount, status: 'completed' } });
+                if (res.success) showToast('Return completed', 'success');
+            } else {
+                const res = await api.completeAfterSales(orderId, {});
+                if (res.success) showToast('Replacement completed', 'success');
+            }
+        }
+        await loadOrders();
+    } catch (error) {
+        console.error('❌ After-sales prompt error:', error);
+        showToast(error.message || 'After-sales action failed', 'error');
     }
 }
 
