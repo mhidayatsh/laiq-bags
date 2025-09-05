@@ -257,9 +257,19 @@ router.get('/oauth/google/callback', async (req, res) => {
       createdAt: user.createdAt
     };
 
-    // Set short-lived cookies readable by JS, then redirect to callback page
-    res.cookie('oauth_token', token, { httpOnly: false, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 2 * 60 * 1000, path: '/' });
-    res.cookie('oauth_user', encodeURIComponent(JSON.stringify(userPayload)), { httpOnly: false, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 2 * 60 * 1000, path: '/' });
+    // Set short-lived cookies readable by JS, with apex domain for cross-subdomain access
+    const hostCookie = req.get('host') || '';
+    const oauthCookieDomain = hostCookie.includes('laiq.shop') ? '.laiq.shop' : undefined;
+    const oauthCookieBase = {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 2 * 60 * 1000,
+      path: '/'
+    };
+    const oauthCookieOpts = oauthCookieDomain ? { ...oauthCookieBase, domain: oauthCookieDomain } : oauthCookieBase;
+    res.cookie('oauth_token', token, oauthCookieOpts);
+    res.cookie('oauth_user', encodeURIComponent(JSON.stringify(userPayload)), oauthCookieOpts);
 
     // Clear verification cookies
     const clearOpts = { maxAge: 0, path: '/' };

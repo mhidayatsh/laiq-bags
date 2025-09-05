@@ -29,9 +29,21 @@
           // Store using existing keys expected by frontend
           localStorage.setItem('customerToken', token);
           localStorage.setItem('customerUser', JSON.stringify(user));
-          // Clear cookies
-          document.cookie = 'oauth_token=; Max-Age=0; path=/';
-          document.cookie = 'oauth_user=; Max-Age=0; path=/';
+          // Clear cookies (support apex domain for www/non-www)
+          function clearCookie(name){
+            const base = `${name}=; Max-Age=0; path=/`;
+            document.cookie = base;
+            try {
+              const host = location.hostname || '';
+              const parts = host.split('.');
+              if (parts.length >= 2) {
+                const apex = `.${parts.slice(-2).join('.')}`;
+                document.cookie = `${base}; domain=${apex}`;
+              }
+            } catch(_) {}
+          }
+          clearCookie('oauth_token');
+          clearCookie('oauth_user');
           // Redirect back to profile or previous page
           const next = sessionStorage.getItem('postLoginRedirect') || '/customer-profile.html';
           sessionStorage.removeItem('postLoginRedirect');
