@@ -104,7 +104,7 @@ app.use(helmet({
       ],
       scriptSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:", "https://images.unsplash.com", "https://randomuser.me", "https://via.placeholder.com", "https://lh3.googleusercontent.com", "https://*.googleusercontent.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "https://images.unsplash.com", "https://randomuser.me", "https://via.placeholder.com", "https://lh3.googleusercontent.com", "https://*.googleusercontent.com", "https://www.gstatic.com", "https://*.gstatic.com"],
       frameSrc: [
         "'self'",
         "https://checkout.razorpay.com",

@@ -269,7 +269,8 @@ router.get('/oauth/google/callback', async (req, res) => {
     };
     const oauthCookieOpts = oauthCookieDomain ? { ...oauthCookieBase, domain: oauthCookieDomain } : oauthCookieBase;
     res.cookie('oauth_token', token, oauthCookieOpts);
-    res.cookie('oauth_user', encodeURIComponent(JSON.stringify(userPayload)), oauthCookieOpts);
+    // Avoid double-encoding: cookie module will encode automatically
+    res.cookie('oauth_user', JSON.stringify(userPayload), oauthCookieOpts);
 
     // Clear verification cookies
     const clearOpts = { maxAge: 0, path: '/' };

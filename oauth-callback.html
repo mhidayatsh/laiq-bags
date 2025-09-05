@@ -25,7 +25,13 @@
             window.location.replace('/customer-login.html?oauth=missing');
             return;
           }
-          const user = JSON.parse(decodeURIComponent(userStr));
+          let user;
+          try {
+            user = JSON.parse(decodeURIComponent(userStr));
+          } catch(_) {
+            // Fallback: cookie may already be decoded
+            user = JSON.parse(userStr);
+          }
           // Store using existing keys expected by frontend
           localStorage.setItem('customerToken', token);
           localStorage.setItem('customerUser', JSON.stringify(user));
