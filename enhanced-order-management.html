@@ -327,6 +327,65 @@
         </div>
     </div>
 
+    <!-- After-Sales Management Modal -->
+    <div id="after-sales-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-semibold text-charcoal">After-Sales Management</h3>
+                        <button onclick="closeAfterSalesModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="after-sales-summary" class="mb-4 text-sm text-gray-700"></div>
+                    <div id="after-sales-eligibility" class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="after-sales-items" class="mb-6"></div>
+                    <form id="after-sales-form">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
+                                <select id="after-sales-action" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" required>
+                                    <option value="">Select Action</option>
+                                    <option value="approve">Approve Request</option>
+                                    <option value="reject">Reject Request</option>
+                                    <option value="complete">Complete (Return/Replacement)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Admin Notes (Optional)</label>
+                                <textarea id="after-sales-notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" placeholder="Add notes for this action..."></textarea>
+                            </div>
+                            <div id="refund-section" class="hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Refund Method</label>
+                                        <select id="refund-method" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold">
+                                            <option value="original_payment">Original Payment</option>
+                                            <option value="wallet">Wallet</option>
+                                            <option value="bank_transfer">Bank Transfer</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Refund Amount</label>
+                                        <input type="number" id="refund-amount" step="0.01" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold" placeholder="Full amount by default">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">If left blank, full order amount will be refunded.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 mt-6">
+                            <button type="submit" class="flex-1 bg-gold text-white px-4 py-2 rounded-lg hover:bg-charcoal transition-colors">Proceed</button>
+                            <button type="button" onclick="closeAfterSalesModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
 

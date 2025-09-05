@@ -450,7 +450,7 @@ function renderOrders() {
                         </button>
                     ` : ''}
                     ${order.status === 'delivered' ? `
-                        <button onclick="openAfterSalesPrompt('${order._id}')" 
+                        <button onclick="openAfterSalesModal('${order._id}')" 
                                 class="w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm">
                             <i class="fas fa-undo mr-2"></i>After-Sales
                         </button>
@@ -859,6 +859,148 @@ async function openAfterSalesPrompt(orderId) {
         showToast(error.message || 'After-sales action failed', 'error');
     }
 }
+
+// Open After-Sales management modal (rich UI)
+async function openAfterSalesModal(orderId) {
+    try {
+        currentOrderId = orderId;
+        const modal = document.getElementById('after-sales-modal');
+        const summaryEl = document.getElementById('after-sales-summary');
+        const eligEl = document.getElementById('after-sales-eligibility');
+        const itemsEl = document.getElementById('after-sales-items');
+        const actionEl = document.getElementById('after-sales-action');
+        const notesEl = document.getElementById('after-sales-notes');
+        const refundSection = document.getElementById('refund-section');
+        const refundMethodEl = document.getElementById('refund-method');
+        const refundAmountEl = document.getElementById('refund-amount');
+
+        // Reset form
+        actionEl.value = '';
+        notesEl.value = '';
+        refundSection.classList.add('hidden');
+        refundMethodEl.value = 'original_payment';
+        refundAmountEl.value = '';
+
+        const order = orders.find(o => o._id === orderId) || null;
+        const elig = await api.getAfterSalesEligibility(orderId);
+        if (!elig.success) throw new Error(elig.message || 'Eligibility check failed');
+
+        const a = elig.afterSales || {};
+        const e = elig.eligibility || {};
+
+        summaryEl.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="font-semibold">Order #${orderId.slice(-8)}</div>
+                    <div class="text-xs text-gray-500">Status: ${(order?.status || 'N/A').toUpperCase()} ${a?.status ? `• After-Sales: ${String(a.status).toUpperCase()}` : ''}</div>
+                    ${a?.type ? `<div class="text-xs text-gray-500">Type: ${a.type}</div>` : ''}
+                    ${a?.reason ? `<div class="text-xs text-gray-500">Reason: ${a.reason}</div>` : ''}
+                </div>
+                <div class="text-right">
+                    <div class="text-xs">Delivered: ${order?.trackingInfo?.deliveredAt ? new Date(order.trackingInfo.deliveredAt).toLocaleDateString('en-IN') : 'N/A'}</div>
+                    <div class="text-xs">Requested: ${a?.requestedAt ? new Date(a.requestedAt).toLocaleDateString('en-IN') : '—'}</div>
+                </div>
+            </div>
+        `;
+
+        eligEl.innerHTML = `
+            <div class="p-3 rounded border ${e.eligibleForReturn ? 'border-green-300 bg-green-50' : 'border-gray-200'}">
+                <div class="text-sm font-medium">Return Eligibility</div>
+                <div class="text-xs text-gray-600">${e.eligibleForReturn ? `Eligible • ${e.remainingDaysReturn} day(s) left` : 'Not eligible'}</div>
+            </div>
+            <div class="p-3 rounded border ${e.eligibleForReplacement ? 'border-green-300 bg-green-50' : 'border-gray-200'}">
+                <div class="text-sm font-medium">Replacement Eligibility</div>
+                <div class="text-xs text-gray-600">${e.eligibleForReplacement ? `Eligible • ${e.remainingDaysReplacement} day(s) left` : 'Not eligible'}</div>
+            </div>
+        `;
+
+        if (order && Array.isArray(order.orderItems)) {
+            itemsEl.innerHTML = `
+                <div class="mb-2 font-medium">Items</div>
+                <div class="space-y-2">
+                    ${order.orderItems.map(it => `
+                        <div class="flex items-center gap-3 text-sm border border-gray-200 rounded p-2">
+                            <img src="${it.image || ''}" class="w-8 h-8 object-cover rounded" alt="${it.name}">
+                            <div class="flex-1">
+                                <div class="font-medium">${it.name}</div>
+                                <div class="text-xs text-gray-600">Qty: ${it.quantity}${it?.color?.name ? ` • Color: ${it.color.name}` : ''}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            itemsEl.innerHTML = '';
+        }
+
+        // Toggle refund fields when choosing action
+        actionEl.onchange = () => {
+            if (actionEl.value === 'complete' && (a?.type === 'return')) {
+                refundSection.classList.remove('hidden');
+            } else {
+                refundSection.classList.add('hidden');
+            }
+        };
+
+        // Show modal
+        modal.classList.remove('hidden');
+    } catch (error) {
+        console.error('❌ After-sales modal error:', error);
+        showToast(error.message || 'Failed to open after-sales modal', 'error');
+    }
+}
+
+function closeAfterSalesModal() {
+    const modal = document.getElementById('after-sales-modal');
+    modal.classList.add('hidden');
+}
+
+// Handle After-Sales form submit
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('after-sales-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentOrderId) return;
+            const action = document.getElementById('after-sales-action').value;
+            const notes = document.getElementById('after-sales-notes').value || '';
+
+            try {
+                if (action === 'approve') {
+                    const res = await api.approveAfterSales(currentOrderId, notes);
+                    if (!res.success) throw new Error(res.message || 'Approve failed');
+                    showToast('After-sales request approved', 'success');
+                } else if (action === 'reject') {
+                    const res = await api.rejectAfterSales(currentOrderId, notes);
+                    if (!res.success) throw new Error(res.message || 'Reject failed');
+                    showToast('After-sales request rejected', 'success');
+                } else if (action === 'complete') {
+                    const elig = await api.getAfterSalesEligibility(currentOrderId);
+                    const type = (elig.afterSales && elig.afterSales.type) || null;
+                    let payload = {};
+                    if (type === 'return') {
+                        const method = document.getElementById('refund-method').value;
+                        const amountStr = document.getElementById('refund-amount').value;
+                        const amount = amountStr ? parseFloat(amountStr) : undefined;
+                        payload = { refund: { method, amount, status: 'completed' } };
+                    }
+                    const res = await api.completeAfterSales(currentOrderId, payload);
+                    if (!res.success) throw new Error(res.message || 'Complete failed');
+                    showToast('After-sales request completed', 'success');
+                } else {
+                    showToast('Please select an action', 'error');
+                    return;
+                }
+
+                closeAfterSalesModal();
+                await loadOrders();
+            } catch (err) {
+                console.error('❌ After-sales action error:', err);
+                showToast(err.message || 'Action failed', 'error');
+            }
+        });
+    }
+});
 
 function printOrder(orderId) {
     const order = orders.find(o => o._id === orderId);
