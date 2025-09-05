@@ -3161,6 +3161,13 @@ function handleCustomerLogout() {
     // Clear all customer data
     localStorage.removeItem('customerToken');
     localStorage.removeItem('customerUser');
+    try {
+        // Remember which account was used last so Google can preselect it
+        const user = JSON.parse(localStorage.getItem('customerUser') || 'null');
+        if (user && user.email) {
+            document.cookie = `g_login_hint=${encodeURIComponent(user.email)}; Max-Age=${180*24*60*60}; Path=/`;
+        }
+    } catch(_) {}
     localStorage.removeItem('userCart');
     localStorage.removeItem('userWishlist');
     

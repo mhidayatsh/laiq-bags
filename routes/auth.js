@@ -126,8 +126,18 @@ router.get('/oauth/google/start', async (req, res) => {
     authUrl.searchParams.set('nonce', nonce);
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'S256');
-    authUrl.searchParams.set('prompt', 'consent');
-    authUrl.searchParams.set('access_type', 'offline');
+    // Minimize prompts for returning users
+    const cookies = parseCookies(req);
+    const loginHint = cookies['g_login_hint'] || req.query.login_hint || '';
+    if (loginHint) {
+      authUrl.searchParams.set('login_hint', loginHint);
+      // No explicit prompt so Google can fast-path
+    } else {
+      // Let user pick if we don't know their account
+      authUrl.searchParams.set('prompt', 'select_account');
+    }
+    // Online access is sufficient; we don't persist Google tokens
+    authUrl.searchParams.set('access_type', 'online');
     authUrl.searchParams.set('include_granted_scopes', 'true');
 
     return res.redirect(authUrl.toString());
@@ -271,6 +281,12 @@ router.get('/oauth/google/callback', async (req, res) => {
     res.cookie('oauth_token', token, oauthCookieOpts);
     // Avoid double-encoding: cookie module will encode automatically
     res.cookie('oauth_user', JSON.stringify(userPayload), oauthCookieOpts);
+
+    // Persist a login hint so future logins can skip account selection
+    const hintOpts = oauthCookieDomain ? { domain: oauthCookieDomain, path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 180 * 24 * 60 * 60 * 1000 } : { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 180 * 24 * 60 * 60 * 1000 };
+    if (user && user.email) {
+      res.cookie('g_login_hint', user.email, hintOpts);
+    }
 
     // Clear verification cookies
     const clearOpts = { maxAge: 0, path: '/' };
