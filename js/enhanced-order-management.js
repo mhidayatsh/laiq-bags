@@ -208,6 +208,34 @@ function initializeEventListeners() {
     document.getElementById('payment-filter').addEventListener('change', handleFilterChange);
     document.getElementById('date-filter').addEventListener('change', handleFilterChange);
     
+    // Inject After-Sales filter if not present
+    try {
+        let afterSalesFilter = document.getElementById('after-sales-filter');
+        if (!afterSalesFilter) {
+            const filterGrid = document.getElementById('status-filter')?.closest('.grid');
+            if (filterGrid) {
+                const node = document.createElement('div');
+                node.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">After-Sales</label>
+                    <select id="after-sales-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-gold focus:border-gold">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                `;
+                filterGrid.appendChild(node);
+                afterSalesFilter = node.querySelector('#after-sales-filter');
+            }
+        }
+        afterSalesFilter?.addEventListener('change', (e) => {
+            filters.afterSalesStatus = e.target.value;
+            currentPage = 1;
+            loadOrders();
+        });
+    } catch (_) {}
+    
     const searchInput = document.getElementById('search-input');
     let searchTimeout;
     searchInput.addEventListener('input', (e) => {
@@ -255,6 +283,7 @@ async function loadOrders() {
         if (filters.paymentMethod) params.append('paymentMethod', filters.paymentMethod);
         if (filters.date) params.append('date', filters.date);
         if (filters.search) params.append('search', filters.search);
+        if (filters.afterSalesStatus) params.append('afterSalesStatus', filters.afterSalesStatus);
         
         console.log('🔍 Sending request with params:', params.toString());
         console.log('🔍 Current filters:', filters);

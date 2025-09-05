@@ -692,6 +692,12 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
             console.log('🔍 Applying payment method filter:', req.query.paymentMethod);
         }
         
+        // After-sales status filter
+        if (req.query.afterSalesStatus && req.query.afterSalesStatus !== '' && req.query.afterSalesStatus !== 'all') {
+            filterQuery['afterSales.status'] = req.query.afterSalesStatus;
+            console.log('🔍 Applying after-sales status filter:', req.query.afterSalesStatus);
+        }
+        
         // Date filter
         if (req.query.date) {
             const filterDate = new Date(req.query.date);
