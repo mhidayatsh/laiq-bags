@@ -1,6 +1,7 @@
 const express = require('express');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Settings = require('../models/Settings');
 const Cart = require('../models/Cart');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const { orderLimiter } = require('../middleware/rateLimiter');
@@ -788,10 +789,10 @@ router.post('/admin/:id/refund', isAuthenticatedUser, authorizeRoles('admin'), a
       });
     }
     
-    if (order.status !== 'cancelled') {
+    if (!['cancelled', 'returned'].includes(order.status)) {
       return res.status(400).json({
         success: false,
-        message: 'Only cancelled orders can be refunded'
+        message: 'Only cancelled or returned orders can be refunded'
       });
     }
     
@@ -819,6 +820,247 @@ router.post('/admin/:id/refund', isAuthenticatedUser, authorizeRoles('admin'), a
       success: false,
       message: 'Error processing refund'
     });
+  }
+});
+
+// Helper: evaluate after-sales eligibility for an order
+async function evaluateAfterSalesEligibility(order, type) {
+  try {
+    // Must be delivered
+    if (!order || order.status !== 'delivered' || !order.deliveredAt) {
+      return { eligible: false, reason: 'Order is not delivered yet' };
+    }
+
+    const settings = await Settings.getSettings().catch(() => null);
+    const defaultReturnable = settings?.returnPolicy?.returnableByDefault ?? true;
+    const defaultReplaceable = settings?.returnPolicy?.replaceableByDefault ?? true;
+    const defaultReturnDays = settings?.returnPolicy?.merchantReturnDays ?? 7;
+    const defaultReplacementDays = settings?.returnPolicy?.merchantReplacementDays ?? 7;
+
+    const now = Date.now();
+    const daysSinceDelivery = Math.floor((now - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24));
+
+    // Gather product policies across order items
+    let overallReturnable = true;
+    let overallReplaceable = true;
+    let windowDaysReturn = Infinity;
+    let windowDaysReplacement = Infinity;
+
+    for (const item of order.orderItems) {
+      const product = await Product.findById(item.product).lean();
+      if (!product) continue;
+      const policy = product.returnPolicy || {};
+      const itemReturnable = (typeof policy.returnable === 'boolean') ? policy.returnable : defaultReturnable;
+      const itemReplaceable = (typeof policy.replaceable === 'boolean') ? policy.replaceable : defaultReplaceable;
+      const itemReturnDays = (typeof policy.returnWindowDays === 'number') ? policy.returnWindowDays : defaultReturnDays;
+      const itemReplacementDays = (typeof policy.replacementWindowDays === 'number') ? policy.replacementWindowDays : defaultReplacementDays;
+
+      overallReturnable = overallReturnable && itemReturnable;
+      overallReplaceable = overallReplaceable && itemReplaceable;
+      windowDaysReturn = Math.min(windowDaysReturn, itemReturnDays);
+      windowDaysReplacement = Math.min(windowDaysReplacement, itemReplacementDays);
+    }
+
+    if (windowDaysReturn === Infinity) windowDaysReturn = defaultReturnDays;
+    if (windowDaysReplacement === Infinity) windowDaysReplacement = defaultReplacementDays;
+
+    const eligibleForReturn = overallReturnable && daysSinceDelivery <= windowDaysReturn;
+    const eligibleForReplacement = overallReplaceable && daysSinceDelivery <= windowDaysReplacement;
+
+    return {
+      eligible: type === 'return' ? eligibleForReturn : eligibleForReplacement,
+      eligibleForReturn,
+      eligibleForReplacement,
+      daysSinceDelivery,
+      windowDaysReturn,
+      windowDaysReplacement,
+      remainingDaysReturn: Math.max(0, windowDaysReturn - daysSinceDelivery),
+      remainingDaysReplacement: Math.max(0, windowDaysReplacement - daysSinceDelivery)
+    };
+  } catch (err) {
+    return { eligible: false, reason: 'Eligibility check failed' };
+  }
+}
+
+// Public: check after-sales eligibility => /api/orders/:id/after-sales/eligibility
+router.get('/:id/after-sales/eligibility', isAuthenticatedUser, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized to view this order' });
+    }
+
+    const resultForReturn = await evaluateAfterSalesEligibility(order, 'return');
+    const resultForReplacement = await evaluateAfterSalesEligibility(order, 'replacement');
+
+    return res.status(200).json({
+      success: true,
+      eligibility: {
+        eligibleForReturn: resultForReturn.eligibleForReturn,
+        eligibleForReplacement: resultForReplacement.eligibleForReplacement,
+        daysSinceDelivery: resultForReturn.daysSinceDelivery,
+        windowDaysReturn: resultForReturn.windowDaysReturn,
+        windowDaysReplacement: resultForReplacement.windowDaysReplacement,
+        remainingDaysReturn: resultForReturn.remainingDaysReturn,
+        remainingDaysReplacement: resultForReplacement.remainingDaysReplacement
+      },
+      afterSales: order.afterSales || null
+    });
+  } catch (error) {
+    console.error('Eligibility error:', error);
+    res.status(500).json({ success: false, message: 'Error checking eligibility' });
+  }
+});
+
+// Customer: request return or replacement => /api/orders/:id/after-sales/request
+router.post('/:id/after-sales/request', isAuthenticatedUser, async (req, res) => {
+  try {
+    const { type, reason, items } = req.body; // items optional: [{ product, quantity, color: {name, code} }]
+    if (!['return', 'replacement'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'Invalid request type' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You can only request for your own order' });
+    }
+    if (order.afterSales?.requested && ['pending', 'approved'].includes(order.afterSales.status)) {
+      return res.status(400).json({ success: false, message: 'After-sales request already in progress' });
+    }
+
+    const eligibility = await evaluateAfterSalesEligibility(order, type);
+    if (!eligibility.eligible) {
+      return res.status(400).json({ success: false, message: 'Order not eligible for this request' });
+    }
+
+    // Build items list (default to all order items)
+    let requestItems = [];
+    if (Array.isArray(items) && items.length > 0) {
+      requestItems = items.map(i => ({
+        product: i.product,
+        quantity: parseInt(i.quantity) || 1,
+        color: i.color && i.color.name && i.color.code ? i.color : undefined
+      }));
+    } else {
+      requestItems = order.orderItems.map(i => ({
+        product: i.product,
+        quantity: i.quantity,
+        color: i.color
+      }));
+    }
+
+    order.afterSales = {
+      requested: true,
+      type,
+      reason: reason || null,
+      requestedAt: Date.now(),
+      status: 'pending',
+      adminNotes: null,
+      processedAt: null,
+      items: requestItems,
+      refund: { method: null, amount: 0, status: null, processedAt: null }
+    };
+
+    await order.save();
+    res.status(200).json({ success: true, message: 'Request submitted', order });
+  } catch (error) {
+    console.error('After-sales request error:', error);
+    res.status(500).json({ success: false, message: 'Error submitting request' });
+  }
+});
+
+// Admin: approve after-sales => /api/orders/admin/:id/after-sales/approve
+router.put('/admin/:id/after-sales/approve', isAuthenticatedUser, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const { adminNotes } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order.afterSales?.requested || order.afterSales.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'No pending request to approve' });
+    }
+    order.afterSales.status = 'approved';
+    order.afterSales.adminNotes = adminNotes || null;
+    await order.save();
+    res.status(200).json({ success: true, message: 'After-sales request approved', order });
+  } catch (error) {
+    console.error('Approve after-sales error:', error);
+    res.status(500).json({ success: false, message: 'Error approving request' });
+  }
+});
+
+// Admin: reject after-sales => /api/orders/admin/:id/after-sales/reject
+router.put('/admin/:id/after-sales/reject', isAuthenticatedUser, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const { adminNotes } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order.afterSales?.requested || order.afterSales.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'No pending request to reject' });
+    }
+    order.afterSales.status = 'rejected';
+    order.afterSales.adminNotes = adminNotes || null;
+    order.afterSales.processedAt = Date.now();
+    await order.save();
+    res.status(200).json({ success: true, message: 'After-sales request rejected', order });
+  } catch (error) {
+    console.error('Reject after-sales error:', error);
+    res.status(500).json({ success: false, message: 'Error rejecting request' });
+  }
+});
+
+// Admin: complete after-sales => /api/orders/admin/:id/after-sales/complete
+router.put('/admin/:id/after-sales/complete', isAuthenticatedUser, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const { replacementItems, refund } = req.body; // replacementItems optional for type 'replacement'
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order.afterSales?.requested || !['approved', 'pending'].includes(order.afterSales.status)) {
+      return res.status(400).json({ success: false, message: 'No approved request to complete' });
+    }
+
+    if (order.afterSales.type === 'return') {
+      // Restore stock for returned items
+      for (const item of order.afterSales.items || []) {
+        await restoreStock(item.product, item.quantity, item?.color?.name || null);
+      }
+      order.status = 'returned';
+      // Optionally record refund snapshot
+      if (refund && typeof refund === 'object') {
+        order.afterSales.refund = {
+          method: refund.method || 'original_payment',
+          amount: typeof refund.amount === 'number' ? refund.amount : order.totalAmount,
+          status: refund.status || 'pending',
+          processedAt: refund.status === 'completed' ? Date.now() : null
+        };
+      }
+    } else if (order.afterSales.type === 'replacement') {
+      // Restore original items
+      for (const item of order.afterSales.items || []) {
+        await restoreStock(item.product, item.quantity, item?.color?.name || null);
+      }
+      // Reduce stock for replacement items (fallback to original items if not provided)
+      const itemsToShip = Array.isArray(replacementItems) && replacementItems.length > 0
+        ? replacementItems
+        : (order.afterSales.items || []);
+      for (const item of itemsToShip) {
+        await updateStock(item.product, item.quantity, item?.color?.name || null);
+      }
+      // Keep status as delivered; replacement fulfilled
+    }
+
+    order.afterSales.status = 'completed';
+    order.afterSales.processedAt = Date.now();
+    await order.save();
+    res.status(200).json({ success: true, message: 'After-sales request completed', order });
+  } catch (error) {
+    console.error('Complete after-sales error:', error);
+    res.status(500).json({ success: false, message: 'Error completing request' });
   }
 });
 

@@ -43,6 +43,14 @@ router.get('/', catchAsyncErrors(async (req, res) => {
                 theme: settings.theme || {
                     primaryColor: '#d4af37',
                     secondaryColor: '#f5f5dc'
+                },
+                returnPolicy: settings.returnPolicy || {
+                    returnableByDefault: true,
+                    replaceableByDefault: true,
+                    merchantReturnDays: 7,
+                    merchantReplacementDays: 7,
+                    returnFees: 'free',
+                    policyNotes: 'Items can be returned or replaced within the window if unused and in original packaging.'
                 }
             }
         });

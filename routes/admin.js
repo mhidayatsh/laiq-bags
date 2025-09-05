@@ -166,7 +166,7 @@ router.get('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
         const baseQuery = Product.find({}, {
             name: 1, price: 1, freeDelivery: 1, category: 1, type: 1, material: 1, size: 1, description: 1,
             stock: 1, images: { $slice: 1 }, // send only first image
-            colorVariants: 1, specifications: 1,
+            colorVariants: 1, specifications: 1, returnPolicy: 1,
             featured: 1, bestSeller: 1, newArrival: 1, createdAt: 1,
             discountInfo: 1, discount: 1, discountEndDate: 1, isDiscountActive: 1, discountType: 1, discountStartDate: 1
         })
@@ -250,6 +250,7 @@ router.get('/products', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (
                 bestSeller: product.bestSeller,
                 newArrival: product.newArrival,
                 createdAt: product.createdAt,
+                returnPolicy: product.returnPolicy,
                 // Include discount fields
                 discount: product.discount,
                 discountType: product.discountType,

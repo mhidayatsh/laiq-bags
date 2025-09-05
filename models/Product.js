@@ -37,6 +37,38 @@ const productSchema = new mongoose.Schema({
     trim: true,
     maxLength: [100, 'Product name cannot exceed 100 characters']
   },
+  // Return & Replacement policy (per-product overrides)
+  returnPolicy: {
+    returnable: {
+      type: Boolean,
+      default: true
+    },
+    replaceable: {
+      type: Boolean,
+      default: true
+    },
+    returnWindowDays: {
+      type: Number,
+      default: 7,
+      min: 0,
+      max: 60
+    },
+    replacementWindowDays: {
+      type: Number,
+      default: 7,
+      min: 0,
+      max: 60
+    },
+    fees: {
+      type: String,
+      enum: ['free', 'customer'],
+      default: 'free'
+    },
+    nonReturnableReason: {
+      type: String,
+      default: null
+    }
+  },
   // SEO-optimized URL slug
   slug: {
     type: String,

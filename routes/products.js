@@ -470,6 +470,7 @@ router.get('/:id', productLimiter, async (req, res) => {
           ratings: 1,
           numOfReviews: 1,
           reviews: 1,
+          returnPolicy: 1,
           images: 1,
           colorVariants: 1,
           createdAt: 1
@@ -542,6 +543,11 @@ router.get('/:id', productLimiter, async (req, res) => {
     }
 
     // Add structured data for SEO
+    const policy = productObj.returnPolicy || {};
+    const returnable = (typeof policy.returnable === 'boolean') ? policy.returnable : true;
+    const returnWindowDays = (typeof policy.returnWindowDays === 'number') ? policy.returnWindowDays : 7;
+    const returnFees = policy.fees === 'customer' ? 'https://schema.org/OriginalShippingFees' : 'https://schema.org/FreeReturn';
+
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -585,14 +591,19 @@ router.get('/:id', productLimiter, async (req, res) => {
             }
           }
         },
-        "hasMerchantReturnPolicy": {
-          "@type": "MerchantReturnPolicy",
-          "applicableCountry": "IN",
-          "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-          "merchantReturnDays": 30,
-          "returnMethod": "https://schema.org/ReturnByMail",
-          "returnFees": "https://schema.org/FreeReturn"
-        }
+        "hasMerchantReturnPolicy": returnable
+          ? {
+              "@type": "MerchantReturnPolicy",
+              "applicableCountry": "IN",
+              "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+              "merchantReturnDays": returnWindowDays,
+              "returnMethod": "https://schema.org/ReturnByMail",
+              "returnFees": returnFees
+            }
+          : {
+              "@type": "MerchantReturnPolicy",
+              "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+            }
       }
     };
 

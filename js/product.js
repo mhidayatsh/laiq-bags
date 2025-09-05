@@ -2145,14 +2145,37 @@ function addProductStructuredData(product) {
                     }
                 }
             },
-            "hasMerchantReturnPolicy": {
-                "@type": "MerchantReturnPolicy",
-                "applicableCountry": "IN",
-                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-                "merchantReturnDays": 30,
-                "returnMethod": "https://schema.org/ReturnByMail",
-                "returnFees": "https://schema.org/FreeReturn"
-            }
+            "hasMerchantReturnPolicy": (function() {
+                try {
+                    const policy = product.returnPolicy || {};
+                    const returnDays = typeof policy.returnWindowDays === 'number' ? policy.returnWindowDays : 7;
+                    const fees = policy.fees === 'customer' ? "https://schema.org/OriginalShippingFees" : "https://schema.org/FreeReturn";
+                    const returnable = (typeof policy.returnable === 'boolean') ? policy.returnable : true;
+                    if (!returnable || returnDays === 0) {
+                        return {
+                            "@type": "MerchantReturnPolicy",
+                            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+                        };
+                    }
+                    return {
+                        "@type": "MerchantReturnPolicy",
+                        "applicableCountry": "IN",
+                        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                        "merchantReturnDays": returnDays,
+                        "returnMethod": "https://schema.org/ReturnByMail",
+                        "returnFees": fees
+                    };
+                } catch (_) {
+                    return {
+                        "@type": "MerchantReturnPolicy",
+                        "applicableCountry": "IN",
+                        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                        "merchantReturnDays": 7,
+                        "returnMethod": "https://schema.org/ReturnByMail",
+                        "returnFees": "https://schema.org/FreeReturn"
+                    };
+                }
+            })()
         }
     };
     

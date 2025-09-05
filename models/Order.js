@@ -202,6 +202,63 @@ const orderSchema = new mongoose.Schema({
       default: null
     }
   },
+  // After-sales: return/replacement requests
+  afterSales: {
+    requested: {
+      type: Boolean,
+      default: false
+    },
+    type: {
+      type: String,
+      enum: [null, 'return', 'replacement'],
+      default: null
+    },
+    reason: {
+      type: String,
+      default: null
+    },
+    requestedAt: {
+      type: Date,
+      default: null
+    },
+    status: {
+      type: String,
+      enum: [null, 'pending', 'approved', 'rejected', 'completed'],
+      default: null
+    },
+    adminNotes: {
+      type: String,
+      default: null
+    },
+    processedAt: {
+      type: Date,
+      default: null
+    },
+    // For replacements: which items/variants
+    items: [{
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      quantity: { type: Number, default: 1 },
+      color: {
+        name: String,
+        code: String
+      }
+    }],
+    // For returns: refund info snapshot
+    refund: {
+      method: {
+        type: String,
+        enum: [null, 'original_payment', 'wallet', 'bank_transfer'],
+        default: null
+      },
+      amount: { type: Number, default: 0 },
+      status: {
+        type: String,
+        enum: [null, 'pending', 'completed', 'failed'],
+        default: null
+      },
+      processedAt: { type: Date, default: null }
+    }
+  },
   // Status change history
   statusNotes: [{
     status: {

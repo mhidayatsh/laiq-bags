@@ -977,6 +977,40 @@ class ApiService {
         });
     }
 
+    // After-sales (Return/Replacement)
+    async getAfterSalesEligibility(orderId) {
+        return await this.request(`/orders/${orderId}/after-sales/eligibility`);
+    }
+
+    async requestAfterSales(orderId, { type, reason, items } = {}) {
+        return await this.request(`/orders/${orderId}/after-sales/request`, {
+            method: 'POST',
+            body: JSON.stringify({ type, reason, items })
+        });
+    }
+
+    async approveAfterSales(orderId, adminNotes = '') {
+        return await this.request(`/orders/admin/${orderId}/after-sales/approve`, {
+            method: 'PUT',
+            body: JSON.stringify({ adminNotes })
+        });
+    }
+
+    async rejectAfterSales(orderId, adminNotes = '') {
+        return await this.request(`/orders/admin/${orderId}/after-sales/reject`, {
+            method: 'PUT',
+            body: JSON.stringify({ adminNotes })
+        });
+    }
+
+    async completeAfterSales(orderId, payload = {}) {
+        // payload: { replacementItems?: [...], refund?: { method, amount, status } }
+        return await this.request(`/orders/admin/${orderId}/after-sales/complete`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+        });
+    }
+
     async updateTracking(orderId, trackingData) {
         return await this.request(`/orders/admin/${orderId}/tracking`, {
             method: 'PUT',

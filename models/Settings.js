@@ -6,6 +6,38 @@ const settingsSchema = new mongoose.Schema({
     required: true,
     default: 'Laiq Bags'
   },
+  // Default return & replacement policy
+  returnPolicy: {
+    returnableByDefault: {
+      type: Boolean,
+      default: true
+    },
+    replaceableByDefault: {
+      type: Boolean,
+      default: true
+    },
+    merchantReturnDays: {
+      type: Number,
+      default: 7,
+      min: 0,
+      max: 60
+    },
+    merchantReplacementDays: {
+      type: Number,
+      default: 7,
+      min: 0,
+      max: 60
+    },
+    returnFees: {
+      type: String,
+      enum: ['free', 'customer'],
+      default: 'free'
+    },
+    policyNotes: {
+      type: String,
+      default: 'Items can be returned or replaced within the window if unused and in original packaging.'
+    }
+  },
   contactEmail: {
     type: String,
     required: true,
