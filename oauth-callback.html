@@ -50,8 +50,8 @@
           }
           clearCookie('oauth_token');
           clearCookie('oauth_user');
-          // Redirect back to profile or previous page
-          const next = sessionStorage.getItem('postLoginRedirect') || '/customer-profile.html';
+          // Redirect back to home page or previous page (consistent with regular login)
+          const next = sessionStorage.getItem('postLoginRedirect') || '/index.html';
           sessionStorage.removeItem('postLoginRedirect');
           window.location.replace(next);
         } catch (e) {
