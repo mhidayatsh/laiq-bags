@@ -121,6 +121,7 @@ router.get('/oauth/google/start', async (req, res) => {
     const clearOpts = cookieDomain ? { ...clearBase, domain: cookieDomain } : clearBase;
     const toLower = (v) => String(v || '').toLowerCase();
     const forceSelect = ['1','true','yes'].includes(toLower(req.query.force_select)) || ['1','true','yes'].includes(toLower(req.query.use_another)) || toLower(req.query.prompt) === 'select_account';
+    const forceConsent = ['1','true','yes'].includes(toLower(req.query.force_consent)) || toLower(req.query.prompt) === 'consent';
     const clearLoginHint = ['1','true','yes'].includes(toLower(req.query.clear_login_hint));
     if (forceSelect || clearLoginHint) {
       res.cookie('g_login_hint', '', clearOpts);
@@ -136,15 +137,22 @@ router.get('/oauth/google/start', async (req, res) => {
     authUrl.searchParams.set('nonce', nonce);
     authUrl.searchParams.set('code_challenge', codeChallenge);
     authUrl.searchParams.set('code_challenge_method', 'S256');
-    // Minimize prompts for returning users
+    // Minimize prompts for returning users, but ensure consent for first-time users
     const cookies = parseCookies(req);
     const loginHint = cookies['g_login_hint'] || req.query.login_hint || '';
-    if (!forceSelect && loginHint) {
+    if (!forceSelect && !forceConsent && loginHint) {
+      // Returning user path: provide hint and avoid extra prompts
       authUrl.searchParams.set('login_hint', loginHint);
-      // No explicit prompt so Google can fast-path
     } else {
-      // Let user pick if we don't know their account
-      authUrl.searchParams.set('prompt', 'select_account');
+      // First-time or forced path: ensure account selection and consent
+      const promptValues = [];
+      // If no known account or explicitly requested, ask to choose account
+      if (forceSelect || !loginHint) promptValues.push('select_account');
+      // If first-time (no hint) or explicitly requested, force consent screen
+      if (forceConsent || !loginHint) promptValues.push('consent');
+      if (promptValues.length > 0) {
+        authUrl.searchParams.set('prompt', promptValues.join(' '));
+      }
     }
     // Online access is sufficient; we don't persist Google tokens
     authUrl.searchParams.set('access_type', 'online');
