@@ -1171,6 +1171,17 @@ async function fillProductForm(productId) {
         freeDeliveryField.checked = (product.freeDelivery === undefined) ? true : !!product.freeDelivery;
     }
     
+    // Fill per-product return policy if present
+    try {
+        const rp = product.returnPolicy || {};
+        form.querySelector('input[name="returnable"]').checked = (typeof rp.returnable === 'boolean') ? rp.returnable : true;
+        form.querySelector('input[name="replaceable"]').checked = (typeof rp.replaceable === 'boolean') ? rp.replaceable : true;
+        form.querySelector('input[name="returnWindowDays"]').value = (typeof rp.returnWindowDays === 'number') ? rp.returnWindowDays : 7;
+        form.querySelector('input[name="replacementWindowDays"]').value = (typeof rp.replacementWindowDays === 'number') ? rp.replacementWindowDays : 7;
+        form.querySelector('select[name="policyFees"]').value = rp.fees || 'free';
+        form.querySelector('input[name="nonReturnableReason"]').value = rp.nonReturnableReason || '';
+    } catch (_) {}
+
     // Fill images
     fillProductImages(product.images || []);
     
@@ -1549,7 +1560,16 @@ async function saveProduct() {
             featured: formData.get('featured') === 'on',
             bestSeller: formData.get('bestSeller') === 'on',
             newArrival: formData.get('newArrival') === 'on',
-            freeDelivery: formData.get('freeDelivery') === 'on'
+            freeDelivery: formData.get('freeDelivery') === 'on',
+            // Return policy per product
+            returnPolicy: {
+                returnable: formData.get('returnable') === 'on',
+                replaceable: formData.get('replaceable') === 'on',
+                returnWindowDays: parseInt(formData.get('returnWindowDays')) || undefined,
+                replacementWindowDays: parseInt(formData.get('replacementWindowDays')) || undefined,
+                fees: formData.get('policyFees') || undefined,
+                nonReturnableReason: formData.get('nonReturnableReason') || undefined
+            }
         };
         
         // Validate required fields
@@ -1648,7 +1668,18 @@ async function saveProduct() {
             originalPrice: productData.originalPrice || productData.price,
             tags: productData.tags || [],
             // Optimize images
-            images: optimizeImages(productData.images)
+            images: optimizeImages(productData.images),
+            // Only include returnPolicy fields that are defined to avoid overwriting with undefined
+            returnPolicy: (function(p){
+                const out = {};
+                if (typeof p.returnable === 'boolean') out.returnable = p.returnable;
+                if (typeof p.replaceable === 'boolean') out.replaceable = p.replaceable;
+                if (typeof p.returnWindowDays === 'number') out.returnWindowDays = p.returnWindowDays;
+                if (typeof p.replacementWindowDays === 'number') out.replacementWindowDays = p.replacementWindowDays;
+                if (p.fees) out.fees = p.fees;
+                if (p.nonReturnableReason) out.nonReturnableReason = p.nonReturnableReason;
+                return out;
+            })(productData.returnPolicy || {})
         };
         
         console.log('📊 Optimized data size:', JSON.stringify(optimizedProductData).length, 'bytes');
@@ -3193,6 +3224,16 @@ async function loadSettings() {
             form.querySelector('[name="state"]').value = settings.address?.state || 'Maharashtra';
             form.querySelector('[name="pincode"]').value = settings.address?.pincode || '400001';
             form.querySelector('[name="country"]').value = settings.address?.country || 'India';
+            // Load global return policy defaults
+            const rp = settings.returnPolicy || {};
+            const getBool = (v, d) => (typeof v === 'boolean' ? v : d);
+            const getNum = (v, d) => (typeof v === 'number' ? v : d);
+            form.querySelector('[name="returnableByDefault"]').checked = getBool(rp.returnableByDefault, true);
+            form.querySelector('[name="replaceableByDefault"]').checked = getBool(rp.replaceableByDefault, true);
+            form.querySelector('[name="merchantReturnDays"]').value = getNum(rp.merchantReturnDays, 7);
+            form.querySelector('[name="merchantReplacementDays"]').value = getNum(rp.merchantReplacementDays, 7);
+            form.querySelector('[name="returnFees"]').value = rp.returnFees || 'free';
+            form.querySelector('[name="policyNotes"]').value = rp.policyNotes || '';
         }
         
         console.log('✅ Settings loaded');
@@ -3221,6 +3262,14 @@ async function saveSettings(e) {
                 state: formData.get('state') || 'Maharashtra',
                 pincode: formData.get('pincode') || '400001',
                 country: formData.get('country') || 'India'
+            },
+            returnPolicy: {
+                returnableByDefault: formData.get('returnableByDefault') === 'on',
+                replaceableByDefault: formData.get('replaceableByDefault') === 'on',
+                merchantReturnDays: parseInt(formData.get('merchantReturnDays')) || 7,
+                merchantReplacementDays: parseInt(formData.get('merchantReplacementDays')) || 7,
+                returnFees: formData.get('returnFees') || 'free',
+                policyNotes: formData.get('policyNotes') || ''
             }
         };
         
