@@ -2998,6 +2998,36 @@ function showGuestMenu() {
 }
 
 /**
+ * Force refresh authentication state and UI
+ */
+function refreshAuthState() {
+    console.log('🔄 Refreshing authentication state...');
+    
+    const isLoggedIn = isCustomerLoggedIn();
+    console.log('🔍 Current login state:', isLoggedIn);
+    
+    if (isLoggedIn) {
+        // Try to get customer data from token
+        const token = localStorage.getItem('customerToken');
+        if (token) {
+            try {
+                const customer = getCustomerFromToken(token);
+                if (customer) {
+                    showCustomerMenu(customer);
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Error getting customer from token:', error);
+            }
+        }
+    }
+    
+    // If not logged in or error, show guest menu
+    showGuestMenu();
+    console.log('✅ Auth state refreshed');
+}
+
+/**
  */
 function hideCustomerMenu() {
     console.log('🕵️ Hiding customer menu, showing guest menu');
@@ -3151,6 +3181,16 @@ async function syncCartWithBackend() {
 function handleCustomerLogout() {
     console.log('🚪 Customer logging out...');
     
+    // Get user data BEFORE clearing localStorage
+    let userEmail = null;
+    try {
+        const userStr = localStorage.getItem('customerUser');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            userEmail = user.email;
+        }
+    } catch(_) {}
+    
     // Best-effort backend logout (non-blocking)
     try {
         if (window.api && typeof window.api.customerLogout === 'function') {
@@ -3161,13 +3201,6 @@ function handleCustomerLogout() {
     // Clear all customer data
     localStorage.removeItem('customerToken');
     localStorage.removeItem('customerUser');
-    try {
-        // Remember which account was used last so Google can preselect it
-        const user = JSON.parse(localStorage.getItem('customerUser') || 'null');
-        if (user && user.email) {
-            document.cookie = `g_login_hint=${encodeURIComponent(user.email)}; Max-Age=${180*24*60*60}; Path=/`;
-        }
-    } catch(_) {}
     localStorage.removeItem('userCart');
     localStorage.removeItem('userWishlist');
     
@@ -3179,11 +3212,26 @@ function handleCustomerLogout() {
     cart = [];
     wishlist = [];
     
-    // Show guest menu
+    // Remember which account was used last so Google can preselect it
+    if (userEmail) {
+        try {
+            document.cookie = `g_login_hint=${encodeURIComponent(userEmail)}; Max-Age=${180*24*60*60}; Path=/`;
+        } catch(_) {}
+    }
+    
+    // Show guest menu immediately
     showGuestMenu();
     
     // Update counts
     updateAllCounts();
+    
+    // Force refresh UI state
+    refreshAuthState();
+    
+    // Redirect to home page if on profile page
+    if (window.location.pathname.includes('customer-profile.html')) {
+        window.location.href = '/index.html';
+    }
     
     // Show success message
     showToast('Logged out successfully!', 'success');
