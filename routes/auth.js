@@ -116,6 +116,16 @@ router.get('/oauth/google/start', async (req, res) => {
     res.cookie('g_nonce', nonce, cookieOpts);
     res.cookie('g_cv', codeVerifier, cookieOpts);
 
+    // Allow caller to force account selection and/or clear stored login hint
+    const clearBase = { maxAge: 0, path: '/' };
+    const clearOpts = cookieDomain ? { ...clearBase, domain: cookieDomain } : clearBase;
+    const toLower = (v) => String(v || '').toLowerCase();
+    const forceSelect = ['1','true','yes'].includes(toLower(req.query.force_select)) || ['1','true','yes'].includes(toLower(req.query.use_another)) || toLower(req.query.prompt) === 'select_account';
+    const clearLoginHint = ['1','true','yes'].includes(toLower(req.query.clear_login_hint));
+    if (forceSelect || clearLoginHint) {
+      res.cookie('g_login_hint', '', clearOpts);
+    }
+
     // Build Google OAuth URL manually
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
@@ -129,7 +139,7 @@ router.get('/oauth/google/start', async (req, res) => {
     // Minimize prompts for returning users
     const cookies = parseCookies(req);
     const loginHint = cookies['g_login_hint'] || req.query.login_hint || '';
-    if (loginHint) {
+    if (!forceSelect && loginHint) {
       authUrl.searchParams.set('login_hint', loginHint);
       // No explicit prompt so Google can fast-path
     } else {
