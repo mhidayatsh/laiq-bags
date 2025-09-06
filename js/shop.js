@@ -7,8 +7,8 @@ function showSkeletonLoader() {
     if (productsGrid) {
         const skeletonHTML = Array(8).fill(0).map(() => `
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden animate-pulse border border-gray-100">
-                <div class="relative aspect-[4/5] overflow-hidden">
-                    <div class="w-full h-full bg-gray-200"></div>
+                <div class="relative overflow-hidden">
+                    <div class="w-full h-56 sm:h-64 bg-gray-200"></div>
                     <div class="absolute top-4 right-4 w-10 h-10 bg-gray-200 rounded-full"></div>
                     <div class="absolute top-4 left-4 w-16 h-6 bg-gray-200 rounded-full"></div>
                 </div>
@@ -767,11 +767,11 @@ function renderProducts() {
         
         return `
             <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100">
-                <div class="relative aspect-[4/5] overflow-hidden">
+                <div class="relative overflow-hidden">
                     <a href="product?id=${productId}" class="block h-full">
-                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="500"
+                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="256"
                              onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
-                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                             class="w-full h-56 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
                     
                     <!-- Enhanced Wishlist Button -->

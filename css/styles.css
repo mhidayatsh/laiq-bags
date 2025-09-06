@@ -243,7 +243,6 @@ html, body {
 
 /* Enhanced Shop page improvements */
 .product-image-container {
-    aspect-ratio: 4/5;
     background: #f3f4f6;
     display: flex;
     align-items: center;
@@ -254,9 +253,13 @@ html, body {
 
 .product-image {
     width: 100%;
-    height: 100%;
+    height: 14rem; /* 56 */
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.3s ease;
+}
+
+@media (min-width: 640px) {
+    .product-image { height: 16rem; /* 64 */ }
 }
 
 /* Enhanced skeleton animation */
