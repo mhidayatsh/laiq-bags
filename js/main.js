@@ -1013,7 +1013,7 @@ function initializeCart() {
     }
     
     // Mobile cart link handler - expanded selectors
-    const mobileCartLink = document.querySelector('#mobile-cart-link, .mobile-cart-link, [data-mobile-cart], a[href*="cart"], .mobile-cart, .mobile-cart-btn')
+    const mobileCartLink = document.querySelector('#mobile-cart-btn, #mobile-cart-link, .mobile-cart-link, [data-mobile-cart], a[href*="cart"], .mobile-cart, .mobile-cart-btn')
     if (mobileCartLink) {
         mobileCartLink.addEventListener('click', function(e) {
             e.preventDefault()
@@ -1563,7 +1563,7 @@ function initializeWishlist() {
     }
     
     // Mobile wishlist link handler - expanded selectors
-    const mobileWishlistLink = document.querySelector('#mobile-wishlist-link, .mobile-wishlist-link, [data-mobile-wishlist], .mobile-wishlist, .mobile-wishlist-btn')
+    const mobileWishlistLink = document.querySelector('#mobile-wishlist-btn, #mobile-wishlist-link, .mobile-wishlist-link, [data-mobile-wishlist], .mobile-wishlist, .mobile-wishlist-btn')
     if (mobileWishlistLink) {
         mobileWishlistLink.addEventListener('click', (e) => {
             e.preventDefault()
@@ -2035,7 +2035,7 @@ function updateCartCount() {
     }
     
     // Update all cart count elements
-    document.querySelectorAll('#cart-count, #cart-count-mobile, .cart-count').forEach(el => {
+    document.querySelectorAll('#cart-count, #cart-count-mobile, #mobile-cart-count, .cart-count').forEach(el => {
         if (el) {
             el.textContent = count
             // Show/hide based on count
@@ -2344,7 +2344,7 @@ function updateWishlistCount() {
     const count = isCustomerLoggedIn() ? (wishlist?.length || 0) : (guestWishlist?.length || 0)
     
     // Update all wishlist count elements
-    document.querySelectorAll('#wishlist-count, #wishlist-count-mobile, .wishlist-count').forEach(el => {
+    document.querySelectorAll('#wishlist-count, #wishlist-count-mobile, #mobile-wishlist-count, .wishlist-count').forEach(el => {
         if (el) {
             el.textContent = count
             // Show/hide based on count
