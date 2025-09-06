@@ -1224,16 +1224,22 @@ async function renderCartDrawer(items = null) {
         const image = item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjQwIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNjc3NDhCIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+UHJvZHVjdDwvdGV4dD4KPC9zdmc+Cg = =';
         const color = item.color ? ` (${item.color.name || item.color})` : '';
         const productId = item.id || item.productId;
+        const productSlug = item.slug || item.productSlug || item.product?.slug;
+        const productLink = productSlug ? `product.html?slug=${productSlug}` : `product?id=${productId}`;
         
         // Create unique identifier that includes both productId and color
         const colorName = item.color ? (item.color.name || item.color) : 'default';
         const uniqueId = `${productId}_${colorName}`;
         
         return `
-            <div class="cart-item flex items-center space-x-4 py-4 border-b border-gray-200" data-product-id="${productId}" data-unique-id="${uniqueId}" data-color="${colorName}">
-                <img src="${image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+            <div class="cart-item flex items-center space-x-4 py-4 border-b border-gray-200" data-product-id="${productId}" data-product-slug="${productSlug || ''}" data-unique-id="${uniqueId}" data-color="${colorName}">
+                <a href="${productLink}" class="block">
+                    <img src="${image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                </a>
                 <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-900">${item.name}${color}</h4>
+                    <h4 class="text-sm font-medium text-gray-900">
+                        <a href="${productLink}" class="hover:text-gold">${item.name}${color}</a>
+                    </h4>
                     <p class="text-sm text-gray-500">₹${price.toFixed(2)}</p>
                     <div class="flex items-center space-x-2 mt-2">
                         <button class="quantity-btn minus text-gray-500 hover:text-gold" data-action="decrease" data-id="${uniqueId}">-</button>
@@ -1268,6 +1274,20 @@ function addCartEventListeners() {
     // Remove buttons
     document.querySelectorAll('.remove-item').forEach(btn => {
         btn.addEventListener('click', handleRemoveFromCart)
+    })
+
+    // Navigate to product on cart item click (exclude controls)
+    document.querySelectorAll('.cart-item').forEach(itemEl => {
+        itemEl.addEventListener('click', (e) => {
+            if (e.target && e.target.closest && e.target.closest('.quantity-btn, .remove-item, button, a')) return
+            const productSlug = itemEl.getAttribute('data-product-slug')
+            const productId = itemEl.getAttribute('data-product-id')
+            if (productSlug) {
+                window.location.href = `product.html?slug=${productSlug}`
+            } else if (productId) {
+                window.location.href = `product?id=${productId}`
+            }
+        })
     })
 }
 
@@ -1798,6 +1818,8 @@ async function renderWishlistDrawer(items = null) {
         } else if (typeof item === 'object') {
             // New format - product object
             productId = item.id || item._id;
+            const productSlug = item.slug || item.productSlug || item.product?.slug;
+            const productLink = productSlug ? `product.html?slug=${productSlug}` : `product?id=${productId}`;
             name = item.name || 'Unknown Product';
             originalPrice = item.price || 0;
             price = getDisplayPrice(item); // Calculate discounted price
@@ -1811,11 +1833,15 @@ async function renderWishlistDrawer(items = null) {
         const discountPercentage = hasDiscount ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0
 
         return `
-            <div class="wishlist-item flex items-center justify-between py-4 border-b border-gray-200">
+            <div class="wishlist-item flex items-center justify-between py-4 border-b border-gray-200" data-product-id="${productId}" data-product-slug="${(typeof item === 'object' && (item.slug || item.productSlug || item.product?.slug)) || ''}">
                 <div class="flex items-center">
-                    <img src="${image}" alt="${name}" class="w-16 h-16 object-cover rounded-lg mr-4">
+                    <a href="${(typeof item === 'object' && (item.slug || item.productSlug || item.product?.slug)) ? `product.html?slug=${(item.slug || item.productSlug || item.product?.slug)}` : `product?id=${productId}` }" class="block mr-4">
+                        <img src="${image}" alt="${name}" class="w-16 h-16 object-cover rounded-lg">
+                    </a>
                     <div>
-                        <h4 class="font-semibold text-sm">${name}</h4>
+                        <h4 class="font-semibold text-sm">
+                            <a href="${(typeof item === 'object' && (item.slug || item.productSlug || item.product?.slug)) ? `product.html?slug=${(item.slug || item.productSlug || item.product?.slug)}` : `product?id=${productId}` }" class="hover:text-gold">${name}</a>
+                        </h4>
                         <div class="flex items-center gap-2">
                             <p class="text-sm font-bold text-gold">₹${price.toLocaleString()}</p>
                             ${hasDiscount ? `
@@ -1876,6 +1902,20 @@ function addWishlistDrawerEventListeners() {
             const productId = this.dataset.productId
             console.log('❤️ Removing from wishlist:', productId)
             removeFromWishlist(productId)
+        })
+    })
+
+    // Navigate to product on wishlist item click (exclude controls)
+    document.querySelectorAll('.wishlist-item').forEach(itemEl => {
+        itemEl.addEventListener('click', (e) => {
+            if (e.target && e.target.closest && e.target.closest('.add-to-cart-from-wishlist, .remove-from-wishlist, button, a')) return
+            const productSlug = itemEl.getAttribute('data-product-slug')
+            const productId = itemEl.getAttribute('data-product-id')
+            if (productSlug) {
+                window.location.href = `product.html?slug=${productSlug}`
+            } else if (productId) {
+                window.location.href = `product?id=${productId}`
+            }
         })
     })
 }
