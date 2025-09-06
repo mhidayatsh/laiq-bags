@@ -3689,6 +3689,8 @@ class VideoCarousel {
         this.isPlaying = false;
         this.isAutoPlay = true;
         this.progressUpdateInterval = null;
+        // Use a stable cache-busting token per page load (prevents re-download on each switch)
+        this.versionToken = `?v=${Date.now()}`;
         
         this.init();
     }
@@ -3743,9 +3745,8 @@ class VideoCarousel {
         this.currentVideoIndex = index;
         const videoData = this.videos[index];
         
-        // Add cache-busting parameter to ensure fresh video loads
-        const cacheBuster = `?v=${Date.now()}`;
-        this.video.src = videoData.src + cacheBuster;
+        // Use stable version token for this page load
+        this.video.src = videoData.src + this.versionToken;
         this.video.poster = videoData.poster;
         this.videoTitle.textContent = videoData.title;
         this.videoCounter.textContent = `${index + 1} / ${this.videos.length}`;
@@ -3758,11 +3759,22 @@ class VideoCarousel {
     }
     
     startAutoPlay() {
-        if (this.isAutoPlay) {
-            setTimeout(() => {
-                this.play();
-            }, 1000); // Small delay to ensure video is loaded
-        }
+        if (!this.isAutoPlay) return;
+        // Try to autoplay immediately; on failure, show controls and wait for user interaction
+        const attemptPlay = () => this.video.play().then(() => {
+            this.isPlaying = true;
+            this.updatePlayPauseButton();
+            this.startProgressUpdate();
+        }).catch(err => {
+            console.log('⚠️ Autoplay prevented, waiting for user interaction', err && err.message ? err.message : err);
+            this.isAutoPlay = false;
+            this.showControls();
+        });
+        // Try once now, and again after metadata if needed
+        attemptPlay();
+        this.video.addEventListener('loadedmetadata', () => {
+            if (!this.isPlaying) attemptPlay();
+        }, { once: true });
     }
     
     play() {
@@ -3771,8 +3783,9 @@ class VideoCarousel {
             this.updatePlayPauseButton();
             this.startProgressUpdate();
         }).catch(error => {
-            console.log('Autoplay prevented:', error);
+            console.log('⚠️ Video play() failed:', error);
             this.isAutoPlay = false;
+            this.showControls();
         });
     }
     
@@ -3813,8 +3826,8 @@ class VideoCarousel {
     }
     
     onVideoLoaded() {
-        // Video is ready to play
-        if (this.isAutoPlay && this.currentVideoIndex === 0) {
+        // Video is ready; ensure it can start
+        if (!this.isPlaying && this.isAutoPlay) {
             this.play();
         }
     }
