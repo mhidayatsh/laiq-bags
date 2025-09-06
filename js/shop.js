@@ -941,7 +941,10 @@ function handleWishlistToggle(e) {
         }
     }
     
-    // Global sync will handle all updates
+    // Update wishlist count immediately
+    if (typeof updateWishlistCount === 'function') {
+        updateWishlistCount();
+    }
 }
 
 // Handle Quick View

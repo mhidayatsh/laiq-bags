@@ -1645,7 +1645,11 @@ function handleWishlistToggle(e) {
         showToast('Added to wishlist', 'success');
     }
     
+    // Update wishlist button and count immediately
     updateWishlistButton();
+    if (typeof updateWishlistCount === 'function') {
+        updateWishlistCount();
+    }
 }
 
 // Update wishlist button appearance

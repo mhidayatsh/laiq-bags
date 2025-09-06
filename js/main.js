@@ -2354,7 +2354,7 @@ function updateWishlistCount() {
     // Only count the active context (logged-in vs guest)
     const count = isCustomerLoggedIn() ? (wishlist?.length || 0) : (guestWishlist?.length || 0)
     
-    // Update all wishlist count elements
+    // Update all wishlist count elements (header icons)
     document.querySelectorAll('#wishlist-count, #wishlist-count-mobile, #mobile-wishlist-count, .wishlist-count').forEach(el => {
         if (el) {
             el.textContent = count
@@ -2366,6 +2366,9 @@ function updateWishlistCount() {
             }
         }
     })
+    
+    // Also update wishlist icon appearance for buttons
+    updateWishlistIcon(count)
     
     console.log('❤️ Updated wishlist count:', count)
 }
