@@ -809,7 +809,7 @@ function renderProducts() {
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 ${generateStars(product.ratings || product.rating || 0)}
-                                <span class="text-sm text-charcoal/60 ml-2">${formatReviewText(product.numOfReviews || 0)}</span>
+                                <span class="text-sm text-charcoal/60 ml-2">(${product.numOfReviews || 0})</span>
                             </div>
                             <div class="text-charcoal/60 text-sm font-medium">${material}</div>
                         </div>
@@ -852,7 +852,7 @@ function renderProducts() {
                         </button>
                         <button class="quick-view-btn bg-charcoal/10 text-charcoal py-3 px-4 rounded-xl font-bold hover:bg-charcoal hover:text-white transition-all duration-200 shadow-md hover:shadow-lg" 
                                 data-id="${productId}">
-                            <i class="fas fa-eye mr-2"></i>Quick View
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
@@ -1075,17 +1075,6 @@ function generateStars(rating) {
         return '<i class="far fa-star text-yellow-400"></i><i class="far fa-star text-yellow-400"></i><i class="far fa-star text-yellow-400"></i><i class="far fa-star text-yellow-400"></i><i class="far fa-star text-yellow-400"></i>';
     }
 } 
-
-// Format review text like "(1 review)" or "(3 reviews)"
-function formatReviewText(count) {
-    try {
-        const n = Number(count) || 0;
-        const label = n === 1 ? 'review' : 'reviews';
-        return `(${n} ${label})`;
-    } catch (e) {
-        return '(0 reviews)';
-    }
-}
 
 // Error handling functions
 function showTimeoutError() {
