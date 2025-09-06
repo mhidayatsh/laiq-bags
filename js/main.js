@@ -3800,9 +3800,8 @@ class VideoCarousel {
     nextVideo() {
         const nextIndex = this.currentVideoIndex < this.videos.length - 1 ? this.currentVideoIndex + 1 : 0;
         this.loadVideo(nextIndex);
-        if (this.isAutoPlay) {
-            this.play();
-        }
+        // Always attempt to autoplay next video so the sequence loops continuously
+        this.play();
     }
     
     onVideoEnded() {
