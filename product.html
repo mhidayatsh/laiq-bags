@@ -282,8 +282,22 @@
             </button>
           </div>
           
-          <!-- Mobile menu button -->
-          <div class="md:hidden">
+          <!-- Mobile Icons and Menu -->
+          <div class="md:hidden flex items-center space-x-3">
+            <!-- Mobile Cart & Wishlist Icons -->
+            <button id="mobile-wishlist-btn" class="relative text-charcoal hover:text-gold transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+              </svg>
+              <span id="mobile-wishlist-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <button id="mobile-cart-btn" class="relative text-charcoal hover:text-gold transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+              </svg>
+              <span id="mobile-cart-count" class="absolute -top-2 -right-2 bg-gold text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <!-- Mobile menu button -->
             <button id="mobile-menu-btn" class="text-charcoal hover:text-gold transition-colors">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -297,20 +311,8 @@
           <div class="px-2 pt-2 pb-3 space-y-1">
             <a href="/index.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Home</a>
             <a href="/shop.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Shop</a>
-<a href="/about.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">About</a>
-<a href="/contact.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Contact</a>
-            <div class="flex items-center space-x-4 px-3 py-2">
-              <a href="#" id="mobile-wishlist-link" class="text-charcoal hover:text-gold transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                </svg>
-              </a>
-              <a href="#" id="mobile-cart-link" class="text-charcoal hover:text-gold transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                </svg>
-              </a>
-            </div>
+            <a href="/about.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">About</a>
+            <a href="/contact.html" class="block px-3 py-2 text-charcoal hover:text-gold transition-colors">Contact</a>
           </div>
         </div>
       </nav>
