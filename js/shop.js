@@ -1,38 +1,21 @@
 
 // Shop Page JavaScript
 
-// Enhanced skeleton loader to prevent layout shift
+// Add skeleton loader to prevent layout shift
 function showSkeletonLoader() {
     const productsGrid = document.getElementById('products-grid');
     if (productsGrid) {
         const skeletonHTML = Array(8).fill(0).map(() => `
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden animate-pulse border border-gray-100">
-                <div class="relative aspect-[4/5] overflow-hidden">
-                    <div class="w-full h-full bg-gray-200"></div>
-                    <div class="absolute top-4 right-4 w-10 h-10 bg-gray-200 rounded-full"></div>
-                    <div class="absolute top-4 left-4 w-16 h-6 bg-gray-200 rounded-full"></div>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+                <div class="relative">
+                    <div class="w-full h-64 bg-gray-200"></div>
+                    <div class="absolute top-3 right-3 w-8 h-8 bg-gray-200 rounded-full"></div>
                 </div>
-                <div class="p-5 space-y-3">
-                    <div class="space-y-2">
-                        <div class="h-6 bg-gray-200 rounded w-3/4"></div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <div class="h-4 bg-gray-200 rounded w-20"></div>
-                                <div class="h-4 bg-gray-200 rounded w-8"></div>
-                            </div>
-                            <div class="h-4 bg-gray-200 rounded w-16"></div>
-                        </div>
-                    </div>
-                    <div class="h-4 bg-gray-200 rounded w-full"></div>
-                    <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-                    <div class="flex items-center justify-between">
-                        <div class="h-6 bg-gray-200 rounded w-20"></div>
-                        <div class="h-6 bg-gray-200 rounded w-24"></div>
-                    </div>
-                    <div class="flex gap-3 pt-2">
-                        <div class="flex-1 h-12 bg-gray-200 rounded-xl"></div>
-                        <div class="w-12 h-12 bg-gray-200 rounded-xl"></div>
-                    </div>
+                <div class="p-4">
+                    <div class="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-4 bg-gray-200 rounded mb-3"></div>
+                    <div class="h-8 bg-gray-200 rounded"></div>
                 </div>
             </div>
         `).join('');
@@ -416,10 +399,10 @@ function updatePaginationUI() {
 // Create page number button
 function createPageNumber(page) {
     const button = document.createElement('button');
-    button.className = `page-number px-4 py-2 text-sm rounded-xl transition-all duration-200 font-medium ${
+    button.className = `page-number px-3 py-2 text-sm rounded-lg transition-colors ${
         page === currentPage 
-            ? 'bg-gold text-white shadow-lg' 
-            : 'text-charcoal bg-white border border-charcoal/20 hover:bg-gold hover:text-white hover:border-gold hover:shadow-md'
+            ? 'bg-gold text-white' 
+            : 'text-charcoal bg-white border border-charcoal/20 hover:bg-gold hover:text-white hover:border-gold'
     }`;
     button.textContent = page;
     button.dataset.page = page;
@@ -766,76 +749,69 @@ function renderProducts() {
         const material = product.material || '';
         
         return `
-            <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100">
-                <div class="relative aspect-[4/5] overflow-hidden">
-                    <a href="product?id=${productId}" class="block h-full">
-                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="500"
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <div class="relative">
+                    <a href="product?id=${productId}" class="block">
+                        <img src="${product.images?.[0]?.url || product.image || 'assets/thumbnail.jpg'}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low" width="400" height="256"
                              onerror="this.onerror=null;this.src='assets/thumbnail.jpg'"
-                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                             class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300" />
                     </a>
-                    
-                    <!-- Enhanced Wishlist Button -->
-                    <button class="wishlist-btn absolute top-4 right-4 bg-white/95 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-200 ${isInWishlist(productId) ? 'text-red-500 scale-110' : 'text-charcoal/60 hover:text-red-500'}" 
+                    <button class="wishlist-btn absolute top-3 right-3 bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-all ${isInWishlist(productId) ? 'text-red-500' : 'text-charcoal/60'}" 
                             data-id="${productId}" title="Add to Wishlist">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="${isInWishlist(productId) ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="${isInWishlist(productId) ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                         </svg>
                     </button>
                     
                     <!-- Enhanced Discount Badge -->
                     ${hasDiscount ? `
-                        <div class="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm px-3 py-2 rounded-full font-bold shadow-lg z-10">
+                        <div class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold z-10 animate-pulse">
                             <i class="fas fa-fire mr-1"></i>${product.discountInfo.value} OFF
                         </div>
                     ` : ''}
                     
-                    <!-- Featured/New Badge -->
+                    <!-- Featured/New Badge (positioned below discount if exists) -->
                     ${product.featured ? `
-                        <span class="absolute ${hasDiscount ? 'top-16' : 'top-4'} left-4 bg-gradient-to-r from-gold to-yellow-500 text-white text-sm px-3 py-2 rounded-full font-bold shadow-lg">
+                        <span class="absolute ${hasDiscount ? 'top-12' : 'top-3'} left-3 bg-gold text-white text-xs px-2 py-1 rounded-full font-semibold">
                             <i class="fas fa-star mr-1"></i>Featured
                         </span>
                     ` : ''}
                     ${product.newArrival ? `
-                        <span class="absolute ${hasDiscount ? 'top-16' : 'top-4'} left-4 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm px-3 py-2 rounded-full font-bold shadow-lg">
+                        <span class="absolute ${hasDiscount ? 'top-12' : 'top-3'} left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
                             <i class="fas fa-sparkles mr-1"></i>New
                         </span>
                     ` : ''}
                 </div>
                 
-                <div class="p-5 space-y-3">
-                    <!-- Product Title and Rating -->
-                    <div class="space-y-2">
-                        <h3 class="font-bold text-lg text-charcoal leading-tight line-clamp-2">${product.name}</h3>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                ${generateStars(product.ratings || product.rating || 0)}
-                                <span class="text-sm text-charcoal/60 ml-2">(${product.numOfReviews || 0})</span>
-                            </div>
-                            <div class="text-charcoal/60 text-sm font-medium">${material}</div>
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-lg text-charcoal">${product.name}</h3>
+                        <div class="flex items-center">
+                            ${generateStars(product.ratings || product.rating || 0)}
+                            <span class="text-sm text-charcoal/60 ml-1">(${product.numOfReviews || 0} reviews)</span>
                         </div>
                     </div>
                     
-                    <!-- Product Description -->
-                    <p class="text-charcoal/70 text-sm line-clamp-2 leading-relaxed">${description}</p>
+                    <p class="text-charcoal/70 text-sm mb-3 line-clamp-2">${description}</p>
                     
-                    <!-- Price Section -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center space-x-2">
                             ${hasDiscount ? `
-                                <div class="space-y-1">
-                                    <div class="text-gold font-bold text-xl">₹${displayPrice.toLocaleString()}</div>
-                                    <div class="text-charcoal/40 text-sm line-through">₹${originalPrice.toLocaleString()}</div>
+                                <div class="flex flex-col">
+                                    <span class="text-gold font-bold text-lg">₹${displayPrice.toLocaleString()}</span>
+                                    <span class="text-charcoal/40 text-sm line-through">₹${originalPrice.toLocaleString()}</span>
                                 </div>
                             ` : `
-                                <div class="text-gold font-bold text-xl">₹${displayPrice.toLocaleString()}</div>
+                                <div class="text-gold font-bold text-lg">₹${displayPrice.toLocaleString()}</div>
                             `}
-                            ${(product.freeDelivery === undefined || product.freeDelivery === true) ? `
-                                <span class="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                    <i class="fas fa-truck mr-1"></i>Free Delivery
-                                </span>
-                            ` : ''}
                         </div>
+                        <div class="text-charcoal/60 text-sm">${material}</div>
                     </div>
+                    ${(product.freeDelivery === undefined || product.freeDelivery === true) ? `
+                    <div class="mb-3">
+                        <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Free Delivery</span>
+                    </div>
+                    ` : ''}
                     
                     <!-- Enhanced Countdown Timer -->
                     ${hasDiscount && product.discountInfo.timeRemaining ? `
@@ -844,15 +820,14 @@ function renderProducts() {
                         </div>
                     ` : ''}
                     
-                    <!-- Action Buttons -->
-                    <div class="flex gap-3 pt-2">
-                        <button class="add-to-cart-btn flex-1 bg-gradient-to-r from-gold to-yellow-500 text-white py-3 px-4 rounded-xl font-bold hover:from-charcoal hover:to-charcoal/80 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" 
+                    <div class="flex gap-2">
+                        <button class="add-to-cart-btn flex-1 bg-gold text-white py-2 px-4 rounded-lg font-semibold hover:bg-charcoal transition-colors" 
                                 data-id="${productId}" data-name="${product.name}" data-price="${displayPrice}" data-image="${product.images?.[0]?.url || product.image}">
                             <i class="fas fa-shopping-cart mr-2"></i>Add to Cart
                         </button>
-                        <button class="quick-view-btn bg-charcoal/10 text-charcoal py-3 px-4 rounded-xl font-bold hover:bg-charcoal hover:text-white transition-all duration-200 shadow-md hover:shadow-lg" 
+                        <button class="quick-view-btn bg-charcoal/10 text-charcoal py-2 px-3 rounded-lg font-semibold hover:bg-charcoal hover:text-white transition-colors" 
                                 data-id="${productId}">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas fa-eye mr-1"></i>Quick View
                         </button>
                     </div>
                 </div>
