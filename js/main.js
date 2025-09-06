@@ -1851,14 +1851,22 @@ async function renderWishlistDrawer(items = null) {
 function addWishlistDrawerEventListeners() {
     // Add to cart buttons
     document.querySelectorAll('.add-to-cart-from-wishlist').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             const productId = this.dataset.productId
             const name = this.dataset.name
             const price = parseInt(this.dataset.price)
             const image = this.dataset.image
             
             console.log('🛒 Adding to cart from wishlist:', { productId, name, price })
-            addToCart(productId, name, price, image)
+            try {
+                const added = await addToCart(productId, name, price, image)
+                if (added) {
+                    // Immediately remove from wishlist and update counts/UI
+                    removeFromWishlist(productId)
+                }
+            } catch (_) {
+                // addToCart handles its own errors and toasts
+            }
         })
     })
     
@@ -1929,10 +1937,12 @@ async function addToCart(productId, name, price, image, color = null, quantity =
                 
                 showToast(`${name} added to cart!`, 'success')
                 openCartDrawer()
+                return true
             }
         } catch (error) {
             console.error('❌ Error adding to cart:', error)
             showToast('Failed to add item to cart', 'error')
+            return false
         }
     } else {
         console.log('🛒 Adding to guest cart:', { productId, name, price, image, color })
@@ -1969,6 +1979,7 @@ async function addToCart(productId, name, price, image, color = null, quantity =
         // Provide user feedback in guest mode as well
         showToast(`${name} added to cart!`, 'success')
         openCartDrawer()
+        return true
     }
 }
 
