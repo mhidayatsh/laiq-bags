@@ -557,29 +557,5 @@
     <!-- Scripts -->
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
-    
-    <!-- Video Cache Busting Script -->
-    <script>
-    // Force refresh videos to clear cache
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add cache-busting to video sources
-        const videoSources = [
-            'assets/OurStory.mp4',
-            'assets/bag-video.mp4', 
-            'assets/bag-video-original.mp4'
-        ];
-        
-        // Preload videos with cache-busting
-        videoSources.forEach((src, index) => {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'video';
-            link.href = src + '?v=' + Date.now();
-            document.head.appendChild(link);
-        });
-        
-        console.log('🎬 Video cache-busting applied');
-    });
-    </script>
   </body>
 </html> 

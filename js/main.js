@@ -3743,9 +3743,7 @@ class VideoCarousel {
         this.currentVideoIndex = index;
         const videoData = this.videos[index];
         
-        // Add cache-busting parameter to ensure fresh video loads
-        const cacheBuster = `?v=${Date.now()}`;
-        this.video.src = videoData.src + cacheBuster;
+        this.video.src = videoData.src;
         this.video.poster = videoData.poster;
         this.videoTitle.textContent = videoData.title;
         this.videoCounter.textContent = `${index + 1} / ${this.videos.length}`;
@@ -3808,7 +3806,7 @@ class VideoCarousel {
     }
     
     onVideoEnded() {
-        // Auto-advance to next video (will loop back to 1 after 3)
+        // Auto-advance to next video
         this.nextVideo();
     }
     
@@ -3888,12 +3886,6 @@ class VideoCarousel {
                 break;
         }
     }
-    
-    // Method to force refresh videos (useful for cache clearing)
-    refreshVideos() {
-        console.log('🔄 Refreshing video carousel...');
-        this.loadVideo(this.currentVideoIndex);
-    }
 }
 
 // Initialize video carousel when DOM is loaded
@@ -3901,7 +3893,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize video carousel if on about page
     if (window.location.pathname.includes('about.html') || 
         document.getElementById('main-video')) {
-        window.videoCarousel = new VideoCarousel();
-        console.log('🎬 Video carousel initialized');
+        new VideoCarousel();
     }
 });
