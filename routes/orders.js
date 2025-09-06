@@ -121,6 +121,33 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
         });
       }
 
+      // Optional: Cross-check payment via Razorpay API for additional safety
+      try {
+        const Razorpay = require('razorpay');
+        const razorpay = new Razorpay({
+          key_id: process.env.RAZORPAY_KEY_ID,
+          key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+        const payment = await razorpay.payments.fetch(razorpayPaymentId);
+        if (!payment || payment.status !== 'captured') {
+          console.error('❌ Payment not captured when creating order:', payment && payment.status);
+          return res.status(400).json({ success: false, message: 'Payment not completed' });
+        }
+        // Validate amount matches order total
+        const expectedPaise = Math.round(totalAmount * 100);
+        if (typeof payment.amount === 'number' && payment.amount !== expectedPaise) {
+          console.error('❌ Payment amount mismatch at order creation:', { expectedPaise, actual: payment.amount });
+          return res.status(400).json({ success: false, message: 'Payment amount mismatch' });
+        }
+        if (payment.currency && payment.currency.toUpperCase() !== 'INR') {
+          console.error('❌ Unexpected payment currency at order creation:', payment.currency);
+          return res.status(400).json({ success: false, message: 'Invalid payment currency' });
+        }
+      } catch (verifyErr) {
+        console.error('❌ Razorpay API verification failed during order creation:', verifyErr);
+        return res.status(400).json({ success: false, message: 'Payment verification failed' });
+      }
+
       paymentInfo = {
         ...paymentInfo,
         razorpayOrderId,

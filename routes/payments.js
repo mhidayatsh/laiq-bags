@@ -122,7 +122,7 @@ router.post('/razorpay/create-order', isAuthenticatedUser, orderLimiter, catchAs
 // Verify Razorpay payment
 router.post('/razorpay/verify', isAuthenticatedUser, orderLimiter, catchAsyncErrors(async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, expectedAmount } = req.body;
 
         // Validate required fields
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -159,6 +159,31 @@ router.post('/razorpay/verify', isAuthenticatedUser, orderLimiter, catchAsyncErr
                     success: false,
                     message: 'Payment not completed'
                 });
+            }
+
+            // Ensure the payment belongs to the provided order
+            if (payment.order_id && payment.order_id !== razorpay_order_id) {
+                console.error('❌ Payment-order mismatch:', { expectedOrder: razorpay_order_id, paymentOrder: payment.order_id });
+                return res.status(400).json({
+                    success: false,
+                    message: 'Payment does not belong to this order'
+                });
+            }
+
+            // Optional: Validate amount and currency if expectedAmount provided
+            if (typeof expectedAmount === 'number' && expectedAmount > 0) {
+                const expectedPaise = Math.round(expectedAmount * 100);
+                if (payment.amount !== expectedPaise) {
+                    console.error('❌ Payment amount mismatch:', { expectedPaise, actual: payment.amount });
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Payment amount mismatch'
+                    });
+                }
+            }
+            if (payment.currency && payment.currency.toUpperCase() !== 'INR') {
+                console.error('❌ Unexpected currency:', payment.currency);
+                return res.status(400).json({ success: false, message: 'Invalid payment currency' });
             }
         } catch (apiError) {
             console.error('❌ Razorpay API error:', apiError);

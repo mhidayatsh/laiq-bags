@@ -917,8 +917,16 @@ async function processRazorpayPayment(orderData) {
                 razorpayOrderId: razorpayResponse.order.id
             }));
             
-            // Get Razorpay key from server response or environment
-            const razorpayKey = razorpayResponse.razorpayKey || 'rzp_test_kgrFv0hWlmKxDT';
+            // Get Razorpay key from server response
+            const razorpayKey = razorpayResponse.razorpayKey;
+            if (!razorpayKey) {
+                console.error('❌ Razorpay public key missing from server response');
+                showToast('Payment service unavailable. Please try again later.', 'error');
+                showLoadingState(false);
+                resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
+                isProcessing = false;
+                return;
+            }
             
             // Configure Razorpay options - With animations and proper flow
             const options = {
@@ -936,10 +944,7 @@ async function processRazorpayPayment(orderData) {
                 theme: {
                     color: '#D4AF37'
                 },
-                // Add proper redirect handling
-                redirect: true,
-                callback_url: window.location.origin + '/payment-callback.html',
-                cancel_url: window.location.origin + '/checkout.html',
+                // Use modal flow (no redirect) so handler runs on success
                 // Use default Razorpay blocks for all payment methods with animations
                 config: {
                     display: {
@@ -992,7 +997,8 @@ async function processRazorpayPayment(orderData) {
                         const verificationResponse = await api.verifyRazorpayPayment({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
+                            razorpay_signature: response.razorpay_signature,
+                            expectedAmount: orderData.totalAmount
                         });
                         
                         if (!verificationResponse.success) {
