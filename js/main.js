@@ -3258,7 +3258,7 @@ function bindLogoutButtons() {
     } catch (_) {}
 }
 
-// Load cart from backend with optimized performance
+// Load cart from backend with server-first strategy for cross-device sync
 async function loadCartFromBackend() {
     if (!isCustomerLoggedIn()) {
         console.log('👤 User not logged in, skipping backend cart load')
@@ -3274,110 +3274,82 @@ async function loadCartFromBackend() {
     isCartLoading = true
 
     try {
-        console.log('📥 Loading cart from backend...')
+        console.log('📥 Loading cart (server-first)...')
         const startTime = Date.now()
-        
-        // Check localStorage first for logged in users
-        const userCartData = localStorage.getItem('userCart');
-        const localStorageCart = userCartData ? JSON.parse(userCartData) : [];
-        
-        console.log('👤 localStorage cart items:', localStorageCart);
-        
+
+        // Optimistically render local cart if present for instant UI
+        const userCartData = localStorage.getItem('userCart')
+        const localStorageCart = userCartData ? JSON.parse(userCartData) : []
         if (localStorageCart.length > 0) {
-            // Use localStorage cart if it has items
-            cart = localStorageCart;
-            console.log('✅ Using localStorage cart with', cart.length, 'items');
-            
-            // Save to localStorage and update UI immediately
+            cart = localStorageCart
             saveUserCart()
             updateCartCount()
             renderCartDrawer(cart)
-            
-            // Sync to backend in background (non-blocking)
-            try {
-                console.log('🔄 Syncing localStorage cart to backend...');
-                const cartResponse = await api.getCart({ timeoutMs: 5000 });
-                if (cartResponse.success && cartResponse.cart && cartResponse.cart.items) {
-                    const backendCart = cartResponse.cart.items;
-                    console.log('📦 Backend cart has', backendCart.length, 'items');
-                    
-                    // If backend cart is empty but localStorage has items, sync them
-                    if (backendCart.length === 0 && localStorageCart.length > 0) {
-                        console.log('🔄 Backend cart is empty, syncing localStorage items...');
-                        for (const item of localStorageCart) {
-                            try {
-                                await api.addToCart(item.id, item.qty, item.color);
-                                console.log('✅ Synced item to backend:', item.name);
-                            } catch (error) {
-                                console.warn('⚠️ Failed to sync item to backend:', item.name, error.message);
-                            }
-                        }
+        }
+
+        // Always fetch server cart so updates from other devices reflect immediately
+        const cartResponse = await api.getCart({ timeoutMs: 10000 })
+
+        if (cartResponse && cartResponse.success) {
+            // Normalize response
+            let backendCart = []
+            if (Array.isArray(cartResponse.cart)) {
+                backendCart = cartResponse.cart
+            } else if (cartResponse.cart && Array.isArray(cartResponse.cart.items)) {
+                backendCart = cartResponse.cart.items
+            } else if (Array.isArray(cartResponse.items)) {
+                backendCart = cartResponse.items
+            }
+
+            // If backend is empty but local has items, sync local to backend once
+            if ((backendCart?.length || 0) === 0 && localStorageCart.length > 0) {
+                console.log('🔄 Backend cart empty; syncing local items to server...')
+                for (const item of localStorageCart) {
+                    try {
+                        await api.addToCart(item.id || item.productId, item.qty || item.quantity || 1, item.color || null)
+                        await new Promise(r => setTimeout(r, 20))
+                    } catch (err) {
+                        console.warn('⚠️ Failed syncing item to backend:', item?.name || item?.id, err?.message)
                     }
                 }
-            } catch (error) {
-                console.warn('⚠️ Backend sync failed, continuing with localStorage cart:', error.message);
+                // Re-fetch to get canonical server state
+                const refetch = await api.getCart({ timeoutMs: 8000 })
+                backendCart = (refetch && refetch.cart && Array.isArray(refetch.cart.items)) ? refetch.cart.items : []
             }
-            
+
+            // Adopt server as source of truth
+            cart = (backendCart || []).map(item => ({
+                id: item.product || item._id || item.id || item.productId || 'unknown',
+                productId: item.product || item._id || item.id || item.productId || 'unknown',
+                name: item.name || item.product?.name || 'Unknown Product',
+                price: parseFloat(item.price || item.product?.price) || 0,
+                image: item.image || item.product?.images?.[0]?.url || item.images?.[0]?.url || 'assets/thumbnail.jpg',
+                qty: parseInt(item.qty || item.quantity) || 1,
+                color: item.color || null
+            }))
+
+            saveUserCart()
+            updateCartCount()
+            renderCartDrawer(cart)
+
             const duration = Date.now() - startTime
-            console.log(`✅ Cart loaded from localStorage in ${duration}ms`)
+            console.log(`✅ Cart synced from server in ${duration}ms (items: ${cart.length})`)
         } else {
-            // localStorage is empty, try backend
-            console.log('📦 localStorage cart is empty, trying backend...');
-            
-            // Single optimized request with reasonable timeout (increased for auth)
-            const cartResponse = await api.getCart({ timeoutMs: 10000 });
-            
-            if (cartResponse.success && cartResponse.cart && cartResponse.cart.items) {
-                // Handle different cart response structures efficiently
-                let backendCart = []
-                if (cartResponse.cart && Array.isArray(cartResponse.cart)) {
-                    backendCart = cartResponse.cart
-                } else if (cartResponse.cart && cartResponse.cart.items && Array.isArray(cartResponse.cart.items)) {
-                    backendCart = cartResponse.cart.items
-                } else if (cartResponse.items && Array.isArray(cartResponse.items)) {
-                    backendCart = cartResponse.items
-                } else {
-                    console.warn('⚠️ Unexpected cart response structure:', cartResponse)
-                    backendCart = []
-                }
-                
-                console.log('✅ Cart loaded from backend:', backendCart.length, 'items')
-                
-                // Optimized mapping with reduced logging
-                cart = backendCart.map(item => ({
-                    id: item.product || item._id || item.id || item.productId || 'unknown',
-                    productId: item.product || item._id || item.id || item.productId || 'unknown',
-                    name: item.name || item.product?.name || 'Unknown Product',
-                    price: parseFloat(item.price || item.product?.price) || 0,
-                    image: item.image || item.product?.images?.[0]?.url || item.images?.[0]?.url || 'assets/thumbnail.jpg',
-                    qty: parseInt(item.qty || item.quantity) || 1,
-                    color: item.color || null
-                }))
-                
-                // Save to localStorage and update UI immediately
-                saveUserCart()
-                updateCartCount()
-                renderCartDrawer(cart)
-                
-                const duration = Date.now() - startTime
-                console.log(`✅ Cart synced with backend successfully in ${duration}ms`)
-            } else {
-                console.warn('⚠️ Backend cart response not successful, using localStorage')
-                loadFromLocalStorage()
-            }
+            console.warn('⚠️ Cart API not successful, falling back to localStorage')
+            loadFromLocalStorage()
         }
     } catch (error) {
         console.error('❌ Error loading cart from backend:', error)
         
         // Handle 401 Unauthorized errors gracefully
-        if (error.message && error.message.includes('Unauthorized')) {
+        if (error?.message && error.message.includes('Unauthorized')) {
             console.log('🔐 User not authorized, loading from localStorage...')
             loadFromLocalStorage()
             return
         }
         
         // Handle timeout errors gracefully
-        if (error.message && error.message.includes('timeout')) {
+        if (error?.message && error.message.includes('timeout')) {
             console.log('⏰ Cart request timed out, using localStorage fallback')
             loadFromLocalStorage()
             return
