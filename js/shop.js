@@ -148,7 +148,7 @@ async function loadProductsFromAPI(page = 1, limit = productsPerPage) {
                 
                 // Add cache-busting parameter
                 const cacheBustQuery = query + (query.includes('?') ? '&' : '?') + '_t=' + Date.now();
-                response = await api.getProducts(cacheBustQuery, { timeoutMs: timeout } + (query.includes('?') ? '&' : '?') + '_t=' + Date.now());
+                response = await api.getProducts(cacheBustQuery, { timeoutMs: timeout });
                 const end = performance.now();
                 console.log(`✅ Products API success in ${(end - start).toFixed(0)} ms with ${timeout}ms timeout`);
                 break;
@@ -457,10 +457,8 @@ async function loadAllProductsForFiltering(filterValue, sortValue, searchValue) 
             showSkeletonLoader();
         }
         
-        // Load products with maximum allowed limit (20)
-        // Add cache-busting parameter
-        const cacheBustQuery = '?limit=20&_t=' + Date.now();
-        const response = await api.getProducts(cacheBustQuery + (query.includes('?') ? '&' : '?') + '_t=' + Date.now());
+        // Load products with maximum allowed limit (20) and cache-busting
+        const response = await api.getProducts({ limit: 20, _t: Date.now() });
         
         if (response.success) {
             const allProducts = response.products || [];
