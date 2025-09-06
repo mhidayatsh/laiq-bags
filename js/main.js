@@ -3663,3 +3663,236 @@ function getGuestData() {
     const wishlist = JSON.parse(localStorage.getItem('guestWishlist') || '[]');
     return { cart, wishlist };
 }
+
+// Video Carousel Functionality for About Page
+class VideoCarousel {
+    constructor() {
+        this.videos = [
+            {
+                src: 'assets/OurStory.mp4',
+                title: 'Our Story',
+                poster: 'https://res.cloudinary.com/dmfw0s5ht/image/upload/v1755781931/Gemini_Generated_Image_8sm4y88sm4y88sm4_fppqvj.png'
+            },
+            {
+                src: 'assets/bag-video.mp4',
+                title: 'Product Showcase',
+                poster: 'https://res.cloudinary.com/dmfw0s5ht/image/upload/v1755781931/Gemini_Generated_Image_8sm4y88sm4y88sm4_fppqvj.png'
+            },
+            {
+                src: 'assets/bag-video-original.mp4',
+                title: 'Behind the Scenes',
+                poster: 'https://res.cloudinary.com/dmfw0s5ht/image/upload/v1755781931/Gemini_Generated_Image_8sm4y88sm4y88sm4_fppqvj.png'
+            }
+        ];
+        
+        this.currentVideoIndex = 0;
+        this.isPlaying = false;
+        this.isAutoPlay = true;
+        this.progressUpdateInterval = null;
+        
+        this.init();
+    }
+    
+    init() {
+        // Only initialize if we're on the about page
+        if (!document.getElementById('main-video')) {
+            return;
+        }
+        
+        this.video = document.getElementById('main-video');
+        this.playPauseBtn = document.getElementById('play-pause-btn');
+        this.prevBtn = document.getElementById('prev-video-btn');
+        this.nextBtn = document.getElementById('next-video-btn');
+        this.videoCounter = document.getElementById('video-counter');
+        this.videoTitle = document.getElementById('video-title');
+        this.progressBar = document.getElementById('video-progress');
+        this.controlsOverlay = document.querySelector('.video-controls-overlay');
+        
+        this.setupEventListeners();
+        this.loadVideo(0);
+        this.startAutoPlay();
+    }
+    
+    setupEventListeners() {
+        // Play/Pause button
+        this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+        
+        // Navigation buttons
+        this.prevBtn.addEventListener('click', () => this.previousVideo());
+        this.nextBtn.addEventListener('click', () => this.nextVideo());
+        
+        // Video events
+        this.video.addEventListener('ended', () => this.onVideoEnded());
+        this.video.addEventListener('timeupdate', () => this.updateProgress());
+        this.video.addEventListener('loadedmetadata', () => this.onVideoLoaded());
+        
+        // Controls overlay events
+        this.controlsOverlay.addEventListener('mouseenter', () => this.showControls());
+        this.controlsOverlay.addEventListener('mouseleave', () => this.hideControls());
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        
+        // Touch events for mobile
+        this.video.addEventListener('touchstart', () => this.toggleControls());
+    }
+    
+    loadVideo(index) {
+        if (index < 0 || index >= this.videos.length) return;
+        
+        this.currentVideoIndex = index;
+        const videoData = this.videos[index];
+        
+        this.video.src = videoData.src;
+        this.video.poster = videoData.poster;
+        this.videoTitle.textContent = videoData.title;
+        this.videoCounter.textContent = `${index + 1} / ${this.videos.length}`;
+        
+        // Reset progress
+        this.progressBar.style.width = '0%';
+        
+        // Load the video
+        this.video.load();
+    }
+    
+    startAutoPlay() {
+        if (this.isAutoPlay) {
+            setTimeout(() => {
+                this.play();
+            }, 1000); // Small delay to ensure video is loaded
+        }
+    }
+    
+    play() {
+        this.video.play().then(() => {
+            this.isPlaying = true;
+            this.updatePlayPauseButton();
+            this.startProgressUpdate();
+        }).catch(error => {
+            console.log('Autoplay prevented:', error);
+            this.isAutoPlay = false;
+        });
+    }
+    
+    pause() {
+        this.video.pause();
+        this.isPlaying = false;
+        this.updatePlayPauseButton();
+        this.stopProgressUpdate();
+    }
+    
+    togglePlayPause() {
+        if (this.isPlaying) {
+            this.pause();
+        } else {
+            this.play();
+        }
+    }
+    
+    previousVideo() {
+        const prevIndex = this.currentVideoIndex > 0 ? this.currentVideoIndex - 1 : this.videos.length - 1;
+        this.loadVideo(prevIndex);
+        if (this.isAutoPlay) {
+            this.play();
+        }
+    }
+    
+    nextVideo() {
+        const nextIndex = this.currentVideoIndex < this.videos.length - 1 ? this.currentVideoIndex + 1 : 0;
+        this.loadVideo(nextIndex);
+        if (this.isAutoPlay) {
+            this.play();
+        }
+    }
+    
+    onVideoEnded() {
+        // Auto-advance to next video
+        this.nextVideo();
+    }
+    
+    onVideoLoaded() {
+        // Video is ready to play
+        if (this.isAutoPlay && this.currentVideoIndex === 0) {
+            this.play();
+        }
+    }
+    
+    updatePlayPauseButton() {
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        
+        if (this.isPlaying) {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+        } else {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        }
+    }
+    
+    updateProgress() {
+        if (this.video.duration) {
+            const progress = (this.video.currentTime / this.video.duration) * 100;
+            this.progressBar.style.width = `${progress}%`;
+        }
+    }
+    
+    startProgressUpdate() {
+        this.stopProgressUpdate();
+        this.progressUpdateInterval = setInterval(() => {
+            this.updateProgress();
+        }, 100);
+    }
+    
+    stopProgressUpdate() {
+        if (this.progressUpdateInterval) {
+            clearInterval(this.progressUpdateInterval);
+            this.progressUpdateInterval = null;
+        }
+    }
+    
+    showControls() {
+        this.controlsOverlay.style.opacity = '1';
+    }
+    
+    hideControls() {
+        this.controlsOverlay.style.opacity = '0';
+    }
+    
+    toggleControls() {
+        if (this.controlsOverlay.style.opacity === '1') {
+            this.hideControls();
+        } else {
+            this.showControls();
+        }
+    }
+    
+    handleKeyboard(e) {
+        // Only handle keyboard events when video is focused or visible
+        if (!this.video || !document.getElementById('main-video')) return;
+        
+        switch(e.code) {
+            case 'Space':
+                e.preventDefault();
+                this.togglePlayPause();
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                this.previousVideo();
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                this.nextVideo();
+                break;
+        }
+    }
+}
+
+// Initialize video carousel when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize video carousel if on about page
+    if (window.location.pathname.includes('about.html') || 
+        document.getElementById('main-video')) {
+        new VideoCarousel();
+    }
+});
