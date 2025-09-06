@@ -258,18 +258,19 @@
         </div>
         
       
-      <!-- Search and Filter Controls -->
-      <div class="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center mb-8">
-        <!-- Search Input -->
-        <div class="relative w-full sm:w-64">
-          <input type="text" id="search-input" placeholder="Search bags..." class="w-full px-4 py-2 pl-10 rounded-lg border border-beige focus:ring-gold focus:border-gold" />
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/50">
+      <!-- Enhanced Search and Filter Controls -->
+      <div class="space-y-4 mb-8">
+        <!-- Search Input - Full width on mobile -->
+        <div class="relative w-full">
+          <input type="text" id="search-input" placeholder="Search bags..." class="w-full px-4 py-3 pl-12 rounded-xl border border-charcoal/20 focus:ring-2 focus:ring-gold focus:border-gold transition-all duration-200 text-base" />
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/50">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
         </div>
-        <!-- Sort Options -->
-        <div class="flex flex-wrap gap-4 mb-6">
-          <select id="filter-select" class="px-4 py-2 border border-charcoal/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold">
+        
+        <!-- Filter and Sort Options - Better mobile layout -->
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <select id="filter-select" class="flex-1 px-4 py-3 border border-charcoal/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200 text-base bg-white">
             <option value="all">All Categories</option>
             <option value="backpack">Backpacks</option>
             <option value="sling">Sling Bags</option>
@@ -279,7 +280,7 @@
             <option value="travel-bag">Travel Bags</option>
           </select>
           
-          <select id="sort-select" class="px-4 py-2 border border-charcoal/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold">
+          <select id="sort-select" class="flex-1 px-4 py-3 border border-charcoal/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200 text-base bg-white">
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
             <option value="name">Name: A to Z</option>
@@ -295,28 +296,30 @@
         Showing <span id="product-count">0</span> products
       </div>
       
-      <!-- Product Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="products-grid">
+      <!-- Enhanced Product Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8" id="products-grid">
         <!-- Products will be loaded here by JavaScript -->
       </div>
       
-      <!-- Pagination Controls -->
-      <div class="flex justify-center items-center mt-12 space-x-2" id="pagination-controls">
+      <!-- Enhanced Pagination Controls -->
+      <div class="flex flex-col sm:flex-row justify-center items-center mt-12 gap-4" id="pagination-controls">
         <!-- Previous Button -->
-        <button id="prev-page" class="px-4 py-2 text-charcoal bg-white border border-charcoal/20 rounded-lg hover:bg-gold hover:text-white hover:border-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="prev-page" class="flex items-center gap-2 px-6 py-3 text-charcoal bg-white border border-charcoal/20 rounded-xl hover:bg-gold hover:text-white hover:border-gold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
+          <span class="hidden sm:inline">Previous</span>
         </button>
         
         <!-- Page Numbers -->
-        <div class="flex space-x-1" id="page-numbers">
+        <div class="flex space-x-2" id="page-numbers">
           <!-- Page numbers will be generated here -->
         </div>
         
         <!-- Next Button -->
-        <button id="next-page" class="px-4 py-2 text-charcoal bg-white border border-charcoal/20 rounded-lg hover:bg-gold hover:text-white hover:border-gold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="next-page" class="flex items-center gap-2 px-6 py-3 text-charcoal bg-white border border-charcoal/20 rounded-xl hover:bg-gold hover:text-white hover:border-gold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium">
+          <span class="hidden sm:inline">Next</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
           </svg>
         </button>
