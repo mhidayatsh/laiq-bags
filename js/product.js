@@ -514,43 +514,14 @@ function renderProductDetail() {
 // Fill basic product information
 function fillProductInfo(product) {
     console.log('📝 Filling product info for:', product.name);
-    
-    // Product name and description
+    if (!product) {
+        console.error('❌ Product data is null in fillProductInfo');
+        showErrorState();
+        return;
+    }
+
     const productName = document.getElementById('product-name');
     const productDescription = document.getElementById('product-description');
-    
-    if (productName) {
-        productName.textContent = product.name;
-        console.log('✅ Product name filled:', product.name);
-    } else {
-        console.error('❌ Product name element not found');
-    }
-    
-    if (productDescription) {
-        console.log('🔍 Product description value:', product.description);
-        console.log('🔍 Product description type:', typeof product.description);
-        console.log('🔍 Full product object:', product);
-        
-        // Handle different possible description fields
-        let description = product.description || product.desc || product.productDescription || 'No description available';
-        
-        // If description is still undefined, try to get it from local data
-        if (!description || description === 'undefined') {
-            console.log('⚠️ Description not found in API response, trying local data...');
-            const localProduct = PRODUCTS.find(p => p.id === product._id || p.id === product.id);
-            if (localProduct) {
-                description = localProduct.description;
-                console.log('✅ Found description in local data:', description);
-            }
-        }
-        
-        productDescription.textContent = description;
-        console.log('✅ Product description filled with:', description);
-    } else {
-        console.error('❌ Product description element not found');
-    }
-    
-    // Price information
     const productPrice = document.getElementById('product-price');
     const productOriginalPrice = document.getElementById('product-original-price');
     const productDiscount = document.getElementById('product-discount');
@@ -563,95 +534,70 @@ function fillProductInfo(product) {
             shouldShowDiscount: product.discountInfo && product.discountInfo.status === 'active'
         });
         
-        // Use discountInfo if available, otherwise fallback to manual calculation
-        let finalPrice = product.price;
-        if (product.discountInfo && product.discountInfo.status === 'active') {
-            finalPrice = product.discountInfo.discountPrice;
-        } else if (product.discount > 0) {
-            // Fallback: check discount manually with real-time validation
-            const now = new Date();
-            let isActive = true;
-            
-            // Check start date
-            if (product.discountStartDate && now < new Date(product.discountStartDate)) {
-                isActive = false;
-            }
-            // Check end date
-            else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
-                isActive = false;
-            }
-            
-            if (isActive) {
-                finalPrice = product.price * (1 - product.discount / 100);
-            }
-        }
+        const finalPrice = getFinalPrice(product);
         
         productPrice.textContent = `₹${finalPrice.toLocaleString()}`;
-        // Add Free Delivery badge next to price (non-intrusive)
+        
+        // Add Free Delivery badge next to price
         try {
             const priceContainer = productPrice.parentElement;
-            const shouldShowFree = (product && (product.freeDelivery === undefined || product.freeDelivery === true));
-            // Remove if exists to avoid duplicates or if disabled
-            const existing = priceContainer ? priceContainer.querySelector('.free-delivery-badge') : null;
-            if (existing && !shouldShowFree) {
-                existing.remove();
-            }
-            if (priceContainer && shouldShowFree && !priceContainer.querySelector('.free-delivery-badge')) {
+            const shouldShowFree = product && (product.freeDelivery === undefined || product.freeDelivery === true);
+            const existingBadge = priceContainer ? priceContainer.querySelector('.free-delivery-badge') : null;
+            
+            if (existingBadge && !shouldShowFree) {
+                existingBadge.remove();
+            } else if (!existingBadge && shouldShowFree) {
                 const badge = document.createElement('span');
-                badge.className = 'free-delivery-badge bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold';
-                badge.style.marginLeft = '8px';
                 badge.textContent = 'Free Delivery';
-                priceContainer.appendChild(badge);
+                badge.className = 'free-delivery-badge bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full ml-2';
+                productPrice.insertAdjacentElement('afterend', badge);
             }
-        } catch(_) {}
-        console.log('✅ Product price filled:', `₹${finalPrice.toLocaleString()}`);
-    } else {
-        console.error('❌ Product price element not found');
-    }
-    
-    // Check if discount should be shown using discountInfo
-    let shouldShowDiscount = false;
-    if (product.discountInfo && product.discountInfo.status === 'active') {
-        shouldShowDiscount = true;
-    } else if (product.discount > 0) {
-        // Fallback: check discount manually with real-time validation
-        const now = new Date();
-        let isActive = true;
-        
-        // Check start date
-        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
-            isActive = false;
-        }
-        // Check end date
-        else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
-            isActive = false;
+        } catch (error) {
+            console.warn('Could not update free delivery badge:', error);
         }
         
-        shouldShowDiscount = isActive;
+        // Show original price and discount if applicable
+        if (productOriginalPrice && productDiscount && finalPrice < product.price) {
+            productOriginalPrice.textContent = `₹${product.price.toLocaleString()}`;
+            productOriginalPrice.classList.remove('hidden');
+            
+            const discountPercentage = Math.round(((product.price - finalPrice) / product.price) * 100);
+            productDiscount.textContent = `${discountPercentage}% OFF`;
+            productDiscount.classList.remove('hidden');
+        } else {
+            productOriginalPrice?.classList.add('hidden');
+            productDiscount?.classList.add('hidden');
+        }
     }
-    
-    if (productOriginalPrice && shouldShowDiscount) {
-        productOriginalPrice.textContent = `₹${product.price.toLocaleString()}`;
-        productOriginalPrice.classList.remove('hidden');
-        console.log('✅ Original price shown');
-    } else if (productOriginalPrice) {
-        productOriginalPrice.classList.add('hidden');
-        console.log('✅ Original price hidden (no active discount)');
-    }
-    
-    if (productDiscount && shouldShowDiscount) {
-        productDiscount.textContent = `${product.discount}% OFF`;
-        productDiscount.classList.remove('hidden');
-        console.log('✅ Discount badge shown');
-    } else if (productDiscount) {
-        productDiscount.classList.add('hidden');
-        console.log('✅ Discount badge hidden (no active discount)');
-    }
-    
+
+    if (productName) productName.textContent = product.name;
+    if (productDescription) productDescription.textContent = product.description;
+
     // Stock status
-    updateStockStatus(product);
+    const stockStatus = document.getElementById('stock-status');
+    const stockIndicator = document.getElementById('stock-indicator');
+    const stockText = document.getElementById('stock-text');
     
-    console.log('✅ Product info filling completed');
+    if (stockStatus && stockIndicator && stockText) {
+        const stock = getMaxStock();
+        if (stock > 0) {
+            stockIndicator.className = 'w-3 h-3 rounded-full bg-green-500';
+            stockText.textContent = stock > 5 ? 'In Stock' : `Low Stock (${stock} left)`;
+            stockText.className = stock > 5 ? 'text-green-600' : 'text-orange-500';
+        } else {
+            stockIndicator.className = 'w-3 h-3 rounded-full bg-red-500';
+            stockText.textContent = 'Out of Stock';
+            stockText.className = 'text-red-600';
+            
+            // Disable add to cart button if out of stock
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            if (addToCartBtn) {
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = 'Out of Stock';
+                addToCartBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+        }
+    }
 }
 
 // Fill product images
@@ -2095,6 +2041,8 @@ function addProductStructuredData(product) {
         existingScript.remove();
     }
     
+    const finalPrice = getFinalPrice(product);
+
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -2113,7 +2061,7 @@ function addProductStructuredData(product) {
         "mpn": product._id,
         "offers": {
             "@type": "Offer",
-            "price": product.price,
+            "price": finalPrice,
             "priceCurrency": "INR",
             "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             "priceValidUntil": new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -3011,4 +2959,31 @@ function getCurrentUserId() {
         console.error('❌ Error getting current user ID:', error);
         return null;
     }
+}
+
+function getFinalPrice(product) {
+    if (!product) return 0;
+
+    // Use discountInfo if available and active
+    if (product.discountInfo && product.discountInfo.status === 'active') {
+        return product.discountInfo.discountPrice;
+    }
+
+    // Fallback to manual discount calculation with real-time validation
+    if (product.discount > 0) {
+        const now = new Date();
+        let isActive = true;
+
+        if (product.discountStartDate && now < new Date(product.discountStartDate)) {
+            isActive = false;
+        } else if (product.discountEndDate && now > new Date(product.discountEndDate)) {
+            isActive = false;
+        }
+
+        if (isActive) {
+            return product.price * (1 - product.discount / 100);
+        }
+    }
+
+    return product.price;
 }

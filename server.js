@@ -497,6 +497,30 @@ app.get('/', async (req, res) => {
       const products = await Product.find({}).limit(6).sort({ createdAt: -1 });
       
       if (products.length > 0) {
+        const computeFinalPrice = (p) => {
+          try {
+            if (!p) return 0;
+            const now = new Date();
+            let isActive = false;
+            if (typeof p.isDiscountActive === 'boolean') {
+              isActive = p.isDiscountActive;
+            }
+            if (p.discount && p.discount > 0) {
+              isActive = true;
+              if (p.discountStartDate && now < new Date(p.discountStartDate)) isActive = false;
+              if (p.discountEndDate && now > new Date(p.discountEndDate)) isActive = false;
+            }
+            if (isActive && p.discount > 0) {
+              if (p.discountType === 'fixed' && typeof p.discountAmount === 'number') {
+                return Math.max(0, p.price - p.discountAmount);
+              }
+              return Math.round(p.price - (p.price * p.discount / 100));
+            }
+            return p.price;
+          } catch (_) {
+            return p?.price || 0;
+          }
+        };
         // Generate dynamic product catalog schema
         const productCatalogSchema = {
           "@context": "https://schema.org",
@@ -523,7 +547,7 @@ app.get('/', async (req, res) => {
               "category": product.category,
               "offers": {
                 "@type": "Offer",
-                "price": product.price,
+                "price": computeFinalPrice(product),
                 "priceCurrency": "INR",
                 "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 "seller": {
@@ -748,7 +772,35 @@ app.get('/product', async (req, res) => {
       let html = fs.readFileSync(path.join(__dirname, 'product.html'), 'utf8');
       
       // Replace meta tags with product-specific content
-      const productTitle = `${product.name} - ₹${product.price} | ${product.category} - Laiq Bags`;
+      // Compute final price considering active discount
+      const computeFinalPrice = (p) => {
+        try {
+          if (!p) return 0;
+          // If backend discount fields are present and active by dates
+          const now = new Date();
+          let isActive = false;
+          if (typeof p.isDiscountActive === 'boolean') {
+            isActive = p.isDiscountActive;
+          }
+          if (p.discount && p.discount > 0) {
+            isActive = true;
+            if (p.discountStartDate && now < new Date(p.discountStartDate)) isActive = false;
+            if (p.discountEndDate && now > new Date(p.discountEndDate)) isActive = false;
+          }
+          if (isActive && p.discount > 0) {
+            if (p.discountType === 'fixed' && typeof p.discountAmount === 'number') {
+              return Math.max(0, p.price - p.discountAmount);
+            }
+            return Math.round(p.price - (p.price * p.discount / 100));
+          }
+          return p.price;
+        } catch (_) {
+          return p?.price || 0;
+        }
+      };
+
+      const finalPrice = computeFinalPrice(product);
+      const productTitle = `${product.name} - ₹${finalPrice} | ${product.category} - Laiq Bags`;
       const productDescription = product.metaDescription || product.description?.substring(0, 160) || `Buy ${product.name} from Laiq Bags. Premium quality ${product.category}.`;
       const productUrl = `https://www.laiq.shop/product.html?slug=${product.slug || product._id}`;
       const productImage = product.images?.[0]?.url || 'https://www.laiq.shop/assets/laiq-logo.png';
@@ -785,7 +837,7 @@ app.get('/product', async (req, res) => {
         "image": product.images?.map(img => img.url) || [],
         "offers": {
           "@type": "Offer",
-          "price": product.price,
+          "price": finalPrice,
           "priceCurrency": "INR",
           "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
         },

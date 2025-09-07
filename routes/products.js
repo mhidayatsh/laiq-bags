@@ -548,6 +548,31 @@ router.get('/:id', productLimiter, async (req, res) => {
     const returnWindowDays = (typeof policy.returnWindowDays === 'number') ? policy.returnWindowDays : 7;
     const returnFees = policy.fees === 'customer' ? 'https://schema.org/OriginalShippingFees' : 'https://schema.org/FreeReturn';
 
+    const computeFinalPrice = (p) => {
+      try {
+        if (!p) return 0;
+        const now = new Date();
+        let isActive = false;
+        if (typeof p.isDiscountActive === 'boolean') {
+          isActive = p.isDiscountActive;
+        }
+        if (p.discount && p.discount > 0) {
+          isActive = true;
+          if (p.discountStartDate && now < new Date(p.discountStartDate)) isActive = false;
+          if (p.discountEndDate && now > new Date(p.discountEndDate)) isActive = false;
+        }
+        if (isActive && p.discount > 0) {
+          if (p.discountType === 'fixed' && typeof p.discountAmount === 'number') {
+            return Math.max(0, p.price - p.discountAmount);
+          }
+          return Math.round(p.price - (p.price * p.discount / 100));
+        }
+        return p.price;
+      } catch (_) {
+        return p?.price || 0;
+      }
+    };
+
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -561,7 +586,7 @@ router.get('/:id', productLimiter, async (req, res) => {
       "image": productObj.images?.map(img => img.url) || [],
       "offers": {
         "@type": "Offer",
-        "price": productObj.price,
+        "price": computeFinalPrice(productObj),
         "priceCurrency": "INR",
         "availability": productObj.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         "seller": {
