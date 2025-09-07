@@ -848,6 +848,18 @@ app.get('/product', async (req, res) => {
         "category": product.category
       };
       
+      // Add aggregateRating if there are reviews
+      if (product.numOfReviews && product.numOfReviews > 0) {
+        structuredData.aggregateRating = {
+          "@type": "AggregateRating",
+          "ratingValue": product.ratings || 0,
+          "reviewCount": product.numOfReviews
+        };
+      } else {
+        // If there are no reviews, we can optionally add a note for internal purposes
+        // or simply omit the aggregateRating property, which is the correct approach.
+      }
+      
       // Insert structured data before closing head tag
       html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(structuredData)}</script></head>`);
       

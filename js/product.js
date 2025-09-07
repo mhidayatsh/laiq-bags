@@ -1128,20 +1128,32 @@ function fillReviewsSection(product) {
     let reviewsHTML = '';
     
     // Review Stats Section
-    reviewsHTML += `
-        <div class="flex items-center gap-8 mb-8">
-            <div class="flex items-center gap-2">
-                <div class="flex text-gold">
-                    ${generateStars(averageRating)}
+    if (numOfReviews > 0) {
+        reviewsHTML += `
+            <div class="flex items-center gap-8 mb-8">
+                <div class="flex items-center gap-2">
+                    <div class="flex text-gold">
+                        ${generateStars(averageRating)}
+                    </div>
+                    <span class="text-lg font-semibold">${averageRating.toFixed(1)}</span>
                 </div>
-                <span class="text-lg font-semibold">${averageRating.toFixed(1)}</span>
+                <div class="text-charcoal/60">
+                    <span>${numOfReviews}</span> reviews
+                </div>
             </div>
-            <div class="text-charcoal/60">
-                <span>${numOfReviews}</span> reviews
+        `;
+    } else {
+        reviewsHTML += `
+            <div class="flex items-center gap-8 mb-8">
+                <div class="text-charcoal/60">
+                    <a href="#reviews-section" class="text-gold hover:underline">Be the first to review</a>
+                </div>
             </div>
-        </div>
+        `;
+    }
         
         <!-- Write Review Button -->
+    reviewsHTML += `
         <div class="mb-8">
             <button id="write-review-btn" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
                 Write a Review
