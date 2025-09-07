@@ -2454,9 +2454,25 @@ function initializeReviewModal() {
         console.log('🔍 Fallback product ID from loaded product:', currentProductId);
     }
     
+    // Do NOT return early if productId is not yet resolved (slug case).
+    // Attach listeners now, and resolve productId shortly after page load.
     if (!currentProductId) {
-        console.error('❌ No product ID found in URL');
-        return;
+        console.warn('⚠️ Product ID not resolved yet (no id param, waiting for product load)');
+        let attempts = 0;
+        const maxAttempts = 50; // ~5s
+        const resolver = setInterval(() => {
+            attempts++;
+            const idFromFn = getCurrentProductId();
+            const idFromProduct = (typeof currentProduct === 'object' && currentProduct) ? (currentProduct._id || currentProduct.id) : null;
+            if (idFromFn || idFromProduct) {
+                currentProductId = idFromFn || idFromProduct;
+                clearInterval(resolver);
+                console.log('✅ Product ID resolved after load:', currentProductId);
+            } else if (attempts >= maxAttempts) {
+                clearInterval(resolver);
+                console.warn('⚠️ Unable to resolve product ID after waiting. Reviews submission will guard later.');
+            }
+        }, 100);
     }
     
     // Add event listeners for review modal
@@ -2565,6 +2581,9 @@ function openReviewModal(review = null) {
     }
     
     modal.classList.remove('opacity-0', 'pointer-events-none');
+
+    // Ensure interactive elements are clickable even if overlay states were stale
+    modal.style.pointerEvents = 'auto';
 }
 
 // Close review modal
