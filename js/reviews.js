@@ -696,7 +696,6 @@ function formatDate(dateString) {
 // Use the getCurrentUserId function from product.js
 // This function is already defined in product.js and handles all storage locations
 
-// Initialize when DOM is loaded - DISABLED to avoid conflicts with product.js
-// document.addEventListener('DOMContentLoaded', function() {
-//     initializeReviews();
-// }); 
+// Keep auto-init disabled to avoid racing with product.js which renders the
+// entire reviews block and fetches data. Expose a no-op guard to avoid accidental calls.
+window.__reviewsAutoInitDisabled = true;

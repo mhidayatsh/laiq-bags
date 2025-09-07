@@ -2855,10 +2855,7 @@ async function loadProductReviews(productId) {
         
         console.log('✅ Reviews loaded and displayed');
         
-        // Initialize reviews system to ensure proper functionality
-        if (typeof initializeReviews === 'function') {
-            initializeReviews();
-        }
+        // Do not re-initialize legacy reviews.js here; product.js owns reviews rendering
         
     } catch (error) {
         console.error('❌ Error loading reviews:', error);
