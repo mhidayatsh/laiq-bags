@@ -1127,30 +1127,20 @@ function fillReviewsSection(product) {
     // Generate the complete reviews section HTML
     let reviewsHTML = '';
     
-    // Review Stats Section
-    if (numOfReviews > 0) {
-        reviewsHTML += `
-            <div class="flex items-center gap-8 mb-8">
-                <div class="flex items-center gap-2">
-                    <div class="flex text-gold">
-                        ${generateStars(averageRating)}
-                    </div>
-                    <span class="text-lg font-semibold">${averageRating.toFixed(1)}</span>
+    // Review Stats Section (always render with IDs so we can update after fetching live reviews)
+    reviewsHTML += `
+        <div class="flex items-center gap-8 mb-8">
+            <div class="flex items-center gap-2">
+                <div class="flex text-gold" id="reviews-stars">
+                    ${generateStars(averageRating || 0)}
                 </div>
-                <div class="text-charcoal/60">
-                    <span>${numOfReviews}</span> reviews
-                </div>
+                <span class="text-lg font-semibold" id="reviews-average-rating">${(Number(averageRating) || 0).toFixed(1)}</span>
             </div>
-        `;
-    } else {
-        reviewsHTML += `
-            <div class="flex items-center gap-8 mb-8">
-                <div class="text-charcoal/60">
-                    <a href="#reviews-section" class="text-gold hover:underline">Be the first to review</a>
-                </div>
+            <div class="text-charcoal/60">
+                <span id="reviews-count">${Number.isFinite(numOfReviews) ? numOfReviews : 0}</span> reviews
             </div>
-        `;
-    }
+        </div>
+    `;
     
     // Write Review Button
     reviewsHTML += `
@@ -1161,31 +1151,14 @@ function fillReviewsSection(product) {
         </div>
     `;
     
-    // Reviews Content
-    if (numOfReviews === 0) {
-        console.log('📝 No reviews found, showing empty state');
-        reviewsHTML += `
-            <div class="text-center py-8">
-                <div class="text-charcoal/60 text-lg mb-4">No Reviews Yet</div>
-                <p class="text-charcoal/40 mb-6">Be the first to review this product!</p>
-                <button class="bg-gold text-white px-6 py-2 rounded-lg font-semibold hover:bg-charcoal transition-colors">
-                    Write First Review
-                </button>
+    // Reviews List Container (always present; we'll fill it from the live Reviews API)
+    reviewsHTML += `
+        <div class="space-y-6" id="reviews-list">
+            <div class="text-center py-4">
+                <div class="text-charcoal/60">Loading reviews...</div>
             </div>
-        `;
-    } else {
-        console.log('📝 Rendering', numOfReviews, 'reviews');
-        reviewsHTML += `
-            <div class="space-y-6" id="reviews-list">
-                <div class="text-center py-4">
-                    <div class="text-charcoal/60">Loading reviews...</div>
-                </div>
-            </div>
-        `;
-        
-        // Load actual reviews from API
-        loadProductReviews(product._id);
-    }
+        </div>
+    `;
     
     // Load More Reviews Button (hidden for now)
     reviewsHTML += `
@@ -1212,6 +1185,9 @@ function fillReviewsSection(product) {
     }
     
     console.log('✅ Reviews section filled');
+
+    // Always load actual reviews from API so slug/id URLs stay consistent
+    loadProductReviews(product._id);
 }
 
 // Generate star rating HTML
@@ -2798,6 +2774,19 @@ async function loadProductReviews(productId) {
             return;
         }
         
+        // Update header stats so both slug/id URLs show the same numbers
+        try {
+            const average = reviews.length > 0
+                ? (reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviews.length)
+                : 0;
+            const avgEl = document.getElementById('reviews-average-rating');
+            const starsEl = document.getElementById('reviews-stars');
+            const countEl = document.getElementById('reviews-count');
+            if (avgEl) avgEl.textContent = average.toFixed(1);
+            if (countEl) countEl.textContent = String(reviews.length);
+            if (starsEl) starsEl.innerHTML = generateStars(average);
+        } catch (_) {}
+
         if (reviews.length === 0) {
             reviewsList.innerHTML = `
                 <div class="text-center py-8">
