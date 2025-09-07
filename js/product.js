@@ -2438,7 +2438,7 @@ function getCurrentProductId() {
         }
     }
 
-    console.warn('⚠️ Product ID not resolved yet (no id param, waiting for product load)');
+    // Silently wait for product ID to resolve when using slug URLs
     return null;
 }
 
@@ -2457,7 +2457,7 @@ function initializeReviewModal() {
     // Do NOT return early if productId is not yet resolved (slug case).
     // Attach listeners now, and resolve productId shortly after page load.
     if (!currentProductId) {
-        console.warn('⚠️ Product ID not resolved yet (no id param, waiting for product load)');
+        // Silently wait for product ID to resolve when using slug URLs
         let attempts = 0;
         const maxAttempts = 50; // ~5s
         const resolver = setInterval(() => {
