@@ -2829,21 +2829,26 @@ async function loadProductReviews(productId) {
                                 <div class="flex items-center">
                                     ${generateStars(review.rating)}
                                 </div>
-                                ${isOwnReview ? `
-                                    <div class="flex gap-2 ml-4">
-                                        <button class="edit-review-btn text-sm text-gold hover:text-charcoal transition-colors" data-review-id="${review._id}">
-                                            Edit
-                                        </button>
-                                        <button class="delete-review-btn text-sm text-red-500 hover:text-red-700 transition-colors" data-review-id="${review._id}">
-                                            Delete
-                                        </button>
-                                    </div>
-                                ` : ''}
                             </div>
                         </div>
                         <div class="mb-4">
                             <h4 class="font-semibold text-lg mb-2">${review.title}</h4>
                             <p class="text-charcoal/80">${review.comment}</p>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <button class="helpful-btn text-sm text-charcoal/60 hover:text-gold transition-colors" data-review-id="${review._id}">
+                                👍 Helpful (${review.helpful?.length || 0})
+                            </button>
+                            ${isOwnReview ? `
+                                <div class="flex gap-2 ml-4">
+                                    <button class="edit-review-btn text-sm text-gold hover:text-charcoal transition-colors" data-review-id="${review._id}">
+                                        Edit
+                                    </button>
+                                    <button class="delete-review-btn text-sm text-red-500 hover:text-red-700 transition-colors" data-review-id="${review._id}">
+                                        Delete
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -2879,6 +2884,43 @@ async function loadProductReviews(productId) {
 
 // Add event listeners for review action buttons
 function addReviewActionListeners() {
+    // Helpful buttons
+    const helpfulButtons = document.querySelectorAll('.helpful-btn');
+    helpfulButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const reviewId = button.dataset.reviewId;
+            try {
+                if (typeof isCustomerLoggedIn === 'function' && !isCustomerLoggedIn()) {
+                    showToast('Please login to mark reviews as helpful', 'error');
+                    return;
+                }
+                const response = await fetch(`https://www.laiq.shop/api/review/${reviewId}/helpful`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': (() => {
+                            const t = localStorage.getItem('customerToken') || localStorage.getItem('token');
+                            return t ? `Bearer ${t}` : '';
+                        })()
+                    }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                // Update button text and style
+                button.textContent = `👍 Helpful (${data.helpfulCount || 0})`;
+                if (data.isHelpful) {
+                    button.classList.add('text-gold');
+                } else {
+                    button.classList.remove('text-gold');
+                }
+            } catch (err) {
+                console.error('❌ Error toggling helpful:', err);
+                showToast('Failed to update helpful vote', 'error');
+            }
+        });
+    });
+
     // Edit review buttons
     const editButtons = document.querySelectorAll('.edit-review-btn');
     editButtons.forEach(button => {
