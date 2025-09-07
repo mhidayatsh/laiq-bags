@@ -2428,12 +2428,42 @@ let currentProductId = null;
 
 // Get product ID from URL
 function getCurrentProductId() {
-    if (!currentProductId) {
-        const urlParams = new URLSearchParams(window.location.search);
-        currentProductId = urlParams.get('id');
-        console.log('🔍 Product ID from URL:', currentProductId);
+    // 1) If we already have it, return it
+    if (currentProductId) {
+        return currentProductId;
     }
-    return currentProductId;
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // 2) Try explicit id param
+    const idParam = urlParams.get('id');
+    if (idParam) {
+        currentProductId = idParam;
+        console.log('🔍 Product ID from id param:', currentProductId);
+        return currentProductId;
+    }
+
+    // 3) If product is already loaded, use its id
+    if (typeof currentProduct === 'object' && currentProduct && (currentProduct._id || currentProduct.id)) {
+        currentProductId = currentProduct._id || currentProduct.id;
+        console.log('🔍 Product ID from loaded product:', currentProductId);
+        return currentProductId;
+    }
+
+    // 4) If we have a slug, attempt to read from product cache filled earlier
+    const slugParam = urlParams.get('slug');
+    if (slugParam && typeof productCache !== 'undefined') {
+        const cached = productCache.get(slugParam);
+        const cachedId = cached && cached.data && (cached.data._id || cached.data.id);
+        if (cachedId) {
+            currentProductId = cachedId;
+            console.log('🔍 Product ID from cache (slug):', currentProductId);
+            return currentProductId;
+        }
+    }
+
+    console.warn('⚠️ Product ID not resolved yet (no id param, waiting for product load)');
+    return null;
 }
 
 // Initialize review modal
@@ -2442,6 +2472,11 @@ function initializeReviewModal() {
     
     // Get product ID from URL
     currentProductId = getCurrentProductId();
+    // Fallback to loaded product if still missing
+    if (!currentProductId && typeof currentProduct === 'object' && currentProduct && (currentProduct._id || currentProduct.id)) {
+        currentProductId = currentProduct._id || currentProduct.id;
+        console.log('🔍 Fallback product ID from loaded product:', currentProductId);
+    }
     
     if (!currentProductId) {
         console.error('❌ No product ID found in URL');
@@ -2611,10 +2646,17 @@ async function handleReviewSubmit(e) {
     const title = formData.get('title').trim();
     const comment = formData.get('comment').trim();
     
+    // Resolve productId robustly at submit time
+    let resolvedProductId = currentProductId || getCurrentProductId();
+    if (!resolvedProductId && typeof currentProduct === 'object' && currentProduct && (currentProduct._id || currentProduct.id)) {
+        resolvedProductId = currentProduct._id || currentProduct.id;
+        currentProductId = resolvedProductId;
+    }
+    
     console.log('📝 Review submission data:', {
         mode,
         reviewId,
-        currentProductId,
+        productId: resolvedProductId,
         rating,
         title,
         comment,
@@ -2622,7 +2664,7 @@ async function handleReviewSubmit(e) {
     });
     
     // Validate product ID
-    if (!currentProductId) {
+    if (!resolvedProductId) {
         console.error('❌ No product ID available');
         showToast('Product information not found. Please refresh the page.', 'error');
         return;
@@ -2650,7 +2692,7 @@ async function handleReviewSubmit(e) {
         rating,
         title,
         comment,
-        productId: currentProductId
+        productId: resolvedProductId
     };
     
     try {
@@ -2675,8 +2717,8 @@ async function handleReviewSubmit(e) {
             showToast(mode === 'edit' ? 'Review updated successfully' : 'Review submitted successfully', 'success');
             closeReviewModal();
             // Reload reviews for this product
-            if (currentProductId) {
-                loadProductReviews(currentProductId);
+            if (resolvedProductId) {
+                loadProductReviews(resolvedProductId);
             }
         }
     } catch (error) {
