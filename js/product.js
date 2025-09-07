@@ -1151,8 +1151,8 @@ function fillReviewsSection(product) {
             </div>
         `;
     }
-        
-        <!-- Write Review Button -->
+    
+    // Write Review Button
     reviewsHTML += `
         <div class="mb-8">
             <button id="write-review-btn" class="bg-gold text-white px-6 py-3 rounded-lg font-semibold hover:bg-charcoal transition-colors">
