@@ -276,8 +276,9 @@ function renderShipments() {
                     </div>
                     
                     <div class="mb-3">
-                        <p class="font-medium text-charcoal">${shipment.user?.name || 'N/A'}</p>
-                        <p class="text-sm text-gray-600">${shipment.user?.email || 'N/A'}</p>
+                        <p class="font-medium text-charcoal">${shipment.user?.name || shipment.contactInfo?.name || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">${shipment.user?.email || shipment.contactInfo?.email || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">📞 ${shipment.contactInfo?.phone || 'N/A'}</p>
                     </div>
                     
                     <div class="space-y-2">
@@ -467,11 +468,15 @@ function renderShipmentModal(shipment) {
                     <div class="space-y-2 text-sm">
                         <div>
                             <p class="text-gray-600">Name</p>
-                            <p class="font-medium">${shipment.user?.name || 'N/A'}</p>
+                            <p class="font-medium">${shipment.user?.name || shipment.contactInfo?.name || 'N/A'}</p>
                         </div>
                         <div>
                             <p class="text-gray-600">Email</p>
-                            <p class="font-medium">${shipment.user?.email || 'N/A'}</p>
+                            <p class="font-medium">${shipment.user?.email || shipment.contactInfo?.email || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Phone</p>
+                            <p class="font-medium">${shipment.contactInfo?.phone || 'N/A'}</p>
                         </div>
                     </div>
                 </div>
@@ -735,8 +740,9 @@ function printShippingLabel(shipmentId) {
                 
                 <div class="customer-info">
                     <h3>Customer Information</h3>
-                    <p><strong>Name:</strong> ${shipment.user?.name}</p>
-                    <p><strong>Email:</strong> ${shipment.user?.email}</p>
+                    <p><strong>Name:</strong> ${shipment.user?.name || shipment.contactInfo?.name || 'N/A'}</p>
+                    <p><strong>Email:</strong> ${shipment.user?.email || shipment.contactInfo?.email || 'N/A'}</p>
+                    <p><strong>Phone:</strong> ${shipment.contactInfo?.phone || 'N/A'}</p>
                     <p><strong>Address:</strong> ${shipment.shippingInfo ? 
                         `${shipment.shippingInfo.street}, ${shipment.shippingInfo.city}, ${shipment.shippingInfo.state} - ${shipment.shippingInfo.pincode}` : 
                         'N/A'}</p>
@@ -784,11 +790,12 @@ function printShippingLabel(shipmentId) {
 // Export shipments to CSV
 function exportShipments() {
     const csvContent = [
-        ['Order ID', 'Customer', 'Email', 'Status', 'Tracking Number', 'Courier', 'Est. Delivery', 'Date'],
+        ['Order ID', 'Customer', 'Email', 'Phone', 'Status', 'Tracking Number', 'Courier', 'Est. Delivery', 'Date'],
         ...shipments.map(shipment => [
             shipment._id.slice(-8),
-            shipment.user?.name || 'N/A',
-            shipment.user?.email || 'N/A',
+            shipment.user?.name || shipment.contactInfo?.name || 'N/A',
+            shipment.user?.email || shipment.contactInfo?.email || 'N/A',
+            shipment.contactInfo?.phone || 'N/A',
             shipment.status,
             shipment.trackingInfo?.trackingNumber || 'N/A',
             shipment.trackingInfo?.courierName || 'N/A',

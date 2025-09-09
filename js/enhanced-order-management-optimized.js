@@ -359,8 +359,9 @@ function renderOrders() {
                         </div>
                         
                         <div class="mb-3">
-                            <p class="font-medium text-charcoal">${order.user?.name || 'N/A'}</p>
-                            <p class="text-sm text-gray-600">${order.user?.email || 'N/A'}</p>
+                            <p class="font-medium text-charcoal">${order.user?.name || order.contactInfo?.name || 'N/A'}</p>
+                            <p class="text-sm text-gray-600">${order.user?.email || order.contactInfo?.email || 'N/A'}</p>
+                            <p class="text-sm text-gray-600">📞 ${order.contactInfo?.phone || 'N/A'}</p>
                         </div>
                         
                         <div class="space-y-2">

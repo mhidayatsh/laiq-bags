@@ -1554,11 +1554,12 @@ function showToast(message, type = 'info') {
 // Export orders to CSV
 function exportOrders() {
     const csvContent = [
-        ['Order ID', 'Customer', 'Email', 'Items', 'Total Amount', 'Status', 'Payment Method', 'Date', 'Tracking Number'],
+        ['Order ID', 'Customer', 'Email', 'Phone', 'Items', 'Total Amount', 'Status', 'Payment Method', 'Date', 'Tracking Number'],
         ...orders.map(order => [
             order._id.slice(-8),
-            order.user?.name || 'N/A',
-            order.user?.email || 'N/A',
+            order.user?.name || order.contactInfo?.name || 'N/A',
+            order.user?.email || order.contactInfo?.email || 'N/A',
+            order.contactInfo?.phone || 'N/A',
             order.orderItems?.length || 0,
             order.totalAmount || 0,
             order.status,

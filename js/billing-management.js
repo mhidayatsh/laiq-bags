@@ -289,8 +289,9 @@ function renderTransactions() {
                     </div>
                     
                     <div class="mb-3">
-                        <p class="font-medium text-charcoal">${transaction.user?.name || 'N/A'}</p>
-                        <p class="text-sm text-gray-600">${transaction.user?.email || 'N/A'}</p>
+                        <p class="font-medium text-charcoal">${transaction.user?.name || transaction.contactInfo?.name || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">${transaction.user?.email || transaction.contactInfo?.email || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">📞 ${transaction.contactInfo?.phone || 'N/A'}</p>
                     </div>
                     
                     <div class="space-y-2">
@@ -613,8 +614,9 @@ function printInvoice(transactionId) {
                 
                 <div class="customer-info">
                     <h3>Customer Information</h3>
-                    <p><strong>Name:</strong> ${transaction.user?.name}</p>
-                    <p><strong>Email:</strong> ${transaction.user?.email}</p>
+                    <p><strong>Name:</strong> ${transaction.user?.name || transaction.contactInfo?.name || 'N/A'}</p>
+                    <p><strong>Email:</strong> ${transaction.user?.email || transaction.contactInfo?.email || 'N/A'}</p>
+                    <p><strong>Phone:</strong> ${transaction.contactInfo?.phone || 'N/A'}</p>
                 </div>
                 
                 <div class="items">
@@ -654,11 +656,12 @@ function printInvoice(transactionId) {
 // Export transactions to CSV
 function exportTransactions() {
     const csvContent = [
-        ['Order ID', 'Customer', 'Email', 'Amount', 'Payment Method', 'Status', 'Date', 'Transaction ID'],
+        ['Order ID', 'Customer', 'Email', 'Phone', 'Amount', 'Payment Method', 'Status', 'Date', 'Transaction ID'],
         ...transactions.map(transaction => [
             transaction._id.slice(-8),
-            transaction.user?.name || 'N/A',
-            transaction.user?.email || 'N/A',
+            transaction.user?.name || transaction.contactInfo?.name || 'N/A',
+            transaction.user?.email || transaction.contactInfo?.email || 'N/A',
+            transaction.contactInfo?.phone || 'N/A',
             transaction.totalAmount || 0,
             transaction.paymentMethod,
             transaction.paymentInfo?.status || 'N/A',

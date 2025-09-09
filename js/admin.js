@@ -1946,8 +1946,9 @@ function renderOrdersTable() {
             </td>
             <td class="px-4 py-3">
                 <div>
-                    <p class="font-medium text-charcoal">${order.user?.name || 'N/A'}</p>
-                    <p class="text-sm text-charcoal/60">${order.user?.email || 'N/A'}</p>
+                    <p class="font-medium text-charcoal">${order.user?.name || order.contactInfo?.name || 'N/A'}</p>
+                    <p class="text-sm text-charcoal/60">${order.user?.email || order.contactInfo?.email || 'N/A'}</p>
+                    <p class="text-xs text-charcoal/60">📞 ${order.contactInfo?.phone || 'N/A'}</p>
                 </div>
             </td>
             <td class="px-4 py-3">
@@ -3493,11 +3494,15 @@ async function viewOrderDetails(orderId) {
                                 <div class="space-y-2 text-sm">
                                     <div>
                                         <p class="text-charcoal/60">Name</p>
-                                        <p class="font-medium">${order.user?.name || 'N/A'}</p>
+                                        <p class="font-medium">${order.user?.name || order.contactInfo?.name || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <p class="text-charcoal/60">Email</p>
-                                        <p class="font-medium">${order.user?.email || 'N/A'}</p>
+                                        <p class="font-medium">${order.user?.email || order.contactInfo?.email || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-charcoal/60">Phone</p>
+                                        <p class="font-medium">${order.contactInfo?.phone || 'N/A'}</p>
                                     </div>
                                 </div>
                             </div>

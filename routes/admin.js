@@ -762,7 +762,7 @@ router.get('/orders', isAuthenticatedUser, adminOnly, catchAsyncErrors(async (re
             .skip(skip)
             .limit(limit)
             .lean()
-            .select('orderItems totalAmount status createdAt user shippingInfo paymentInfo paymentMethod trackingInfo afterSales deliveredAt')
+            .select('orderItems totalAmount status createdAt user shippingInfo paymentInfo paymentMethod trackingInfo afterSales deliveredAt contactInfo.phone contactInfo.name contactInfo.email')
             .maxTimeMS(15000); // 15 second timeout for admin order queries
 
         // Normalize COD delivered payment status to Completed in the response
