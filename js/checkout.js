@@ -981,6 +981,54 @@ async function processRazorpayPayment(orderData) {
             }
             
             // Configure Razorpay options - With animations and proper flow
+            // In test mode, some instruments (e.g., certain netbanking banks, wallets)
+            // frequently fail with a generic "Please use another method".
+            // Detect test keys and only show Cards + UPI in that case for reliability.
+            const isTestKey = typeof razorpayKey === 'string' && razorpayKey.startsWith('rzp_test_');
+
+            // Build display blocks dynamically based on environment
+            const blocksConfig = {
+                upi: {
+                    name: "Pay using UPI",
+                    instruments: [
+                        {
+                            method: "upi",
+                            flow: "collect"
+                        }
+                    ]
+                },
+                cards: {
+                    name: "Pay using Cards",
+                    instruments: [
+                        {
+                            method: "card"
+                        }
+                    ]
+                }
+            };
+            if (!isTestKey) {
+                blocksConfig.banks = {
+                    name: "Pay using Netbanking",
+                    instruments: [
+                        {
+                            method: "netbanking"
+                        }
+                    ]
+                };
+                blocksConfig.wallets = {
+                    name: "Pay using Wallets",
+                    instruments: [
+                        {
+                            method: "wallet"
+                        }
+                    ]
+                };
+            }
+
+            const sequenceList = isTestKey
+                ? ["block.cards", "block.upi"]
+                : ["block.cards", "block.upi", "block.banks", "block.wallets"];
+
             const options = {
                 key: razorpayKey,
                 amount: orderData.totalAmount * 100,
@@ -998,47 +1046,13 @@ async function processRazorpayPayment(orderData) {
                     color: '#D4AF37'
                 },
                 // Use modal flow (no redirect) so handler runs on success
-                // Use default Razorpay blocks for all payment methods with animations
+                // Dynamically show instruments. In test keys we avoid netbanking/wallets to reduce failures.
                 config: {
                     display: {
-                        blocks: {
-                            banks: {
-                                name: "Pay using Netbanking",
-                                instruments: [
-                                    {
-                                        method: "netbanking"
-                                    }
-                                ]
-                            },
-                            upi: {
-                                name: "Pay using UPI",
-                                instruments: [
-                                    {
-                                        method: "upi",
-                                        flow: "collect"
-                                    }
-                                ]
-                            },
-                            cards: {
-                                name: "Pay using Cards",
-                                instruments: [
-                                    {
-                                        method: "card"
-                                    }
-                                ]
-                            },
-                            wallets: {
-                                name: "Pay using Wallets",
-                                instruments: [
-                                    {
-                                        method: "wallet"
-                                    }
-                                ]
-                            }
-                        },
-                        sequence: ["block.banks", "block.upi", "block.cards", "block.wallets"],
+                        blocks: blocksConfig,
+                        sequence: sequenceList,
                         preferences: {
-                            show_default_blocks: true
+                            show_default_blocks: false
                         }
                     }
                 },
@@ -1124,7 +1138,18 @@ async function processRazorpayPayment(orderData) {
             
             // Add event listeners for better error handling
             rzp.on('payment.failed', function (resp) {
-                console.error('❌ Payment failed:', resp.error);
+                try {
+                    console.error('❌ Payment failed:', {
+                        code: resp && resp.error && resp.error.code,
+                        description: resp && resp.error && resp.error.description,
+                        source: resp && resp.error && resp.error.source,
+                        step: resp && resp.error && resp.error.step,
+                        reason: resp && resp.error && resp.error.reason,
+                        metadata: resp && resp.error && resp.error.metadata
+                    });
+                } catch (_) {
+                    console.error('❌ Payment failed (raw):', resp);
+                }
                 showToast('Payment failed: ' + (resp.error.description || 'Unknown error'), 'error');
                 showLoadingState(false);
                 resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
