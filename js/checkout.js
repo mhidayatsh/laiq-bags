@@ -12,18 +12,24 @@ const brandLogoCanonicalUrl = '/assets/laiq-logo-192x192.png';
 
 async function prefetchBrandLogo() {
     try {
-        // Prefer canonical HTTPS domain to avoid redirects
-        const resp = await fetch(brandLogoCanonicalUrl, { cache: 'force-cache' });
-        if (!resp.ok) return;
+        const logoUrl = `${window.location.origin}${brandLogoCanonicalUrl}`;
+        console.log(`🖼️ Prefetching brand logo from: ${logoUrl}`);
+        const resp = await fetch(logoUrl);
+        if (!resp.ok) {
+            console.warn(`⚠️ Failed to fetch brand logo: HTTP status ${resp.status}`);
+            return;
+        }
         const blob = await resp.blob();
         const reader = new FileReader();
-        brandLogoDataUrl = await new Promise((resolve) => {
+        brandLogoDataUrl = await new Promise((resolve, reject) => {
             reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
-        console.log('🖼️ Brand logo prefetched as data URL');
+        console.log('✅ Brand logo prefetched successfully as data URL.');
     } catch (e) {
-        console.warn('⚠️ Could not prefetch brand logo:', e.message);
+        console.error('❌ Critical error: Could not prefetch brand logo. The payment modal will not show the brand logo.', e);
+        brandLogoDataUrl = null; // Ensure it's null on failure
     }
 }
 
@@ -31,7 +37,7 @@ async function prefetchBrandLogo() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Checkout page initialized - Standalone');
     // Preload brand logo early so Razorpay can use a data URL (avoids external wordmark fetch noise)
-    prefetchBrandLogo();
+    await prefetchBrandLogo();
     
     // Check if user is coming back from order confirmation (prevent resubmission)
     if (window.history.state && window.history.state.orderCompleted) {
@@ -1056,8 +1062,6 @@ async function processRazorpayPayment(orderData) {
                 currency: 'INR',
                 name: 'Laiq Bags',
                 description: 'Order Payment',
-                // Prefer preloaded data URL to prevent Razorpay from fetching EMPTY_WORDMARK
-                image: brandLogoDataUrl || 'https://www.laiq.shop/assets/laiq-logo-192x192.png',
                 order_id: razorpayResponse.order.id,
                 prefill: {
                     name: customerInfo.name,
@@ -1155,6 +1159,13 @@ async function processRazorpayPayment(orderData) {
                 }
             };
             
+            // Conditionally add the image to avoid 'EMPTY_WORDMARK' error if prefetch fails
+            if (brandLogoDataUrl) {
+                options.image = brandLogoDataUrl;
+            } else {
+                console.warn("⚠️ Proceeding without a brand logo in Razorpay modal because prefetch failed.");
+            }
+
             // Initialize Razorpay
             const rzp = new Razorpay(options);
             
