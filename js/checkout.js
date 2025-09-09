@@ -987,6 +987,7 @@ async function processRazorpayPayment(orderData) {
                 currency: 'INR',
                 name: 'Laiq Bags',
                 description: 'Order Payment',
+                image: 'https://laiq.shop/assets/laiq-logo-192x192.png',
                 order_id: razorpayResponse.order.id,
                 prefill: {
                     name: customerInfo.name,
