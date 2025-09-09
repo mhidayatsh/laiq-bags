@@ -376,8 +376,9 @@ function renderOrders() {
                     </div>
                     
                     <div class="mb-3">
-                        <p class="font-medium text-charcoal">${order.user?.name || 'N/A'}</p>
-                        <p class="text-sm text-gray-600">${order.user?.email || 'N/A'}</p>
+                        <p class="font-medium text-charcoal">${order.user?.name || order.contactInfo?.name || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">${order.user?.email || order.contactInfo?.email || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">📞 ${order.contactInfo?.phone || 'N/A'}</p>
                     </div>
                     
                     <div class="space-y-2">
@@ -581,11 +582,15 @@ function renderOrderModal(order) {
                     <div class="space-y-2 text-sm">
                         <div>
                             <p class="text-gray-600">Name</p>
-                            <p class="font-medium">${order.user?.name || 'N/A'}</p>
+                            <p class="font-medium">${order.user?.name || order.contactInfo?.name || 'N/A'}</p>
                         </div>
                         <div>
                             <p class="text-gray-600">Email</p>
-                            <p class="font-medium">${order.user?.email || 'N/A'}</p>
+                            <p class="font-medium">${order.user?.email || order.contactInfo?.email || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Phone</p>
+                            <p class="font-medium">${order.contactInfo?.phone || 'N/A'}</p>
                         </div>
                     </div>
                 </div>
@@ -1437,8 +1442,9 @@ function printOrder(orderId) {
                             
                             <div class="info-section">
                                 <h3>👤 Customer Information</h3>
-                                <p><strong>Name:</strong> <span style="color: #1e293b; font-weight: 600;">${order.user?.name || 'N/A'}</span></p>
-                                <p><strong>Email:</strong> <span style="color: #64748b;">${order.user?.email || 'N/A'}</span></p>
+                                <p><strong>Name:</strong> <span style="color: #1e293b; font-weight: 600;">${order.user?.name || order.contactInfo?.name || 'N/A'}</span></p>
+                                <p><strong>Email:</strong> <span style="color: #64748b;">${order.user?.email || order.contactInfo?.email || 'N/A'}</span></p>
+                                <p><strong>Phone:</strong> <span style="color: #64748b;">${order.contactInfo?.phone || 'N/A'}</span></p>
                                 <p><strong>Address:</strong> <span style="color: #64748b; line-height: 1.4;">${order.shippingInfo ? 
                                     `${order.shippingInfo.street}, ${order.shippingInfo.city}, ${order.shippingInfo.state} - ${order.shippingInfo.pincode}` : 
                                     'N/A'}</span></p>

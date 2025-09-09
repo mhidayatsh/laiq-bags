@@ -109,6 +109,10 @@ function renderOrderDetails() {
                         <span class="font-medium">Payment Method:</span>
                         <span class="text-gray-600">${formatPaymentMethod(currentOrder.paymentMethod)}</span>
                     </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Contact Phone:</span>
+                        <span class="text-gray-600">${currentOrder.contactInfo?.phone || 'N/A'}</span>
+                    </div>
                 </div>
             </div>
             

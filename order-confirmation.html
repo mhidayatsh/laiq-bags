@@ -114,6 +114,10 @@
                             <span id="payment-status" class="font-medium text-green-600">Paid</span>
                         </div>
                         <div class="flex justify-between">
+                            <span class="text-gray-600">Contact Phone:</span>
+                            <span id="order-phone" class="font-medium text-charcoal">-</span>
+                        </div>
+                        <div class="flex justify-between">
                             <span class="text-gray-600">Order Status:</span>
                             <span id="order-status" class="font-medium text-gold">Processing</span>
                         </div>
@@ -219,6 +223,8 @@
                 // Handle undefined orderStatus
                 const orderStatus = order.status || 'processing';
                 document.getElementById('order-status').textContent = orderStatus.charAt(0).toUpperCase() + orderStatus.slice(1);
+                // Populate contact phone
+                document.getElementById('order-phone').textContent = order.contactInfo?.phone || 'N/A';
                 
                 // Populate shipping address
                 const address = order.shippingInfo;
