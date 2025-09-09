@@ -8,7 +8,7 @@ let selectedAddress = null;
 
 // Brand logo handling for Razorpay (preload and provide data URL to avoid external fetch hiccups)
 let brandLogoDataUrl = null;
-const brandLogoCanonicalUrl = 'https://www.laiq.shop/assets/laiq-logo-192x192.png';
+const brandLogoCanonicalUrl = '/assets/laiq-logo-192x192.png';
 
 async function prefetchBrandLogo() {
     try {
@@ -1010,47 +1010,45 @@ async function processRazorpayPayment(orderData) {
             const isTestKey = typeof razorpayKey === 'string' && razorpayKey.startsWith('rzp_test_');
 
             // Build display blocks dynamically based on environment
-            const blocksConfig = {
-                upi: {
-                    name: "Pay using UPI",
-                    instruments: [
-                        {
-                            method: "upi",
-                            flow: "collect"
-                        }
-                    ]
-                },
-                cards: {
-                    name: "Pay using Cards",
-                    instruments: [
-                        {
-                            method: "card"
-                        }
-                    ]
-                }
-            };
-            if (!isTestKey) {
-                blocksConfig.banks = {
-                    name: "Pay using Netbanking",
-                    instruments: [
-                        {
-                            method: "netbanking"
-                        }
-                    ]
+            let blocksConfig = {};
+            let sequenceList = [];
+
+            if (isTestKey) {
+                // For test mode, ONLY show cards as requested to ensure reliability
+                blocksConfig = {
+                    cards: {
+                        name: "Pay using Card",
+                        instruments: [{ method: "card" }]
+                    }
                 };
-                blocksConfig.wallets = {
-                    name: "Pay using Wallets",
-                    instruments: [
-                        {
-                            method: "wallet"
-                        }
-                    ]
+                sequenceList = ["block.cards"];
+            } else {
+                // For production, show all reliable methods
+                blocksConfig = {
+                    cards: {
+                        name: "Pay using Card",
+                        instruments: [{ method: "card" }]
+                    },
+                    upi: {
+                        name: "Pay using UPI",
+                        instruments: [{ method: "upi", flow: "collect" }]
+                    },
+                    banks: {
+                        name: "Pay using Netbanking",
+                        instruments: [{ method: "netbanking" }]
+                    },
+                    wallets: {
+                        name: "Pay using Wallets",
+                        instruments: [{ method: "wallet" }]
+                    }
                 };
+                sequenceList = ["block.cards", "block.upi", "block.banks", "block.wallets"];
             }
 
-            const sequenceList = isTestKey
-                ? ["block.cards", "block.upi"]
-                : ["block.cards", "block.upi", "block.banks", "block.wallets"];
+            // Ensure brand logo is ready as a data URL (same-origin fetch avoids CORS)
+            if (!brandLogoDataUrl) {
+                try { await prefetchBrandLogo(); } catch (_) {}
+            }
 
             const options = {
                 key: razorpayKey,
@@ -1061,15 +1059,6 @@ async function processRazorpayPayment(orderData) {
                 // Prefer preloaded data URL to prevent Razorpay from fetching EMPTY_WORDMARK
                 image: brandLogoDataUrl || 'https://www.laiq.shop/assets/laiq-logo-192x192.png',
                 order_id: razorpayResponse.order.id,
-                // Strictly allow methods to avoid flaky instruments in test mode
-                method: {
-                    card: '1',
-                    upi: '1',
-                    netbanking: isTestKey ? '0' : '1',
-                    wallet: isTestKey ? '0' : '1',
-                    emi: '0',
-                    paylater: '0'
-                },
                 prefill: {
                     name: customerInfo.name,
                     email: customerInfo.email,
