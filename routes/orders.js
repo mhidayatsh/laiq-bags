@@ -27,7 +27,8 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
       razorpayOrderId,
       razorpayPaymentId,
       razorpaySignature,
-      saveAddress = false
+      saveAddress = false,
+      contactInfo
     } = req.body;
 
     // SECURITY: Validate order amount
@@ -77,6 +78,16 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
       state: shippingAddress.state || 'N/A',
       pincode: shippingAddress.pincode || 'N/A',
       country: shippingAddress.country || 'India'
+    };
+
+    // Build contact info snapshot (fallback to req.user)
+    const userName = (req.user && req.user.name) ? req.user.name : null;
+    const userEmail = (req.user && req.user.email) ? req.user.email : null;
+    const userPhone = (req.user && req.user.phone && /^[0-9]{10,12}$/.test(String(req.user.phone))) ? String(req.user.phone) : null;
+    const validatedContactInfo = {
+      name: (contactInfo && contactInfo.name) ? String(contactInfo.name).trim() : userName,
+      email: (contactInfo && contactInfo.email) ? String(contactInfo.email).trim() : userEmail,
+      phone: (contactInfo && contactInfo.phone) ? String(contactInfo.phone).trim() : userPhone
     };
 
     // Ensure every orderItem has a color object
@@ -233,6 +244,7 @@ router.post('/new', isAuthenticatedUser, orderLimiter, async (req, res) => {
     }
 
     const order = await Order.create({
+      contactInfo: validatedContactInfo,
       orderItems: safeOrderItems,
       shippingInfo: validatedShippingAddress,
       paymentMethod,
@@ -364,7 +376,7 @@ router.get('/me', isAuthenticatedUser, async (req, res) => {
       Order.countDocuments({ user: req.user._id }),
       Order.find({ user: req.user._id })
         .sort({ createdAt: -1 })
-        .select('orderItems.name orderItems.quantity orderItems.price orderItems.image totalAmount status createdAt paymentMethod shippingInfo.street shippingInfo.city shippingInfo.state shippingInfo.pincode shippingInfo.country paymentInfo.id paymentInfo.status')
+        .select('orderItems.name orderItems.quantity orderItems.price orderItems.image totalAmount status createdAt paymentMethod shippingInfo.street shippingInfo.city shippingInfo.state shippingInfo.pincode shippingInfo.country contactInfo.phone paymentInfo.id paymentInfo.status')
         .skip(skip)
         .limit(limit)
         .maxTimeMS(QUERY_TIMEOUT_MS)

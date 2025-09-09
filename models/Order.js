@@ -59,6 +59,22 @@ const shippingInfoSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
+// Contact info for the order (snapshot at time of purchase)
+const contactInfoSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    default: null
+  },
+  email: {
+    type: String,
+    default: null
+  },
+  phone: {
+    type: String,
+    default: null
+  }
+}, { _id: false });
+
 const paymentInfoSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -93,6 +109,7 @@ const paymentInfoSchema = new mongoose.Schema({
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
+  contactInfo: contactInfoSchema,
   shippingInfo: shippingInfoSchema,
   orderItems: [orderItemSchema],
   user: {

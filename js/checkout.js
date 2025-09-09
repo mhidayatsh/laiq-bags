@@ -378,11 +378,26 @@ function renderCustomerInfo() {
         <div class="space-y-2">
             <div><span class="font-medium">Name:</span> ${customerInfo.name || 'N/A'}</div>
             <div><span class="font-medium">Email:</span> ${customerInfo.email || 'N/A'}</div>
-            <div><span class="font-medium">Phone:</span> ${customerInfo.phone || 'N/A'}</div>
+            <div><span class="font-medium">Phone (profile):</span> ${customerInfo.phone || 'N/A'}</div>
+            <div class="mt-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone for this order</label>
+                <input type="tel" id="order-phone" inputmode="numeric" pattern="[0-9]{10,12}" maxlength="12" placeholder="10-12 digit number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-gold focus:border-gold" value="${(customerInfo.phone && customerInfo.phone.match(/^[0-9]{10,12}$/)) ? customerInfo.phone : ''}">
+                <p class="text-xs text-gray-500 mt-1">This phone will be saved with your order for delivery contact.</p>
+            </div>
         </div>
     `;
     
     console.log('✅ Customer info rendered');
+    try {
+        const phoneInput = document.getElementById('order-phone');
+        if (phoneInput) {
+            const onChange = () => {
+                updatePlaceOrderButton();
+            };
+            phoneInput.addEventListener('input', onChange);
+            phoneInput.addEventListener('blur', onChange);
+        }
+    } catch (_) {}
 }
 
 // Load saved addresses
@@ -582,8 +597,9 @@ function updatePlaceOrderButton() {
         // Check if we have a selected address OR if form is filled
         const hasSelectedAddress = selectedAddress !== null;
         const hasFormData = checkFormData();
+        const phoneOk = validateOrderPhone(false);
         
-        if (hasSelectedAddress || hasFormData) {
+        if ((hasSelectedAddress || hasFormData) && phoneOk) {
             if (paymentMethod === 'cod') {
                 placeOrderBtn.textContent = 'Place Order (Cash on Delivery)';
             } else if (paymentMethod === 'razorpay') {
@@ -593,7 +609,7 @@ function updatePlaceOrderButton() {
             }
             placeOrderBtn.disabled = false;
         } else {
-            placeOrderBtn.textContent = 'Please Fill Address Details';
+            placeOrderBtn.textContent = 'Please Fill Address & Phone';
             placeOrderBtn.disabled = true;
         }
     }
@@ -609,8 +625,31 @@ function checkFormData() {
     const city = formData.get('city')?.trim();
     const state = formData.get('state')?.trim();
     const pincode = formData.get('pincode')?.trim();
+    const phoneOk = validateOrderPhone(false);
     
-    return street && city && state && pincode && /^\d{6}$/.test(pincode);
+    return street && city && state && pincode && /^\d{6}$/.test(pincode) && phoneOk;
+}
+
+// Validate and get phone for this order. Returns phone string or false
+function validateOrderPhone(showError = false) {
+    try {
+        const phoneInput = document.getElementById('order-phone');
+        const inputVal = phoneInput ? String(phoneInput.value || '').trim() : '';
+        const profilePhone = customerInfo && customerInfo.phone ? String(customerInfo.phone).trim() : '';
+        const phoneToUse = inputVal || profilePhone;
+        if (phoneToUse && /^[0-9]{10,12}$/.test(phoneToUse)) {
+            return phoneToUse;
+        }
+        if (showError) {
+            showToast('Please enter a valid contact phone (10-12 digits).', 'error');
+        }
+        return false;
+    } catch (e) {
+        if (showError) {
+            showToast('Please enter a valid contact phone (10-12 digits).', 'error');
+        }
+        return false;
+    }
 }
 
 // Add new address
@@ -811,6 +850,14 @@ async function handlePlaceOrder() {
         const saveAddressCheckbox = document.getElementById('save-address');
         const shouldSaveAddress = !selectedAddress && saveAddressCheckbox && saveAddressCheckbox.checked;
         
+        // Validate phone for this order
+        const orderPhone = validateOrderPhone(true);
+        if (!orderPhone) {
+            resetOrderButton(placeOrderBtn, originalText);
+            isProcessing = false;
+            return;
+        }
+
         // Create order data
         const orderData = {
             orderItems: orderItems.map(item => ({
@@ -824,7 +871,12 @@ async function handlePlaceOrder() {
             shippingAddress,
             totalAmount: orderTotal,
             paymentMethod,
-            saveAddress: shouldSaveAddress
+            saveAddress: shouldSaveAddress,
+            contactInfo: {
+                name: customerInfo?.name || null,
+                email: customerInfo?.email || null,
+                phone: orderPhone
+            }
         };
         
         console.log('📋 Order data:', orderData);
@@ -939,7 +991,7 @@ async function processRazorpayPayment(orderData) {
                 prefill: {
                     name: customerInfo.name,
                     email: customerInfo.email,
-                    contact: customerInfo.phone
+                    contact: (document.getElementById('order-phone')?.value || customerInfo.phone || '').toString().trim()
                 },
                 theme: {
                     color: '#D4AF37'
