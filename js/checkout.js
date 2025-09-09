@@ -1061,6 +1061,15 @@ async function processRazorpayPayment(orderData) {
                 // Prefer preloaded data URL to prevent Razorpay from fetching EMPTY_WORDMARK
                 image: brandLogoDataUrl || 'https://www.laiq.shop/assets/laiq-logo-192x192.png',
                 order_id: razorpayResponse.order.id,
+                // Strictly allow methods to avoid flaky instruments in test mode
+                method: {
+                    card: '1',
+                    upi: '1',
+                    netbanking: isTestKey ? '0' : '1',
+                    wallet: isTestKey ? '0' : '1',
+                    emi: '0',
+                    paylater: '0'
+                },
                 prefill: {
                     name: customerInfo.name,
                     email: customerInfo.email,
@@ -1162,19 +1171,21 @@ async function processRazorpayPayment(orderData) {
             
             // Add event listeners for better error handling
             rzp.on('payment.failed', function (resp) {
+                const err = (resp && resp.error) || {};
+                const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a Card or UPI.');
                 try {
                     console.error('❌ Payment failed:', {
-                        code: resp && resp.error && resp.error.code,
-                        description: resp && resp.error && resp.error.description,
-                        source: resp && resp.error && resp.error.source,
-                        step: resp && resp.error && resp.error.step,
-                        reason: resp && resp.error && resp.error.reason,
-                        metadata: resp && resp.error && resp.error.metadata
+                        code: err.code,
+                        description: err.description,
+                        source: err.source,
+                        step: err.step,
+                        reason: err.reason,
+                        metadata: err.metadata
                     });
                 } catch (_) {
                     console.error('❌ Payment failed (raw):', resp);
                 }
-                showToast('Payment failed: ' + (resp.error.description || 'Unknown error'), 'error');
+                showToast(friendly, 'error');
                 showLoadingState(false);
                 resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
                 isProcessing = false;
