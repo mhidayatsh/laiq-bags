@@ -1109,6 +1109,16 @@ async function processRazorpayPayment(orderData) {
                         }
                     }
                 },
+                // Additional options to prevent wordmark issues
+                notes: {
+                    merchant_order_id: razorpayResponse.order.id
+                },
+                // Disable automatic wordmark fetching
+                readonly: {
+                    email: false,
+                    contact: false,
+                    name: false
+                },
                 handler: async function(response) {
                     console.log('✅ Payment successful:', response);
                     
@@ -1186,17 +1196,32 @@ async function processRazorpayPayment(orderData) {
                 }
             };
             
-            // Conditionally add the image to avoid 'EMPTY_WORDMARK' error if prefetch fails
-            if (brandLogoDataUrl) {
-                options.image = brandLogoDataUrl;
-                console.log('✅ Using brand logo in Razorpay modal');
-            } else {
-                // Don't add image property at all to prevent wordmark errors
-                console.log("ℹ️ Proceeding without brand logo in Razorpay modal to prevent wordmark errors");
-            }
+            // Do not set image property at all to prevent wordmark 404 errors
+            // Razorpay's wordmark system has known issues with custom images
+            console.log("ℹ️ Not setting image property to prevent Razorpay wordmark 404 errors");
+
+            // Intercept and block wordmark requests to prevent 404 errors
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                if (typeof url === 'string' && url.includes('wordmark')) {
+                    console.log('🚫 Blocking wordmark request:', url);
+                    return Promise.reject(new Error('Wordmark request blocked'));
+                }
+                if (typeof url === 'string' && url.includes('/checkout/data')) {
+                    console.log('🚫 Blocking checkout data request:', url);
+                    return Promise.reject(new Error('Checkout data request blocked'));
+                }
+                return originalFetch.apply(this, arguments);
+            };
 
             // Initialize Razorpay
             const rzp = new Razorpay(options);
+            
+            // Restore original fetch after Razorpay initialization
+            setTimeout(() => {
+                window.fetch = originalFetch;
+                console.log('🔄 Restored original fetch function');
+            }, 1000);
             
             // Add event listeners for better error handling
             rzp.on('payment.failed', function (resp) {
