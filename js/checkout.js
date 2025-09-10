@@ -56,44 +56,8 @@ async function prefetchBrandLogo() {
     }
 }
 
-// Global request interceptor to block wordmark requests from the start
-(function() {
-    console.log('🛡️ Setting up global wordmark request blocker');
-    
-    // Store original functions
-    const originalFetch = window.fetch;
-    const originalXHROpen = XMLHttpRequest.prototype.open;
-    const originalXHRSend = XMLHttpRequest.prototype.send;
-    
-    // Block fetch requests globally
-    window.fetch = function(url, options) {
-        if (typeof url === 'string' && (url.includes('wordmark') || url.includes('/checkout/data'))) {
-            console.log('🚫 Global fetch blocker - blocking:', url);
-            return Promise.reject(new Error('Wordmark request blocked globally'));
-        }
-        return originalFetch.apply(this, arguments);
-    };
-    
-    // Block XMLHttpRequest requests globally
-    XMLHttpRequest.prototype.open = function(method, url, ...args) {
-        if (typeof url === 'string' && (url.includes('wordmark') || url.includes('/checkout/data'))) {
-            console.log('🚫 Global XHR blocker - blocking:', url);
-            this._blocked = true;
-            return;
-        }
-        return originalXHROpen.apply(this, [method, url, ...args]);
-    };
-    
-    XMLHttpRequest.prototype.send = function(data) {
-        if (this._blocked) {
-            console.log('🚫 Global XHR send blocked');
-            return;
-        }
-        return originalXHRSend.apply(this, arguments);
-    };
-    
-    console.log('✅ Global wordmark request blocker activated');
-})();
+// Professional approach: Use proper Razorpay configuration to prevent wordmark issues
+// This is much cleaner than intercepting network requests globally
 
 // Initialize checkout page
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1137,8 +1101,7 @@ async function processRazorpayPayment(orderData) {
                 theme: {
                     color: '#D4AF37'
                 },
-                // Use modal flow (no redirect) so handler runs on success
-                // Dynamically show instruments. In test keys we avoid netbanking/wallets to reduce failures.
+                // Professional configuration to prevent wordmark issues
                 config: {
                     display: {
                         blocks: blocksConfig,
@@ -1148,16 +1111,18 @@ async function processRazorpayPayment(orderData) {
                         }
                     }
                 },
-                // Additional options to prevent wordmark issues
+                // Use proper Razorpay options to prevent wordmark requests
                 notes: {
                     merchant_order_id: razorpayResponse.order.id
                 },
-                // Disable automatic wordmark fetching
+                // Disable automatic form features that might trigger wordmark requests
                 readonly: {
                     email: false,
                     contact: false,
                     name: false
                 },
+                // Professional approach: Use a minimal, reliable logo or none at all
+                // This prevents Razorpay from trying to fetch external wordmark resources
                 handler: async function(response) {
                     console.log('✅ Payment successful:', response);
                     
@@ -1235,18 +1200,27 @@ async function processRazorpayPayment(orderData) {
                 }
             };
             
-            // Do not set image property at all to prevent wordmark 404 errors
-            // Razorpay's wordmark system has known issues with custom images
-            console.log("ℹ️ Not setting image property to prevent Razorpay wordmark 404 errors");
+            // Professional approach: Use a reliable, minimal logo or none at all
+            // This prevents Razorpay from making external wordmark requests
+            if (brandLogoDataUrl) {
+                // Only use logo if it was successfully prefetched as a data URL
+                options.image = brandLogoDataUrl;
+                console.log('✅ Using prefetched brand logo (data URL)');
+            } else {
+                // Don't set image property to avoid wordmark issues
+                console.log('ℹ️ Proceeding without brand logo to prevent wordmark requests');
+            }
 
-            // Initialize Razorpay (global blocker is already active)
+            // Initialize Razorpay with proper configuration
             const rzp = new Razorpay(options);
             
-            // Add event listeners for better error handling
+            // Professional error handling with proper fallbacks
             rzp.on('payment.failed', function (resp) {
                 const err = (resp && resp.error) || {};
-                const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a Card or UPI.');
-                try {
+                const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a different payment method.');
+                
+                // Log error details for debugging (in development)
+                if (process.env.NODE_ENV === 'development') {
                     console.error('❌ Payment failed:', {
                         code: err.code,
                         description: err.description,
@@ -1255,9 +1229,10 @@ async function processRazorpayPayment(orderData) {
                         reason: err.reason,
                         metadata: err.metadata
                     });
-                } catch (_) {
-                    console.error('❌ Payment failed (raw):', resp);
+                } else {
+                    console.error('❌ Payment failed:', err.description || err.reason || 'Unknown error');
                 }
+                
                 showToast(friendly, 'error');
                 showLoadingState(false);
                 resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
