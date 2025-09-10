@@ -14,12 +14,31 @@ async function prefetchBrandLogo() {
     try {
         const logoUrl = `${window.location.origin}${brandLogoCanonicalUrl}`;
         console.log(`🖼️ Prefetching brand logo from: ${logoUrl}`);
-        const resp = await fetch(logoUrl);
+        
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
+        const resp = await fetch(logoUrl, { 
+            signal: controller.signal,
+            cache: 'force-cache' // Use cached version if available
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!resp.ok) {
             console.warn(`⚠️ Failed to fetch brand logo: HTTP status ${resp.status}`);
             return;
         }
+        
         const blob = await resp.blob();
+        
+        // Validate blob size (should be reasonable for a logo)
+        if (blob.size > 1024 * 1024) { // 1MB limit
+            console.warn(`⚠️ Brand logo too large: ${blob.size} bytes`);
+            return;
+        }
+        
         const reader = new FileReader();
         brandLogoDataUrl = await new Promise((resolve, reject) => {
             reader.onloadend = () => resolve(reader.result);
@@ -28,7 +47,11 @@ async function prefetchBrandLogo() {
         });
         console.log('✅ Brand logo prefetched successfully as data URL.');
     } catch (e) {
-        console.error('❌ Critical error: Could not prefetch brand logo. The payment modal will not show the brand logo.', e);
+        if (e.name === 'AbortError') {
+            console.warn('⚠️ Brand logo fetch timed out, proceeding without logo');
+        } else {
+            console.warn('⚠️ Could not prefetch brand logo, proceeding without logo:', e.message);
+        }
         brandLogoDataUrl = null; // Ensure it's null on failure
     }
 }
@@ -1053,7 +1076,11 @@ async function processRazorpayPayment(orderData) {
 
             // Ensure brand logo is ready as a data URL (same-origin fetch avoids CORS)
             if (!brandLogoDataUrl) {
-                try { await prefetchBrandLogo(); } catch (_) {}
+                try { 
+                    await prefetchBrandLogo(); 
+                } catch (e) {
+                    console.warn('⚠️ Logo prefetch failed, proceeding without logo:', e.message);
+                }
             }
 
             const options = {
@@ -1162,8 +1189,10 @@ async function processRazorpayPayment(orderData) {
             // Conditionally add the image to avoid 'EMPTY_WORDMARK' error if prefetch fails
             if (brandLogoDataUrl) {
                 options.image = brandLogoDataUrl;
+                console.log('✅ Using brand logo in Razorpay modal');
             } else {
-                console.warn("⚠️ Proceeding without a brand logo in Razorpay modal because prefetch failed.");
+                // Don't add image property at all to prevent wordmark errors
+                console.log("ℹ️ Proceeding without brand logo in Razorpay modal to prevent wordmark errors");
             }
 
             // Initialize Razorpay
