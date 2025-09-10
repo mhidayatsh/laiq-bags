@@ -56,6 +56,45 @@ async function prefetchBrandLogo() {
     }
 }
 
+// Global request interceptor to block wordmark requests from the start
+(function() {
+    console.log('🛡️ Setting up global wordmark request blocker');
+    
+    // Store original functions
+    const originalFetch = window.fetch;
+    const originalXHROpen = XMLHttpRequest.prototype.open;
+    const originalXHRSend = XMLHttpRequest.prototype.send;
+    
+    // Block fetch requests globally
+    window.fetch = function(url, options) {
+        if (typeof url === 'string' && (url.includes('wordmark') || url.includes('/checkout/data'))) {
+            console.log('🚫 Global fetch blocker - blocking:', url);
+            return Promise.reject(new Error('Wordmark request blocked globally'));
+        }
+        return originalFetch.apply(this, arguments);
+    };
+    
+    // Block XMLHttpRequest requests globally
+    XMLHttpRequest.prototype.open = function(method, url, ...args) {
+        if (typeof url === 'string' && (url.includes('wordmark') || url.includes('/checkout/data'))) {
+            console.log('🚫 Global XHR blocker - blocking:', url);
+            this._blocked = true;
+            return;
+        }
+        return originalXHROpen.apply(this, [method, url, ...args]);
+    };
+    
+    XMLHttpRequest.prototype.send = function(data) {
+        if (this._blocked) {
+            console.log('🚫 Global XHR send blocked');
+            return;
+        }
+        return originalXHRSend.apply(this, arguments);
+    };
+    
+    console.log('✅ Global wordmark request blocker activated');
+})();
+
 // Initialize checkout page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Checkout page initialized - Standalone');
@@ -1200,28 +1239,8 @@ async function processRazorpayPayment(orderData) {
             // Razorpay's wordmark system has known issues with custom images
             console.log("ℹ️ Not setting image property to prevent Razorpay wordmark 404 errors");
 
-            // Intercept and block wordmark requests to prevent 404 errors
-            const originalFetch = window.fetch;
-            window.fetch = function(url, options) {
-                if (typeof url === 'string' && url.includes('wordmark')) {
-                    console.log('🚫 Blocking wordmark request:', url);
-                    return Promise.reject(new Error('Wordmark request blocked'));
-                }
-                if (typeof url === 'string' && url.includes('/checkout/data')) {
-                    console.log('🚫 Blocking checkout data request:', url);
-                    return Promise.reject(new Error('Checkout data request blocked'));
-                }
-                return originalFetch.apply(this, arguments);
-            };
-
-            // Initialize Razorpay
+            // Initialize Razorpay (global blocker is already active)
             const rzp = new Razorpay(options);
-            
-            // Restore original fetch after Razorpay initialization
-            setTimeout(() => {
-                window.fetch = originalFetch;
-                console.log('🔄 Restored original fetch function');
-            }, 1000);
             
             // Add event listeners for better error handling
             rzp.on('payment.failed', function (resp) {
