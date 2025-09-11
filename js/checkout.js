@@ -1098,6 +1098,64 @@ async function processRazorpayPayment(orderData) {
                 color: '#D4AF37'
             },
             
+            // Professional brand logo handling - only if available and valid
+            ...(brandLogoDataUrl && { image: brandLogoDataUrl }),
+            
+            // Professional payment metadata for tracking and analytics
+            notes: {
+                merchant_order_id: razorpayResponse.order.id,
+                order_items: orderData.orderItems.length.toString(),
+                customer_id: customerInfo.id || 'guest',
+                order_total: orderData.totalAmount.toString(),
+                ...(razorpayKey.startsWith('rzp_test_') && { 
+                    test_payment: 'true',
+                    environment: 'development'
+                })
+            },
+            
+            // Professional payment method configuration with enhanced UX
+            config: {
+                display: {
+                    blocks: {
+                        cards: {
+                            name: "💳 Pay using Card",
+                            instruments: [
+                                { method: "card" }
+                            ]
+                        },
+                        upi: {
+                            name: "📱 Pay using UPI",
+                            instruments: [
+                                { method: "upi", flow: "collect" }
+                            ]
+                        },
+                        netbanking: {
+                            name: "🏦 Pay using Net Banking",
+                            instruments: [
+                                { method: "netbanking" }
+                            ]
+                        },
+                        wallet: {
+                            name: "💰 Pay using Wallets",
+                            instruments: [
+                                { method: "wallet" }
+                            ]
+                        }
+                    },
+                    sequence: ["block.cards", "block.upi", "block.netbanking", "block.wallet"],
+                    preferences: {
+                        show_default_blocks: false
+                    }
+                }
+            },
+            
+            // Professional field configuration for better UX
+            readonly: {
+                email: false,
+                contact: false,
+                name: false
+            },
+            
             // Official Razorpay success handler
             handler: async function(response) {
                 console.log('✅ Payment successful:', response);
@@ -1146,13 +1204,17 @@ async function processRazorpayPayment(orderData) {
                 }
             },
             
-            // Simplified modal configuration
+            // Professional modal configuration with enhanced UX
             modal: {
                 ondismiss: function() {
                     console.log('❌ Payment modal dismissed');
                     showToast('Payment cancelled', 'warning');
                     resetPaymentState();
-                }
+                },
+                escape: false,  // Prevent accidental closure with ESC key
+                handleback: true,  // Handle browser back button properly
+                confirm_close: false,  // Don't show confirmation dialog
+                animation: true  // Enable smooth animations
             },
             
             // Add redirect handling for test payments and OTP verification
@@ -1161,14 +1223,35 @@ async function processRazorpayPayment(orderData) {
                 callback_url: `${window.location.origin}/payment-callback.html`
             }),
             
-            // Official retry configuration
+            // Professional retry configuration with smart retry logic
             retry: {
                 enabled: true,
-                max_count: 3
+                max_count: 3,
+                retry_on_failure: true
+            },
+            
+            // Professional timeout configuration
+            timeout: 300,  // 5 minutes timeout
+            
+            // Professional language configuration
+            language: 'en',
+            
+            // Professional receipt configuration
+            receipt: {
+                enabled: true
             }
         };
         
-        // Step 5: Initialize Razorpay with official configuration
+        // Step 5: Initialize Razorpay with professional configuration
+        console.log('🔧 Initializing Razorpay with professional configuration:', {
+            key: razorpayKey.substring(0, 10) + '...',
+            amount: orderData.totalAmount,
+            currency: 'INR',
+            orderId: razorpayResponse.order.id,
+            hasLogo: !!brandLogoDataUrl,
+            isTestMode: razorpayKey.startsWith('rzp_test_')
+        });
+        
         const rzp = new Razorpay(options);
         
         // Step 6: Add official event listeners with enhanced error handling
