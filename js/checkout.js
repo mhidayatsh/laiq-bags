@@ -1006,269 +1006,206 @@ function validateAndGetAddress() {
     return shippingAddress;
 }
 
-// Process Razorpay payment
+// Official Razorpay Integration - Standard Implementation
 async function processRazorpayPayment(orderData) {
     try {
         console.log('💳 Processing Razorpay payment...');
         showLoadingState(true, 'Processing Razorpay payment...');
         
-        // Create Razorpay order first
+        // Step 1: Create Razorpay order on server
         const razorpayResponse = await api.createRazorpayOrder(orderData.totalAmount);
         
-        if (razorpayResponse.success) {
-            console.log('✅ Razorpay order created:', razorpayResponse.order.id);
-            
-            // Store order data for after payment
-            localStorage.setItem('pendingOrderData', JSON.stringify({
-                ...orderData,
-                razorpayOrderId: razorpayResponse.order.id
-            }));
-            
-            // Get Razorpay key from server response
-            const razorpayKey = razorpayResponse.razorpayKey;
-            if (!razorpayKey) {
-                console.error('❌ Razorpay public key missing from server response');
-                showToast('Payment service unavailable. Please try again later.', 'error');
-                showLoadingState(false);
-                resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-                isProcessing = false;
-                return;
-            }
-            
-            // Configure Razorpay options - With animations and proper flow
-            // In test mode, some instruments (e.g., certain netbanking banks, wallets)
-            // frequently fail with a generic "Please use another method".
-            // Detect test keys and only show Cards + UPI in that case for reliability.
-            const isTestKey = typeof razorpayKey === 'string' && razorpayKey.startsWith('rzp_test_');
-
-            // Build display blocks dynamically based on environment
-            let blocksConfig = {};
-            let sequenceList = [];
-
-            if (isTestKey) {
-                // For test mode, ONLY show cards as requested to ensure reliability
-                blocksConfig = {
-                    cards: {
-                        name: "Pay using Card",
-                        instruments: [{ method: "card" }]
-                    }
-                };
-                sequenceList = ["block.cards"];
-            } else {
-                // For production, show all reliable methods
-                blocksConfig = {
-                    cards: {
-                        name: "Pay using Card",
-                        instruments: [{ method: "card" }]
-                    },
-                    upi: {
-                        name: "Pay using UPI",
-                        instruments: [{ method: "upi", flow: "collect" }]
-                    },
-                    banks: {
-                        name: "Pay using Netbanking",
-                        instruments: [{ method: "netbanking" }]
-                    },
-                    wallets: {
-                        name: "Pay using Wallets",
-                        instruments: [{ method: "wallet" }]
-                    }
-                };
-                sequenceList = ["block.cards", "block.upi", "block.banks", "block.wallets"];
-            }
-
-            // Ensure brand logo is ready as a data URL (same-origin fetch avoids CORS)
-            if (!brandLogoDataUrl) {
-                try { 
-                    await prefetchBrandLogo(); 
-                } catch (e) {
-                    console.warn('⚠️ Logo prefetch failed, proceeding without logo:', e.message);
-                }
-            }
-
-            const options = {
-                key: razorpayKey,
-                amount: orderData.totalAmount * 100,
-                currency: 'INR',
-                name: 'Laiq Bags',
-                description: 'Order Payment',
-                order_id: razorpayResponse.order.id,
-                prefill: {
-                    name: customerInfo.name,
-                    email: customerInfo.email,
-                    contact: (document.getElementById('order-phone')?.value || customerInfo.phone || '').toString().trim()
-                },
-                theme: {
-                    color: '#D4AF37'
-                },
-                // Professional configuration to prevent wordmark issues
-                config: {
-                    display: {
-                        blocks: blocksConfig,
-                        sequence: sequenceList,
-                        preferences: {
-                            show_default_blocks: false
-                        }
-                    }
-                },
-                // Use proper Razorpay options to prevent wordmark requests
-                notes: {
-                    merchant_order_id: razorpayResponse.order.id
-                },
-                // Disable automatic form features that might trigger wordmark requests
-                readonly: {
-                    email: false,
-                    contact: false,
-                    name: false
-                },
-                // Professional approach: Use a minimal, reliable logo or none at all
-                // This prevents Razorpay from trying to fetch external wordmark resources
-                handler: async function(response) {
-                    console.log('✅ Payment successful:', response);
-                    
-                    try {
-                        // Verify payment signature first
-                        const verificationResponse = await api.verifyRazorpayPayment({
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            expectedAmount: orderData.totalAmount
-                        });
-                        
-                        if (!verificationResponse.success) {
-                            throw new Error('Payment verification failed');
-                        }
-                        
-                        // Create order with payment details
-                        const orderResponse = await api.createCustomerOrder({
-                            ...orderData,
-                            paymentMethod: 'razorpay',
-                            paymentStatus: 'paid',
-                            razorpayOrderId: response.razorpay_order_id,
-                            razorpayPaymentId: response.razorpay_payment_id,
-                            razorpaySignature: response.razorpay_signature
-                        });
-                        
-                        if (orderResponse.success) {
-                            showToast('Payment successful! Order placed.', 'success');
-                            
-                            // Clear cart
-                            const token = localStorage.getItem('customerToken');
-                            if (token) {
-                                localStorage.removeItem('userCart');
-                            } else {
-                                localStorage.removeItem('guestCart');
-                            }
-                            
-                            // Clear pending order data
-                            localStorage.removeItem('pendingOrderData');
-                            
-                            // Redirect to order confirmation
-                            setTimeout(() => {
-                                window.location.href = `/order-confirmation.html?id=${orderResponse.order._id}`;
-                            }, 2000);
-                        } else {
-                            showToast('Error creating order: ' + orderResponse.message, 'error');
-                            showLoadingState(false);
-                            resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-                            isProcessing = false;
-                        }
-                    } catch (error) {
-                        console.error('❌ Order creation error:', error);
-                        showToast('Error creating order: ' + error.message, 'error');
-                        showLoadingState(false);
-                        resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-                        isProcessing = false;
-                    }
-                },
-                modal: {
-                    ondismiss: function() {
-                        console.log('❌ Payment modal dismissed');
-                        showToast('Payment cancelled', 'warning');
-                        showLoadingState(false);
-                        resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-                        isProcessing = false;
-                        localStorage.removeItem('pendingOrderData');
-                    },
-                    escape: false,
-                    handleback: true
-                },
-                // Add retry options
-                retry: {
-                    enabled: true,
-                    max_count: 3
-                }
-            };
-            
-            // Professional approach: Use a reliable, minimal logo or none at all
-            // This prevents Razorpay from making external wordmark requests
-            if (brandLogoDataUrl) {
-                // Only use logo if it was successfully prefetched as a data URL
-                options.image = brandLogoDataUrl;
-                console.log('✅ Using prefetched brand logo (data URL)');
-            } else {
-                // Don't set image property to avoid wordmark issues
-                console.log('ℹ️ Proceeding without brand logo to prevent wordmark requests');
-            }
-
-            // Initialize Razorpay with proper configuration
-            const rzp = new Razorpay(options);
-            
-            // Professional error handling with proper fallbacks
-            rzp.on('payment.failed', function (resp) {
-                const err = (resp && resp.error) || {};
-                const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a different payment method.');
-                
-                // Log error details for debugging (in development)
-                if (process.env.NODE_ENV === 'development') {
-                    console.error('❌ Payment failed:', {
-                        code: err.code,
-                        description: err.description,
-                        source: err.source,
-                        step: err.step,
-                        reason: err.reason,
-                        metadata: err.metadata
-                    });
-                } else {
-                    console.error('❌ Payment failed:', err.description || err.reason || 'Unknown error');
-                }
-                
-                showToast(friendly, 'error');
-                showLoadingState(false);
-                resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-                isProcessing = false;
-                localStorage.removeItem('pendingOrderData');
-            });
-            
-            rzp.on('payment.cancelled', function (resp) {
-                console.log('❌ Payment cancelled by user');
-                showToast('Payment cancelled', 'warning');
-                showLoadingState(false);
-                resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-                isProcessing = false;
-                localStorage.removeItem('pendingOrderData');
-            });
-            
-            showLoadingState(false);
-            console.log('🔄 Opening Razorpay modal...');
-            
-            // Open Razorpay modal
-            rzp.open();
-            
-        } else {
-            console.error('❌ Failed to create Razorpay order:', razorpayResponse);
-            showToast('Error creating payment order: ' + (razorpayResponse.message || 'Unknown error'), 'error');
-            showLoadingState(false);
-            resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-            isProcessing = false;
+        if (!razorpayResponse.success) {
+            throw new Error(razorpayResponse.message || 'Failed to create Razorpay order');
         }
+        
+        console.log('✅ Razorpay order created:', razorpayResponse.order.id);
+        
+        // Step 2: Store order data for after payment
+        localStorage.setItem('pendingOrderData', JSON.stringify({
+            ...orderData,
+            razorpayOrderId: razorpayResponse.order.id
+        }));
+        
+        // Step 3: Get Razorpay key from server response
+        const razorpayKey = razorpayResponse.razorpayKey;
+        if (!razorpayKey) {
+            throw new Error('Razorpay public key missing from server response');
+        }
+        
+        // Step 4: Configure Razorpay options using official pattern
+        const options = {
+            key: razorpayKey,
+            amount: orderData.totalAmount * 100, // Amount in paise
+            currency: 'INR',
+            name: 'Laiq Bags',
+            description: `Order Payment - ${orderData.orderItems.length} items`,
+            order_id: razorpayResponse.order.id,
+            prefill: {
+                name: customerInfo.name || '',
+                email: customerInfo.email || '',
+                contact: (document.getElementById('order-phone')?.value || customerInfo.phone || '').toString().trim()
+            },
+            theme: {
+                color: '#D4AF37'
+            },
+            // Official Razorpay configuration
+            config: {
+                display: {
+                    blocks: {
+                        cards: {
+                            name: "Pay using Card",
+                            instruments: [{ method: "card" }]
+                        },
+                        upi: {
+                            name: "Pay using UPI",
+                            instruments: [{ method: "upi", flow: "collect" }]
+                        },
+                        netbanking: {
+                            name: "Pay using Netbanking",
+                            instruments: [{ method: "netbanking" }]
+                        },
+                        wallet: {
+                            name: "Pay using Wallets",
+                            instruments: [{ method: "wallet" }]
+                        }
+                    },
+                    sequence: ["block.cards", "block.upi", "block.netbanking", "block.wallet"],
+                    preferences: {
+                        show_default_blocks: false
+                    }
+                }
+            },
+            // Additional official options
+            notes: {
+                merchant_order_id: razorpayResponse.order.id,
+                order_items: orderData.orderItems.length.toString()
+            },
+            // Professional logo handling
+            ...(brandLogoDataUrl && { image: brandLogoDataUrl }),
+            
+            // Official Razorpay success handler
+            handler: async function(response) {
+                console.log('✅ Payment successful:', response);
+                
+                try {
+                    // Step 1: Verify payment signature (official Razorpay practice)
+                    const verificationResponse = await api.verifyRazorpayPayment({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        expectedAmount: orderData.totalAmount
+                    });
+                    
+                    if (!verificationResponse.success) {
+                        throw new Error('Payment verification failed');
+                    }
+                    
+                    // Step 2: Create order with payment details
+                    const orderResponse = await api.createCustomerOrder({
+                        ...orderData,
+                        paymentMethod: 'razorpay',
+                        paymentStatus: 'paid',
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpaySignature: response.razorpay_signature
+                    });
+                    
+                    if (orderResponse.success) {
+                        showToast('Payment successful! Order placed.', 'success');
+                        
+                        // Step 3: Clear cart and redirect
+                        clearCartAfterOrder();
+                        localStorage.removeItem('pendingOrderData');
+                        
+                        // Redirect to order confirmation
+                        setTimeout(() => {
+                            window.location.href = `/order-confirmation.html?id=${orderResponse.order._id}`;
+                        }, 2000);
+                    } else {
+                        throw new Error(orderResponse.message || 'Failed to create order');
+                    }
+                } catch (error) {
+                    console.error('❌ Order creation error:', error);
+                    showToast('Error creating order: ' + error.message, 'error');
+                    resetPaymentState();
+                }
+            },
+            
+            // Official Razorpay modal configuration
+            modal: {
+                ondismiss: function() {
+                    console.log('❌ Payment modal dismissed');
+                    showToast('Payment cancelled', 'warning');
+                    resetPaymentState();
+                },
+                escape: false,
+                handleback: true
+            },
+            
+            // Official retry configuration
+            retry: {
+                enabled: true,
+                max_count: 3
+            }
+        };
+        
+        // Step 5: Initialize Razorpay with official configuration
+        const rzp = new Razorpay(options);
+        
+        // Step 6: Add official event listeners
+        rzp.on('payment.failed', function (resp) {
+            const err = (resp && resp.error) || {};
+            const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a different payment method.');
+            
+            console.error('❌ Payment failed:', {
+                code: err.code,
+                description: err.description,
+                source: err.source,
+                step: err.step,
+                reason: err.reason
+            });
+            
+            showToast(friendly, 'error');
+            resetPaymentState();
+        });
+        
+        rzp.on('payment.cancelled', function (resp) {
+            console.log('❌ Payment cancelled by user');
+            showToast('Payment cancelled', 'warning');
+            resetPaymentState();
+        });
+        
+        // Step 7: Open Razorpay modal
+        showLoadingState(false);
+        console.log('🔄 Opening Razorpay modal...');
+        rzp.open();
+        
     } catch (error) {
         console.error('❌ Razorpay payment error:', error);
         showToast('Error processing payment: ' + error.message, 'error');
-        showLoadingState(false);
-        resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
-        isProcessing = false;
+        resetPaymentState();
     }
+}
+
+// Helper function to clear cart after successful order
+function clearCartAfterOrder() {
+    const token = localStorage.getItem('customerToken');
+    if (token) {
+        localStorage.removeItem('userCart');
+        console.log('🧹 User cart cleared');
+    } else {
+        localStorage.removeItem('guestCart');
+        console.log('🧹 Guest cart cleared');
+    }
+}
+
+// Helper function to reset payment state
+function resetPaymentState() {
+    showLoadingState(false);
+    resetOrderButton(document.getElementById('place-order-btn'), 'Pay with Razorpay');
+    isProcessing = false;
+    localStorage.removeItem('pendingOrderData');
 }
 
 // Process COD order
