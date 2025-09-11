@@ -1080,7 +1080,7 @@ async function processRazorpayPayment(orderData) {
             throw new Error('Razorpay public key missing from server response');
         }
         
-        // Step 4: Configure Razorpay options with ultra-minimal configuration
+        // Step 4: Configure Razorpay options with professional configuration
         const options = {
             key: razorpayKey,
             amount: orderData.totalAmount * 100, // Amount in paise
@@ -1094,9 +1094,34 @@ async function processRazorpayPayment(orderData) {
                 contact: (document.getElementById('order-phone')?.value || customerInfo.phone || '').toString().trim()
             },
             
-            // Official Razorpay success handler
+            // Professional theme configuration
+            theme: {
+                color: '#D4AF37'  // Gold theme matching your brand
+            },
+            
+            // Professional payment metadata
+            notes: {
+                merchant_order_id: razorpayResponse.order.id,
+                order_items: orderData.orderItems.length.toString(),
+                customer_id: customerInfo.id || 'guest',
+                order_total: orderData.totalAmount.toString(),
+                payment_date: new Date().toISOString(),
+                ...(razorpayKey.startsWith('rzp_test_') && { 
+                    test_payment: 'true',
+                    environment: 'development'
+                })
+            },
+            
+            // Professional Razorpay success handler
             handler: async function(response) {
-                console.log('✅ Payment successful:', response);
+                console.log('✅ Payment successful:', {
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    razorpaySignature: response.razorpay_signature,
+                    orderId: razorpayResponse.order.id,
+                    amount: orderData.totalAmount,
+                    timestamp: new Date().toISOString()
+                });
                 
                 try {
                     // Step 1: Verify payment signature (official Razorpay practice)
@@ -1142,19 +1167,53 @@ async function processRazorpayPayment(orderData) {
                 }
             },
             
-            // Ultra-minimal configuration - no modal or retry settings
+            // Professional modal configuration
+            modal: {
+                ondismiss: function() {
+                    console.log('❌ Payment modal dismissed by user');
+                    showToast('Payment cancelled', 'warning');
+                    resetPaymentState();
+                },
+                escape: false,  // Prevent accidental closure
+                handleback: true  // Handle browser back button properly
+            },
+            
+            // Professional retry configuration
+            retry: {
+                enabled: true,
+                max_count: 3
+            }
         };
         
-        // Step 5: Initialize Razorpay with stable configuration
-        console.log('🔧 Initializing Razorpay with stable configuration');
+        // Step 5: Initialize Razorpay with professional configuration
+        console.log('🔧 Initializing Razorpay with professional configuration:', {
+            key: razorpayKey.substring(0, 10) + '...',
+            amount: orderData.totalAmount,
+            currency: 'INR',
+            orderId: razorpayResponse.order.id,
+            isTestMode: razorpayKey.startsWith('rzp_test_'),
+            customerInfo: {
+                name: customerInfo.name || 'Not provided',
+                email: customerInfo.email || 'Not provided',
+                phone: customerInfo.phone || 'Not provided'
+            }
+        });
+        
         const rzp = new Razorpay(options);
         
-        // Step 6: Add simple event listeners
+        // Step 6: Add professional event listeners
         rzp.on('payment.failed', function (resp) {
             const err = (resp && resp.error) || {};
             const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a different payment method.');
             
-            console.error('❌ Payment failed:', err);
+            console.error('❌ Payment failed:', {
+                error: err,
+                orderId: razorpayResponse.order.id,
+                amount: orderData.totalAmount,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            });
+            
             showToast(friendly, 'error');
             resetPaymentState();
         });
