@@ -122,6 +122,37 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
     
+    // Check if there's pending order data (user might have completed payment but went back)
+    const pendingOrderData = localStorage.getItem('pendingOrderData');
+    if (pendingOrderData) {
+        try {
+            const orderData = JSON.parse(pendingOrderData);
+            console.log('⚠️ Found pending order data - user might have completed payment');
+            
+            // Check if this is a recent order (within last 5 minutes)
+            const orderTime = new Date(orderData.timestamp || 0);
+            const now = new Date();
+            const timeDiff = now - orderTime;
+            
+            if (timeDiff < 5 * 60 * 1000) { // 5 minutes
+                console.log('⚠️ Recent pending order detected - redirecting to shop to prevent duplicate');
+                showToast('Payment may be processing. Please check your orders or try again.', 'warning');
+                localStorage.removeItem('pendingOrderData');
+                setTimeout(() => {
+                    window.location.href = '/shop.html';
+                }, 3000);
+                return;
+            } else {
+                // Old pending data, clear it
+                localStorage.removeItem('pendingOrderData');
+                console.log('🧹 Cleared old pending order data');
+            }
+        } catch (error) {
+            console.error('❌ Error parsing pending order data:', error);
+            localStorage.removeItem('pendingOrderData');
+        }
+    }
+    
     // Show loading state
     showLoadingState(true, 'Loading checkout page...');
     
@@ -1068,10 +1099,11 @@ async function processRazorpayPayment(orderData) {
         
         console.log('✅ Razorpay order created:', razorpayResponse.order.id);
         
-        // Step 2: Store order data for after payment
+        // Step 2: Store order data for after payment with timestamp
         localStorage.setItem('pendingOrderData', JSON.stringify({
             ...orderData,
-            razorpayOrderId: razorpayResponse.order.id
+            razorpayOrderId: razorpayResponse.order.id,
+            timestamp: new Date().toISOString()
         }));
         
         // Step 3: Get Razorpay key from server response

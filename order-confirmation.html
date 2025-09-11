@@ -261,6 +261,9 @@
                 // Hide loading overlay
                 document.getElementById('loading-overlay').style.display = 'none';
                 
+                // Set order completion state to prevent back navigation issues
+                window.history.replaceState({ orderCompleted: true }, '', window.location.href);
+                
                 console.log('✅ Order confirmation page populated successfully');
                 
             } catch (error) {
