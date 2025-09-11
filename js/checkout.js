@@ -1124,10 +1124,11 @@ async function processRazorpayPayment(orderData) {
                     }
                 }
             },
-            // Additional official options
+            // Additional official options - consolidated notes configuration
             notes: {
                 merchant_order_id: razorpayResponse.order.id,
-                order_items: orderData.orderItems.length.toString()
+                order_items: orderData.orderItems.length.toString(),
+                ...(razorpayKey.startsWith('rzp_test_') && { test_payment: 'true' })
             },
             // Professional logo handling - use data URL to prevent wordmark requests
             ...(brandLogoDataUrl && { image: brandLogoDataUrl }),
@@ -1200,14 +1201,6 @@ async function processRazorpayPayment(orderData) {
             
             // Add redirect handling for test payments and OTP verification
             callback_url: `${window.location.origin}/payment-callback.html`,
-            
-            // Test payment configuration (for development)
-            ...(razorpayKey.startsWith('rzp_test_') && {
-                notes: {
-                    ...options.notes,
-                    test_payment: 'true'
-                }
-            }),
             
             // Official retry configuration
             retry: {
