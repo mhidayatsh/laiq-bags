@@ -1196,11 +1196,27 @@ async function processRazorpayPayment(orderData) {
                     resetPaymentState();
                 },
                 escape: false,
-                handleback: true
+                handleback: true,
+                // Ensure proper redirect flow
+                confirm_close: true
             },
             
             // Add redirect handling for test payments and OTP verification
             callback_url: `${window.location.origin}/payment-callback.html`,
+            
+            // Force redirect for proper bank page flow
+            redirect: true,
+            
+            // Additional redirect configuration for test environment
+            ...(razorpayKey.startsWith('rzp_test_') && {
+                redirect: true,
+                method: {
+                    netbanking: '1',
+                    wallet: '1',
+                    emi: '1',
+                    upi: '1'
+                }
+            }),
             
             // Official retry configuration
             retry: {
@@ -1243,10 +1259,19 @@ async function processRazorpayPayment(orderData) {
             resetPaymentState();
         });
         
-        // Step 7: Open Razorpay modal
+        // Step 7: Open Razorpay modal with proper redirect handling
         showLoadingState(false);
         console.log('🔄 Opening Razorpay modal...');
-        rzp.open();
+        
+        // For test payments, ensure proper redirect flow
+        if (razorpayKey.startsWith('rzp_test_')) {
+            console.log('🧪 Test payment detected - enabling redirect flow');
+            rzp.open({
+                redirect: true
+            });
+        } else {
+            rzp.open();
+        }
         
     } catch (error) {
         console.error('❌ Razorpay payment error:', error);
