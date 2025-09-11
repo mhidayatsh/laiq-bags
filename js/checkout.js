@@ -1182,7 +1182,13 @@ async function processRazorpayPayment(orderData) {
             retry: {
                 enabled: true,
                 max_count: 3
-            }
+            },
+            
+            // Professional callback URL for proper redirect handling
+            callback_url: `${window.location.origin}/payment-callback.html`,
+            
+            // Additional redirect configuration for better handling
+            redirect: true
         };
         
         // Step 5: Initialize Razorpay with professional configuration
