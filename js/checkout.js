@@ -110,8 +110,7 @@ async function prefetchBrandLogo() {
 // Initialize checkout page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Checkout page initialized - Standalone');
-    // Preload brand logo early so Razorpay can use a data URL (avoids external wordmark fetch noise)
-    await prefetchBrandLogo();
+    // Disabled brand logo prefetching to eliminate potential issues
     
     // Check if user is coming back from order confirmation (prevent resubmission)
     if (window.history.state && window.history.state.orderCompleted) {
@@ -1081,7 +1080,7 @@ async function processRazorpayPayment(orderData) {
             throw new Error('Razorpay public key missing from server response');
         }
         
-        // Step 4: Configure Razorpay options with stable, minimal configuration
+        // Step 4: Configure Razorpay options with ultra-minimal configuration
         const options = {
             key: razorpayKey,
             amount: orderData.totalAmount * 100, // Amount in paise
@@ -1093,9 +1092,6 @@ async function processRazorpayPayment(orderData) {
                 name: customerInfo.name || '',
                 email: customerInfo.email || '',
                 contact: (document.getElementById('order-phone')?.value || customerInfo.phone || '').toString().trim()
-            },
-            theme: {
-                color: '#D4AF37'
             },
             
             // Official Razorpay success handler
@@ -1146,48 +1142,20 @@ async function processRazorpayPayment(orderData) {
                 }
             },
             
-            // Simple modal configuration for stability
-            modal: {
-                ondismiss: function() {
-                    console.log('❌ Payment modal dismissed');
-                    showToast('Payment cancelled', 'warning');
-                    resetPaymentState();
-                }
-            },
-            
-            // Simple retry configuration for stability
-            retry: {
-                enabled: true,
-                max_count: 3
-            }
+            // Ultra-minimal configuration - no modal or retry settings
         };
         
         // Step 5: Initialize Razorpay with stable configuration
         console.log('🔧 Initializing Razorpay with stable configuration');
         const rzp = new Razorpay(options);
         
-        // Step 6: Add official event listeners with enhanced error handling
+        // Step 6: Add simple event listeners
         rzp.on('payment.failed', function (resp) {
             const err = (resp && resp.error) || {};
             const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a different payment method.');
             
-            console.error('❌ Payment failed:', {
-                code: err.code,
-                description: err.description,
-                source: err.source,
-                step: err.step,
-                reason: err.reason,
-                fullResponse: resp
-            });
-            
-            // Check if it's a wordmark-related error
-            if (err.description && err.description.includes('another method')) {
-                console.log('🔍 This appears to be a wordmark-related payment failure');
-                showToast('Payment method temporarily unavailable. Please try again or use a different payment method.', 'error');
-            } else {
-                showToast(friendly, 'error');
-            }
-            
+            console.error('❌ Payment failed:', err);
+            showToast(friendly, 'error');
             resetPaymentState();
         });
         
