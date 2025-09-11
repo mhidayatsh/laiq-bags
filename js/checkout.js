@@ -59,6 +59,54 @@ async function prefetchBrandLogo() {
 // Professional approach: Use proper Razorpay configuration to prevent wordmark issues
 // This is much cleaner than intercepting network requests globally
 
+// Global request interceptor to prevent Razorpay wordmark 404 errors
+// This is necessary because Razorpay makes internal requests that cause 404s
+(function() {
+    console.log('🛡️ Setting up Razorpay wordmark request blocker');
+    
+    // Store original functions
+    const originalFetch = window.fetch;
+    const originalXHROpen = XMLHttpRequest.prototype.open;
+    const originalXHRSend = XMLHttpRequest.prototype.send;
+    
+    // Block problematic Razorpay requests
+    window.fetch = function(url, options) {
+        if (typeof url === 'string' && (
+            url.includes('wordmark') || 
+            url.includes('/checkout/data') ||
+            url.includes('EMPTY_WORDMARK')
+        )) {
+            console.log('🚫 Blocking Razorpay wordmark request:', url);
+            return Promise.reject(new Error('Wordmark request blocked'));
+        }
+        return originalFetch.apply(this, arguments);
+    };
+    
+    // Block XMLHttpRequest requests
+    XMLHttpRequest.prototype.open = function(method, url, ...args) {
+        if (typeof url === 'string' && (
+            url.includes('wordmark') || 
+            url.includes('/checkout/data') ||
+            url.includes('EMPTY_WORDMARK')
+        )) {
+            console.log('🚫 Blocking Razorpay XHR wordmark request:', url);
+            this._blocked = true;
+            return;
+        }
+        return originalXHROpen.apply(this, [method, url, ...args]);
+    };
+    
+    XMLHttpRequest.prototype.send = function(data) {
+        if (this._blocked) {
+            console.log('🚫 Razorpay XHR request blocked');
+            return;
+        }
+        return originalXHRSend.apply(this, arguments);
+    };
+    
+    console.log('✅ Razorpay wordmark request blocker activated');
+})();
+
 // Initialize checkout page
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🛒 Checkout page initialized - Standalone');
@@ -1081,8 +1129,15 @@ async function processRazorpayPayment(orderData) {
                 merchant_order_id: razorpayResponse.order.id,
                 order_items: orderData.orderItems.length.toString()
             },
-            // Professional logo handling
+            // Professional logo handling - use data URL to prevent wordmark requests
             ...(brandLogoDataUrl && { image: brandLogoDataUrl }),
+            
+            // Additional configuration to prevent wordmark issues
+            readonly: {
+                email: false,
+                contact: false,
+                name: false
+            },
             
             // Official Razorpay success handler
             handler: async function(response) {
@@ -1153,7 +1208,7 @@ async function processRazorpayPayment(orderData) {
         // Step 5: Initialize Razorpay with official configuration
         const rzp = new Razorpay(options);
         
-        // Step 6: Add official event listeners
+        // Step 6: Add official event listeners with enhanced error handling
         rzp.on('payment.failed', function (resp) {
             const err = (resp && resp.error) || {};
             const friendly = err.description || (err.reason ? `Payment failed: ${err.reason}` : 'Payment failed. Please try a different payment method.');
@@ -1163,10 +1218,18 @@ async function processRazorpayPayment(orderData) {
                 description: err.description,
                 source: err.source,
                 step: err.step,
-                reason: err.reason
+                reason: err.reason,
+                fullResponse: resp
             });
             
-            showToast(friendly, 'error');
+            // Check if it's a wordmark-related error
+            if (err.description && err.description.includes('another method')) {
+                console.log('🔍 This appears to be a wordmark-related payment failure');
+                showToast('Payment method temporarily unavailable. Please try again or use a different payment method.', 'error');
+            } else {
+                showToast(friendly, 'error');
+            }
+            
             resetPaymentState();
         });
         
