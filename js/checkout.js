@@ -1081,7 +1081,7 @@ async function processRazorpayPayment(orderData) {
             throw new Error('Razorpay public key missing from server response');
         }
         
-        // Step 4: Configure Razorpay options with minimal configuration to prevent conflicts
+        // Step 4: Configure Razorpay options with stable, minimal configuration
         const options = {
             key: razorpayKey,
             amount: orderData.totalAmount * 100, // Amount in paise
@@ -1096,64 +1096,6 @@ async function processRazorpayPayment(orderData) {
             },
             theme: {
                 color: '#D4AF37'
-            },
-            
-            // Professional brand logo handling - only if available and valid
-            ...(brandLogoDataUrl && { image: brandLogoDataUrl }),
-            
-            // Professional payment metadata for tracking and analytics
-            notes: {
-                merchant_order_id: razorpayResponse.order.id,
-                order_items: orderData.orderItems.length.toString(),
-                customer_id: customerInfo.id || 'guest',
-                order_total: orderData.totalAmount.toString(),
-                ...(razorpayKey.startsWith('rzp_test_') && { 
-                    test_payment: 'true',
-                    environment: 'development'
-                })
-            },
-            
-            // Professional payment method configuration with enhanced UX
-            config: {
-                display: {
-                    blocks: {
-                        cards: {
-                            name: "💳 Pay using Card",
-                            instruments: [
-                                { method: "card" }
-                            ]
-                        },
-                        upi: {
-                            name: "📱 Pay using UPI",
-                            instruments: [
-                                { method: "upi", flow: "collect" }
-                            ]
-                        },
-                        netbanking: {
-                            name: "🏦 Pay using Net Banking",
-                            instruments: [
-                                { method: "netbanking" }
-                            ]
-                        },
-                        wallet: {
-                            name: "💰 Pay using Wallets",
-                            instruments: [
-                                { method: "wallet" }
-                            ]
-                        }
-                    },
-                    sequence: ["block.cards", "block.upi", "block.netbanking", "block.wallet"],
-                    preferences: {
-                        show_default_blocks: false
-                    }
-                }
-            },
-            
-            // Professional field configuration for better UX
-            readonly: {
-                email: false,
-                contact: false,
-                name: false
             },
             
             // Official Razorpay success handler
@@ -1204,54 +1146,24 @@ async function processRazorpayPayment(orderData) {
                 }
             },
             
-            // Professional modal configuration with enhanced UX
+            // Simple modal configuration for stability
             modal: {
                 ondismiss: function() {
                     console.log('❌ Payment modal dismissed');
                     showToast('Payment cancelled', 'warning');
                     resetPaymentState();
-                },
-                escape: false,  // Prevent accidental closure with ESC key
-                handleback: true,  // Handle browser back button properly
-                confirm_close: false,  // Don't show confirmation dialog
-                animation: true  // Enable smooth animations
+                }
             },
             
-            // Add redirect handling for test payments and OTP verification
-            // Only use callback_url for production, not for test payments
-            ...(razorpayKey.startsWith('rzp_live_') && {
-                callback_url: `${window.location.origin}/payment-callback.html`
-            }),
-            
-            // Professional retry configuration with smart retry logic
+            // Simple retry configuration for stability
             retry: {
                 enabled: true,
-                max_count: 3,
-                retry_on_failure: true
-            },
-            
-            // Professional timeout configuration
-            timeout: 300,  // 5 minutes timeout
-            
-            // Professional language configuration
-            language: 'en',
-            
-            // Professional receipt configuration
-            receipt: {
-                enabled: true
+                max_count: 3
             }
         };
         
-        // Step 5: Initialize Razorpay with professional configuration
-        console.log('🔧 Initializing Razorpay with professional configuration:', {
-            key: razorpayKey.substring(0, 10) + '...',
-            amount: orderData.totalAmount,
-            currency: 'INR',
-            orderId: razorpayResponse.order.id,
-            hasLogo: !!brandLogoDataUrl,
-            isTestMode: razorpayKey.startsWith('rzp_test_')
-        });
-        
+        // Step 5: Initialize Razorpay with stable configuration
+        console.log('🔧 Initializing Razorpay with stable configuration');
         const rzp = new Razorpay(options);
         
         // Step 6: Add official event listeners with enhanced error handling
