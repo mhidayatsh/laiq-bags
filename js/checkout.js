@@ -59,52 +59,52 @@ async function prefetchBrandLogo() {
 // Professional approach: Use proper Razorpay configuration to prevent wordmark issues
 // This is much cleaner than intercepting network requests globally
 
-// Global request interceptor to prevent Razorpay wordmark 404 errors
-// This is necessary because Razorpay makes internal requests that cause 404s
+// Smart request interceptor to prevent only problematic Razorpay wordmark requests
+// This blocks only the specific 404-causing requests while allowing legitimate ones
 (function() {
-    console.log('🛡️ Setting up Razorpay wordmark request blocker');
+    console.log('🛡️ Setting up smart Razorpay wordmark request blocker');
     
     // Store original functions
     const originalFetch = window.fetch;
     const originalXHROpen = XMLHttpRequest.prototype.open;
     const originalXHRSend = XMLHttpRequest.prototype.send;
     
-    // Block problematic Razorpay requests
+    // Smart blocking - only block specific problematic patterns
     window.fetch = function(url, options) {
-        if (typeof url === 'string' && (
-            url.includes('wordmark') || 
-            url.includes('/checkout/data') ||
-            url.includes('EMPTY_WORDMARK')
-        )) {
-            console.log('🚫 Blocking Razorpay wordmark request:', url);
-            return Promise.reject(new Error('Wordmark request blocked'));
+        if (typeof url === 'string') {
+            // Only block the exact problematic patterns that cause 404s
+            if (url.includes('EMPTY_WORDMARK') || 
+                (url.includes('/checkout/data') && !url.includes('order_id'))) {
+                console.log('🚫 Blocking problematic Razorpay request:', url);
+                return Promise.reject(new Error('Problematic request blocked'));
+            }
         }
         return originalFetch.apply(this, arguments);
     };
     
-    // Block XMLHttpRequest requests
+    // Smart XMLHttpRequest blocking
     XMLHttpRequest.prototype.open = function(method, url, ...args) {
-        if (typeof url === 'string' && (
-            url.includes('wordmark') || 
-            url.includes('/checkout/data') ||
-            url.includes('EMPTY_WORDMARK')
-        )) {
-            console.log('🚫 Blocking Razorpay XHR wordmark request:', url);
-            this._blocked = true;
-            return;
+        if (typeof url === 'string') {
+            // Only block the exact problematic patterns
+            if (url.includes('EMPTY_WORDMARK') || 
+                (url.includes('/checkout/data') && !url.includes('order_id'))) {
+                console.log('🚫 Blocking problematic Razorpay XHR request:', url);
+                this._blocked = true;
+                return;
+            }
         }
         return originalXHROpen.apply(this, [method, url, ...args]);
     };
     
     XMLHttpRequest.prototype.send = function(data) {
         if (this._blocked) {
-            console.log('🚫 Razorpay XHR request blocked');
+            console.log('🚫 Problematic Razorpay XHR request blocked');
             return;
         }
         return originalXHRSend.apply(this, arguments);
     };
     
-    console.log('✅ Razorpay wordmark request blocker activated');
+    console.log('✅ Smart Razorpay wordmark request blocker activated');
 })();
 
 // Initialize checkout page
@@ -1187,7 +1187,7 @@ async function processRazorpayPayment(orderData) {
                 }
             },
             
-            // Official Razorpay modal configuration
+            // Official Razorpay modal configuration with proper redirect handling
             modal: {
                 ondismiss: function() {
                     console.log('❌ Payment modal dismissed');
@@ -1197,6 +1197,17 @@ async function processRazorpayPayment(orderData) {
                 escape: false,
                 handleback: true
             },
+            
+            // Add redirect handling for test payments and OTP verification
+            callback_url: `${window.location.origin}/payment-callback.html`,
+            
+            // Test payment configuration (for development)
+            ...(razorpayKey.startsWith('rzp_test_') && {
+                notes: {
+                    ...options.notes,
+                    test_payment: 'true'
+                }
+            }),
             
             // Official retry configuration
             retry: {
