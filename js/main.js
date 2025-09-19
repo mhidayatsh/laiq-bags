@@ -1079,7 +1079,7 @@ function createCartDrawer() {
     clearBtn.addEventListener('click', (e) => {
         e.preventDefault()
         e.stopPropagation()
-        clearCart()
+        showClearCartConfirmation()
     })
     
     // Checkout button handler
@@ -2021,6 +2021,78 @@ async function addToCart(productId, name, price, image, color = null, quantity =
         openCartDrawer()
         return true
     }
+}
+
+// Show confirmation dialog before clearing cart
+function showClearCartConfirmation() {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div')
+    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+    modalOverlay.id = 'clear-cart-modal'
+    
+    // Create modal content
+    const modalContent = document.createElement('div')
+    modalContent.className = 'bg-white rounded-lg p-6 mx-4 max-w-md w-full shadow-xl'
+    modalContent.innerHTML = `
+        <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Clear Shopping Cart</h3>
+            <p class="text-sm text-gray-500 mb-6">
+                Are you sure you want to clear your cart? This action cannot be undone and all items will be removed.
+            </p>
+            <div class="flex gap-3 justify-center">
+                <button 
+                    id="cancel-clear-cart" 
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                >
+                    Cancel
+                </button>
+                <button 
+                    id="confirm-clear-cart" 
+                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                >
+                    Clear Cart
+                </button>
+            </div>
+        </div>
+    `
+    
+    modalOverlay.appendChild(modalContent)
+    document.body.appendChild(modalOverlay)
+    
+    // Add event listeners
+    const cancelBtn = modalOverlay.querySelector('#cancel-clear-cart')
+    const confirmBtn = modalOverlay.querySelector('#confirm-clear-cart')
+    
+    const closeModal = () => {
+        document.body.removeChild(modalOverlay)
+    }
+    
+    cancelBtn.addEventListener('click', closeModal)
+    confirmBtn.addEventListener('click', () => {
+        closeModal()
+        clearCart()
+    })
+    
+    // Close on overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal()
+        }
+    })
+    
+    // Close on Escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeModal()
+            document.removeEventListener('keydown', handleEscape)
+        }
+    }
+    document.addEventListener('keydown', handleEscape)
 }
 
 async function clearCart() {
