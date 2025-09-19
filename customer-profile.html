@@ -163,9 +163,9 @@
               <div id="profile-initial-wrapper" class="w-16 h-16 md:w-20 md:h-20 bg-gold rounded-full flex items-center justify-center">
                 <span class="text-white text-2xl font-bold" id="profile-initial">U</span>
               </div>
-              <label for="avatar-input" class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow cursor-pointer" title="Change photo">
-                <svg class="w-4 h-4 text-charcoal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 13v7h7l9-9a2.5 2.5 0 10-3.536-3.536L7.464 16.464 4 13z" />
+              <label for="avatar-input" aria-label="Change profile photo" class="absolute -bottom-1 -right-1 w-7 h-7 md:w-8 md:h-8 bg-gold text-white rounded-full flex items-center justify-center shadow ring-2 ring-white cursor-pointer hover:bg-charcoal transition">
+                <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h3l2-2h8l2 2h3v12H3V7zm9 10a5 5 0 100-10 5 5 0 000 10zm0-3a2 2 0 110-4 2 2 0 010 4z" />
                 </svg>
               </label>
               <input id="avatar-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" />
@@ -207,10 +207,12 @@
           <!-- Profile Tab -->
           <div id="profile-tab" class="tab-content">
             <h2 class="text-xl font-semibold mb-6">Edit Profile</h2>
-            <div class="mb-6 flex items-center gap-4">
+            <div class="mb-6 flex items-center gap-4 flex-wrap">
               <img id="avatar-preview" src="assets/placeholder-avatar-1.jpg" alt="Avatar preview" class="w-16 h-16 rounded-full object-cover hidden">
-              <button id="change-avatar-btn" type="button" class="bg-white border border-beige px-4 py-2 rounded-lg text-charcoal hover:bg-beige transition-colors">Change photo</button>
-              <button id="remove-avatar-btn" type="button" class="text-red-600 hover:text-gold">Remove</button>
+              <div class="flex items-center gap-3">
+                <button id="change-avatar-btn" type="button" class="bg-white border border-beige px-4 py-2 rounded-lg text-charcoal hover:bg-beige transition-colors">Change photo</button>
+                <button id="remove-avatar-btn" type="button" class="text-red-600 hover:text-gold">Remove</button>
+              </div>
             </div>
             <form id="profile-form" class="space-y-6">
               <div class="grid md:grid-cols-2 gap-6">
