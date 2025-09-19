@@ -552,7 +552,18 @@
           document.getElementById('profile-initial').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
 
           // Avatar handling
-          const avatarUrl = user.avatar && user.avatar.url ? user.avatar.url : '';
+          let avatarUrl = user.avatar && user.avatar.url ? user.avatar.url : '';
+          
+          // Fix old placeholder URLs to use local asset
+          if (avatarUrl && avatarUrl.includes('via.placeholder.com')) {
+            avatarUrl = 'assets/placeholder-avatar-1.jpg';
+            // Update user data in localStorage
+            user.avatar = user.avatar || {};
+            user.avatar.url = avatarUrl;
+            localStorage.setItem('customerUser', JSON.stringify(user));
+            console.log('🔄 Updated avatar URL from external placeholder to local asset');
+          }
+          
           const avatarImg = document.getElementById('profile-avatar');
           const initialWrap = document.getElementById('profile-initial-wrapper');
           const avatarPreview = document.getElementById('avatar-preview');
