@@ -2027,7 +2027,7 @@ async function addToCart(productId, name, price, image, color = null, quantity =
 function showClearCartConfirmation() {
     // Create modal overlay
     const modalOverlay = document.createElement('div')
-    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto'
+    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 overflow-y-auto'
     modalOverlay.id = 'clear-cart-modal'
     
     // Create modal content
@@ -2055,6 +2055,7 @@ function showClearCartConfirmation() {
                 <button 
                     id="confirm-clear-cart" 
                     class="w-full sm:w-auto px-6 py-3 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                    style="color: white !important; background-color: #dc2626 !important;"
                 >
                     Clear Cart
                 </button>
