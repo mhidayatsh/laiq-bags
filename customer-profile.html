@@ -158,8 +158,17 @@
       <div class="bg-white rounded-2xl shadow-lg p-4 md:p-8 mb-8">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div class="flex items-center space-x-4 md:space-x-6">
-            <div class="w-16 h-16 md:w-20 md:h-20 bg-gold rounded-full flex items-center justify-center">
-              <span class="text-white text-2xl font-bold" id="profile-initial">U</span>
+            <div class="relative">
+              <img id="profile-avatar" src="assets/placeholder-avatar-1.jpg" alt="Avatar" width="80" height="80" class="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover hidden">
+              <div id="profile-initial-wrapper" class="w-16 h-16 md:w-20 md:h-20 bg-gold rounded-full flex items-center justify-center">
+                <span class="text-white text-2xl font-bold" id="profile-initial">U</span>
+              </div>
+              <label for="avatar-input" class="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow cursor-pointer" title="Change photo">
+                <svg class="w-4 h-4 text-charcoal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 13v7h7l9-9a2.5 2.5 0 10-3.536-3.536L7.464 16.464 4 13z" />
+                </svg>
+              </label>
+              <input id="avatar-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" />
             </div>
             <div>
               <h1 class="text-2xl font-bold text-charcoal break-words" id="profile-name">User Name</h1>
@@ -198,6 +207,11 @@
           <!-- Profile Tab -->
           <div id="profile-tab" class="tab-content">
             <h2 class="text-xl font-semibold mb-6">Edit Profile</h2>
+            <div class="mb-6 flex items-center gap-4">
+              <img id="avatar-preview" src="assets/placeholder-avatar-1.jpg" alt="Avatar preview" class="w-16 h-16 rounded-full object-cover hidden">
+              <button id="change-avatar-btn" type="button" class="bg-white border border-beige px-4 py-2 rounded-lg text-charcoal hover:bg-beige transition-colors">Change photo</button>
+              <button id="remove-avatar-btn" type="button" class="text-red-600 hover:text-gold">Remove</button>
+            </div>
             <form id="profile-form" class="space-y-6">
               <div class="grid md:grid-cols-2 gap-6">
                 <div>
@@ -353,6 +367,7 @@
         
         // Initialize profile form
         initializeProfileForm();
+        initializeAvatarControls();
         
         // Start auto-refresh for orders
         startOrdersAutoRefresh();
@@ -533,6 +548,23 @@
           document.getElementById('profile-email').textContent = user.email || 'N/A';
           document.getElementById('profile-phone').textContent = user.phone || 'N/A';
           document.getElementById('profile-initial').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+
+          // Avatar handling
+          const avatarUrl = user.avatar && user.avatar.url ? user.avatar.url : '';
+          const avatarImg = document.getElementById('profile-avatar');
+          const initialWrap = document.getElementById('profile-initial-wrapper');
+          const avatarPreview = document.getElementById('avatar-preview');
+          if (avatarUrl) {
+            avatarImg.src = getThumbnailUrl(avatarUrl, 128);
+            avatarImg.classList.remove('hidden');
+            initialWrap.classList.add('hidden');
+            avatarPreview.src = getThumbnailUrl(avatarUrl, 128);
+            avatarPreview.classList.remove('hidden');
+          } else {
+            avatarImg.classList.add('hidden');
+            initialWrap.classList.remove('hidden');
+            avatarPreview.classList.add('hidden');
+          }
           
           // Update form fields
           document.getElementById('edit-name').value = user.name || '';
@@ -562,6 +594,95 @@
           console.error('❌ Error loading customer data:', error);
           showToast('Error loading customer data', 'error');
         }
+      }
+
+      function initializeAvatarControls() {
+        const fileInput = document.getElementById('avatar-input');
+        const changeBtn = document.getElementById('change-avatar-btn');
+        const removeBtn = document.getElementById('remove-avatar-btn');
+        const avatarImg = document.getElementById('profile-avatar');
+        const initialWrap = document.getElementById('profile-initial-wrapper');
+        const avatarPreview = document.getElementById('avatar-preview');
+
+        if (changeBtn) {
+          changeBtn.addEventListener('click', () => fileInput.click());
+        }
+
+        // Clicking the small pencil also triggers file input (via label)
+
+        fileInput.addEventListener('change', async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) {
+            showToast('Please select a PNG, JPG or WEBP image', 'error');
+            return;
+          }
+          if (file.size > 2 * 1024 * 1024) {
+            showToast('Image must be 2MB or smaller', 'error');
+            return;
+          }
+
+          try {
+            const dataUrl = await readFileAsDataUrl(file);
+            // Show local preview immediately
+            avatarImg.src = dataUrl;
+            avatarImg.classList.remove('hidden');
+            initialWrap.classList.add('hidden');
+            avatarPreview.src = dataUrl;
+            avatarPreview.classList.remove('hidden');
+
+            // Upload to server
+            const res = await api.uploadCustomerAvatar(dataUrl);
+            if (res && res.success) {
+              // Update localStorage user
+              const user = res.user || JSON.parse(localStorage.getItem('customerUser')) || {};
+              if (res.avatar) {
+                user.avatar = res.avatar;
+              }
+              localStorage.setItem('customerUser', JSON.stringify(user));
+              showToast('Profile photo updated', 'success');
+            } else {
+              throw new Error(res && res.message ? res.message : 'Upload failed');
+            }
+          } catch (err) {
+            console.error('Avatar upload error:', err);
+            showToast('Failed to update photo: ' + err.message, 'error');
+          } finally {
+            fileInput.value = '';
+          }
+        });
+
+        if (removeBtn) {
+          removeBtn.addEventListener('click', async () => {
+            if (!confirm('Remove your profile photo?')) return;
+            try {
+              const res = await api.removeCustomerAvatar();
+              if (res && res.success) {
+                avatarImg.classList.add('hidden');
+                initialWrap.classList.remove('hidden');
+                avatarPreview.classList.add('hidden');
+                const user = res.user || JSON.parse(localStorage.getItem('customerUser')) || {};
+                user.avatar = res.avatar;
+                localStorage.setItem('customerUser', JSON.stringify(user));
+                showToast('Profile photo removed', 'success');
+              } else {
+                throw new Error(res && res.message ? res.message : 'Remove failed');
+              }
+            } catch (err) {
+              console.error('Remove avatar error:', err);
+              showToast('Failed to remove photo: ' + err.message, 'error');
+            }
+          });
+        }
+      }
+
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       }
       
       function initializeTabs() {

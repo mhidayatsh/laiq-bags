@@ -719,6 +719,19 @@ class ApiService {
         });
     }
 
+    async uploadCustomerAvatar(avatarData) {
+        return this.request('/auth/customer/avatar', {
+            method: 'PUT',
+            body: JSON.stringify({ avatarData })
+        });
+    }
+
+    async removeCustomerAvatar() {
+        return this.request('/auth/customer/avatar/remove', {
+            method: 'DELETE'
+        });
+    }
+
     // Customer Orders API
     async getCustomerOrders(page = 1, options = {}) {
         const token = localStorage.getItem('customerToken');

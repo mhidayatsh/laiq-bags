@@ -13,6 +13,7 @@ const jwt = require('jsonwebtoken');
 const { encrypt, decrypt } = require('../utils/encryption');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const { uploadImage, deleteImage } = require('../utils/cloudinary');
 // OAuth (Google) - OpenID Connect (ESM/CJS compatibility loader)
 let openidModuleCache;
 async function getOpenIdModule() {
@@ -1033,6 +1034,78 @@ router.put('/customer/me/update', isAuthenticatedUser, async (req, res) => {
       success: false,
       message: 'Error updating profile'
     });
+  }
+});
+
+// Update customer avatar => /api/auth/customer/avatar
+router.put('/customer/avatar', isAuthenticatedUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'user') {
+      return res.status(404).json({ success: false, message: 'Customer not found' });
+    }
+
+    const { avatarData } = req.body;
+    if (!avatarData || typeof avatarData !== 'string') {
+      return res.status(400).json({ success: false, message: 'avatarData (base64 data URL) is required' });
+    }
+
+    // Upload new image to Cloudinary with square crop for avatar
+    const uploaded = await uploadImage(avatarData, {
+      folder: 'laiq-bags/avatars',
+      transformation: [{ width: 256, height: 256, crop: 'fill', gravity: 'face', quality: 'auto', fetch_format: 'auto' }],
+      format: 'webp'
+    });
+
+    if (!uploaded) {
+      return res.status(500).json({ success: false, message: 'Failed to upload avatar image' });
+    }
+
+    // Delete previous avatar if it exists and is not default or google placeholder
+    try {
+      const previousPublicId = user.avatar && user.avatar.public_id;
+      if (previousPublicId && previousPublicId !== 'default_avatar' && previousPublicId !== 'google_avatar') {
+        await deleteImage(previousPublicId);
+      }
+    } catch (_) {}
+
+    user.avatar = { public_id: uploaded.public_id, url: uploaded.url };
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json({ success: true, message: 'Avatar updated', avatar: user.avatar, user });
+  } catch (error) {
+    console.error('Update customer avatar error:', error);
+    return res.status(500).json({ success: false, message: 'Error updating avatar' });
+  }
+});
+
+// Remove customer avatar => /api/auth/customer/avatar/remove
+router.delete('/customer/avatar/remove', isAuthenticatedUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'user') {
+      return res.status(404).json({ success: false, message: 'Customer not found' });
+    }
+
+    // Delete current avatar from Cloudinary if not default/google
+    try {
+      const previousPublicId = user.avatar && user.avatar.public_id;
+      if (previousPublicId && previousPublicId !== 'default_avatar' && previousPublicId !== 'google_avatar') {
+        await deleteImage(previousPublicId);
+      }
+    } catch (_) {}
+
+    // Reset to defaults
+    user.avatar = {
+      public_id: 'default_avatar',
+      url: 'https://via.placeholder.com/150?text=User'
+    };
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json({ success: true, message: 'Avatar removed', avatar: user.avatar, user });
+  } catch (error) {
+    console.error('Remove customer avatar error:', error);
+    return res.status(500).json({ success: false, message: 'Error removing avatar' });
   }
 });
 
