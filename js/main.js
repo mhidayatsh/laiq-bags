@@ -540,6 +540,9 @@ function saveUserCart() {
             localStorage.setItem('userCart', cartData)
         }
         
+        // Update timestamp to track when cart was last modified
+        localStorage.setItem('lastCartUpdate', Date.now().toString())
+        
         console.log('✅ User cart saved:', cart.length, 'items')
     } catch (error) {
         if (error.name === 'QuotaExceededError') {
@@ -2135,6 +2138,9 @@ async function clearCart() {
         // Clear from local storage
         cart = []
         saveUserCart()
+        
+        // Set timestamp to prevent old cart data from syncing back
+        localStorage.setItem('lastCartUpdate', Date.now().toString())
     } else {
         // Clear guest cart
         guestCart = []
@@ -3454,20 +3460,36 @@ async function loadCartFromBackend() {
                 backendCart = cartResponse.items
             }
 
-            // If backend is empty but local has items, sync local to backend once
+            // If backend is empty but local has items, check if we should sync
             if ((backendCart?.length || 0) === 0 && localStorageCart.length > 0) {
-                console.log('🔄 Backend cart empty; syncing local items to server...')
-                for (const item of localStorageCart) {
-                    try {
-                        await api.addToCart(item.id || item.productId, item.qty || item.quantity || 1, item.color || null)
-                        await new Promise(r => setTimeout(r, 20))
-                    } catch (err) {
-                        console.warn('⚠️ Failed syncing item to backend:', item?.name || item?.id, err?.message)
+                // Check if local cart was recently modified (within last 5 minutes)
+                const lastCartUpdate = localStorage.getItem('lastCartUpdate')
+                const now = Date.now()
+                const fiveMinutesAgo = now - (5 * 60 * 1000)
+                
+                if (lastCartUpdate && parseInt(lastCartUpdate) > fiveMinutesAgo) {
+                    console.log('🔄 Backend cart empty; syncing local items to server...')
+                    for (const item of localStorageCart) {
+                        try {
+                            await api.addToCart(item.id || item.productId, item.qty || item.quantity || 1, item.color || null)
+                            await new Promise(r => setTimeout(r, 20))
+                        } catch (err) {
+                            console.warn('⚠️ Failed syncing item to backend:', item?.name || item?.id, err?.message)
+                        }
                     }
+                    // Re-fetch to get canonical server state
+                    const refetch = await api.getCart({ timeoutMs: 8000 })
+                    backendCart = (refetch && refetch.cart && Array.isArray(refetch.cart.items)) ? refetch.cart.items : []
+                } else {
+                    console.log('⚠️ Local cart data is stale, clearing localStorage to match backend')
+                    localStorage.removeItem('userCart')
+                    localStorage.removeItem('lastCartUpdate')
+                    cart = []
+                    saveUserCart()
+                    updateCartCount()
+                    renderCartDrawer(cart)
+                    return
                 }
-                // Re-fetch to get canonical server state
-                const refetch = await api.getCart({ timeoutMs: 8000 })
-                backendCart = (refetch && refetch.cart && Array.isArray(refetch.cart.items)) ? refetch.cart.items : []
             }
 
             // Adopt server as source of truth
