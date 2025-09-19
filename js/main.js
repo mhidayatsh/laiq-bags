@@ -2027,13 +2027,22 @@ async function addToCart(productId, name, price, image, color = null, quantity =
 function showClearCartConfirmation() {
     // Create modal overlay
     const modalOverlay = document.createElement('div')
-    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 overflow-y-auto'
+    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto'
+    modalOverlay.style.setProperty('z-index', '99999', 'important')
+    modalOverlay.style.zIndex = '99999'
+    modalOverlay.style.position = 'fixed'
+    modalOverlay.style.top = '0'
+    modalOverlay.style.left = '0'
+    modalOverlay.style.width = '100%'
+    modalOverlay.style.height = '100%'
     modalOverlay.id = 'clear-cart-modal'
     
     // Create modal content
     const modalContent = document.createElement('div')
     modalContent.className = 'bg-white rounded-lg p-4 mx-4 max-w-sm w-full shadow-xl my-4'
     modalContent.style.minHeight = '200px'
+    modalContent.style.position = 'relative'
+    modalContent.style.zIndex = '100000'
     modalContent.innerHTML = `
         <div class="text-center">
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
