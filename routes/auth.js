@@ -1050,10 +1050,18 @@ router.put('/customer/avatar', isAuthenticatedUser, async (req, res) => {
       return res.status(400).json({ success: false, message: 'avatarData (base64 data URL) is required' });
     }
 
-    // Upload new image to Cloudinary with square crop for avatar
+    // Upload new image to Cloudinary with optimized settings for avatars
     const uploaded = await uploadImage(avatarData, {
       folder: 'laiq-bags/avatars',
-      transformation: [{ width: 256, height: 256, crop: 'fill', gravity: 'face', quality: 'auto', fetch_format: 'auto' }],
+      transformation: [{ 
+        width: 256, 
+        height: 256, 
+        crop: 'fill', 
+        gravity: 'face', 
+        quality: 'auto:best',  // Enhanced quality optimization
+        fetch_format: 'auto',  // Serves WebP/AVIF when supported
+        flags: 'progressive'   // Progressive JPEG loading
+      }],
       format: 'webp'
     });
 
