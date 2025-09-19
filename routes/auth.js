@@ -246,7 +246,7 @@ router.get('/oauth/google/callback', async (req, res) => {
         // Optionally set avatar URL if empty
         if (!existing.avatar || !existing.avatar.url) {
           existing.avatar = existing.avatar || {};
-          existing.avatar.url = picture || existing.avatar.url || 'https://via.placeholder.com/150?text=User';
+          existing.avatar.url = picture || existing.avatar.url || 'assets/placeholder-avatar-1.jpg';
         }
         user = await existing.save({ validateBeforeSave: false });
       }
@@ -1106,7 +1106,7 @@ router.delete('/customer/avatar/remove', isAuthenticatedUser, async (req, res) =
     // Reset to defaults
     user.avatar = {
       public_id: 'default_avatar',
-      url: 'https://via.placeholder.com/150?text=User'
+      url: 'assets/placeholder-avatar-1.jpg'
     };
     await user.save({ validateBeforeSave: false });
 

@@ -135,7 +135,7 @@ const userSchema = new mongoose.Schema({
     url: {
       type: String,
       required: false,
-      default: 'https://via.placeholder.com/150?text=User'
+      default: 'assets/placeholder-avatar-1.jpg'
     }
   },
   role: {
@@ -195,14 +195,14 @@ userSchema.pre('save', async function(next) {
   if (!this.avatar) {
     this.avatar = {
       public_id: 'default_avatar',
-      url: 'https://via.placeholder.com/150?text=User'
+      url: 'assets/placeholder-avatar-1.jpg'
     };
   } else {
     if (!this.avatar.public_id) {
       this.avatar.public_id = 'default_avatar';
     }
     if (!this.avatar.url) {
-      this.avatar.url = 'https://via.placeholder.com/150?text=User';
+      this.avatar.url = 'assets/placeholder-avatar-1.jpg';
     }
   }
   
