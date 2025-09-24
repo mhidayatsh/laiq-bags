@@ -1,58 +1,81 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const sendEmail = async (options) => {
-  // Check if email configuration is available
+  const to = options.email;
+  const subject = options.subject;
+  const text = options.text || options.message || '';
+  const html = options.html || options.message || '';
+
+  // Prefer Resend HTTPS API if configured (works on Render free plan)
+  if (process.env.RESEND_API_KEY) {
+    const fromEmail = process.env.FROM_EMAIL || process.env.EMAIL_FROM || 'no-reply@laiq.shop';
+    try {
+      const payload = {
+        from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${fromEmail}>`,
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html,
+        text
+      };
+
+      const res = await axios.post('https://api.resend.com/emails', payload, {
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 15000
+      });
+
+      console.log('✅ Resend email queued id:', res.data?.id || 'unknown');
+      return;
+    } catch (error) {
+      console.error('❌ Resend email failed, falling back to SMTP if available:', error.response?.data || error.message);
+      // Fall through to SMTP fallback below
+    }
+  }
+
+  // SMTP fallback (will not work on Render free due to blocked ports)
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.EMAIL_PASS === 'your_app_password_here') {
-    console.warn('⚠️ Email configuration not set up. Skipping email send.');
-    console.log('📧 Email would have been sent to:', options.email);
-    console.log('📧 Subject:', options.subject);
-    console.log('📧 Content:', options.html || options.message || options.text || '');
+    console.warn('⚠️ Email configuration not set or SMTP blocked. Skipping email send.');
+    console.log('📧 Email would have been sent to:', to);
+    console.log('📧 Subject:', subject);
+    console.log('📧 Content:', html || text);
     return;
   }
 
-  // Create transporter with Gmail SMTP
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: process.env.EMAIL_PORT || 587,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS // App password
+      pass: process.env.EMAIL_PASS
     },
-    tls: {
-      rejectUnauthorized: false
-    }
+    tls: { rejectUnauthorized: false }
   });
 
-  // Verify transporter
   try {
     await transporter.verify();
-    console.log('✅ Email transporter verified successfully');
   } catch (error) {
     console.error('❌ Email transporter verification failed:', error.message);
-    console.log('📧 Email would have been sent to:', options.email);
-    console.log('📧 Subject:', options.subject);
-    console.log('📧 Content:', options.html || options.message || options.text || '');
-    return; // Don't throw error, just log and continue
+    return;
   }
 
   const message = {
-    from: `Laiq Bags <${process.env.EMAIL_USER}>`,
-    to: options.email,
-    subject: options.subject,
-    text: options.text || options.message || '',
-    html: options.html || options.message || ''
+    from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    text,
+    html
   };
 
   try {
     await transporter.sendMail(message);
-    console.log('✅ Email sent successfully to:', options.email);
+    console.log('✅ SMTP email sent successfully to:', to);
   } catch (error) {
-    console.error('❌ Email sending failed:', error.message);
-    console.log('📧 Email would have been sent to:', options.email);
-    console.log('📧 Subject:', options.subject);
-    console.log('📧 Content:', options.html || options.message || options.text || '');
+    console.error('❌ SMTP email sending failed:', error.message);
   }
 };
 

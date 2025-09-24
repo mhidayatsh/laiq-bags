@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 // Helper to build absolute asset URLs for emails
 const getBaseUrl = () => process.env.FRONTEND_URL || 'https://www.laiq.shop';
@@ -37,31 +38,47 @@ const createTransporter = () => {
   }
 };
 
-// Send email with error handling
+// Send email with Resend first, SMTP fallback
 const sendEmail = async (options) => {
   try {
+    // Prefer Resend API if available
+    if (process.env.RESEND_API_KEY) {
+      const fromEmail = process.env.FROM_EMAIL || process.env.EMAIL_FROM || 'no-reply@laiq.shop';
+      const payload = {
+        from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${fromEmail}>`,
+        to: Array.isArray(options.email) ? options.email : [options.email],
+        subject: options.subject,
+        text: options.text,
+        html: options.html
+      };
+      try {
+        const res = await axios.post('https://api.resend.com/emails', payload, {
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 15000
+        });
+        console.log('✅ Resend email queued:', res.data?.id || 'unknown');
+        return { success: true, messageId: res.data?.id };
+      } catch (apiError) {
+        console.error('❌ Resend API error, falling back to SMTP:', apiError.response?.data || apiError.message);
+        // continue to SMTP fallback
+      }
+    }
+
+    // SMTP fallback
     const transporter = createTransporter();
-    
     if (!transporter) {
       console.log('⚠️  Email service not available, skipping email send');
       return { success: false, message: 'Email service not configured' };
     }
-
-    // Verify transporter
     try {
       console.log('🔍 Verifying email transporter...');
       await transporter.verify();
-      console.log('✅ Email transporter verified successfully');
     } catch (verifyError) {
-      console.error('❌ Email transporter verification failed:', verifyError.message);
-      console.error('❌ Error details:', verifyError);
       return { success: false, message: 'Email service verification failed: ' + verifyError.message };
     }
-
-    console.log('📧 Sending email to:', options.email);
-    console.log('📧 Subject:', options.subject);
-
-    // Send email
     const info = await transporter.sendMail({
       from: process.env.EMAIL_FROM || `"${process.env.BUSINESS_NAME || 'Laiq Bags'}" <${process.env.EMAIL_USER}>`,
       to: options.email,
@@ -69,8 +86,7 @@ const sendEmail = async (options) => {
       text: options.text,
       html: options.html
     });
-
-    console.log('✅ Email sent successfully:', info.messageId);
+    console.log('✅ SMTP email sent:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('❌ Email sending failed:', error.message);
