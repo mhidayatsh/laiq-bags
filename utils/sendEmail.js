@@ -6,17 +6,20 @@ const sendEmail = async (options) => {
   const subject = options.subject;
   const text = options.text || options.message || '';
   const html = options.html || options.message || '';
+  const requestedFrom = options.from;
+  const requestedReplyTo = options.replyTo || process.env.SUPPORT_EMAIL;
 
   // Prefer Resend HTTPS API if configured (works on Render free plan)
   if (process.env.RESEND_API_KEY) {
-    const fromEmail = process.env.FROM_EMAIL || process.env.EMAIL_FROM || 'no-reply@laiq.shop';
+    const fromEmail = requestedFrom || process.env.FROM_EMAIL || process.env.EMAIL_FROM || 'no-reply@laiq.shop';
     try {
       const payload = {
         from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${fromEmail}>`,
         to: Array.isArray(to) ? to : [to],
         subject,
         html,
-        text
+        text,
+        reply_to: requestedReplyTo
       };
 
       const res = await axios.post('https://api.resend.com/emails', payload, {
@@ -64,11 +67,12 @@ const sendEmail = async (options) => {
   }
 
   const message = {
-    from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${process.env.EMAIL_USER}>`,
+    from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${requestedFrom || process.env.FROM_EMAIL || process.env.EMAIL_USER}>`,
     to,
     subject,
     text,
-    html
+    html,
+    replyTo: requestedReplyTo
   };
 
   try {

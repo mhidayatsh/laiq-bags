@@ -43,13 +43,14 @@ const sendEmail = async (options) => {
   try {
     // Prefer Resend API if available
     if (process.env.RESEND_API_KEY) {
-      const fromEmail = process.env.FROM_EMAIL || process.env.EMAIL_FROM || 'no-reply@laiq.shop';
+      const fromEmail = options.from || process.env.FROM_EMAIL || process.env.EMAIL_FROM || 'no-reply@laiq.shop';
       const payload = {
         from: `${process.env.BUSINESS_NAME || 'Laiq Bags'} <${fromEmail}>`,
         to: Array.isArray(options.email) ? options.email : [options.email],
         subject: options.subject,
         text: options.text,
-        html: options.html
+        html: options.html,
+        reply_to: options.replyTo || process.env.SUPPORT_EMAIL
       };
       try {
         const res = await axios.post('https://api.resend.com/emails', payload, {
@@ -80,11 +81,12 @@ const sendEmail = async (options) => {
       return { success: false, message: 'Email service verification failed: ' + verifyError.message };
     }
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || `"${process.env.BUSINESS_NAME || 'Laiq Bags'}" <${process.env.EMAIL_USER}>`,
+      from: options.from || process.env.EMAIL_FROM || `"${process.env.BUSINESS_NAME || 'Laiq Bags'}" <${process.env.EMAIL_USER}>`,
       to: options.email,
       subject: options.subject,
       text: options.text,
-      html: options.html
+      html: options.html,
+      replyTo: options.replyTo || process.env.SUPPORT_EMAIL
     });
     console.log('✅ SMTP email sent:', info.messageId);
     return { success: true, messageId: info.messageId };
@@ -136,7 +138,7 @@ const sendPasswordResetEmail = async (email, resetUrl) => {
     </div>
   `;
 
-  return await sendEmail({ email, subject, text, html });
+  return await sendEmail({ email, subject, text, html, from: process.env.FROM_EMAIL, replyTo: process.env.SUPPORT_EMAIL });
 };
 
 // Send newsletter email
@@ -175,7 +177,7 @@ const sendNewsletterEmail = async (email, newsletterData) => {
     </div>
   `;
 
-  return await sendEmail({ email, subject, text, html });
+  return await sendEmail({ email, subject, text, html, from: process.env.NEWSLETTER_FROM || process.env.FROM_EMAIL, replyTo: process.env.SUPPORT_EMAIL });
 };
 
 // Send order confirmation email
@@ -232,7 +234,7 @@ const sendOrderConfirmationEmail = async (email, orderDetails) => {
     </div>
   `;
 
-  return await sendEmail({ email, subject, text, html });
+  return await sendEmail({ email, subject, text, html, from: process.env.FROM_EMAIL, replyTo: process.env.SUPPORT_EMAIL });
 };
 
 module.exports = {
